@@ -271,3 +271,152 @@ test("legacy scheduler remains available with its fixed-tick behavior", () => {
   assert.equal(quick.cr, 100);
   assert.equal(slow.cr, 95);
 });
+
+// --- Time-order, clone-safety and CR-pull ordering ---------------------------
+
+// Each pick should happen in true time order: the k-th turn of an actor with SPD s
+// is due at time k * 100 / s, and picks must never go backwards in that time.
+function countTimeOrderInversions(order, speedByName) {
+  const taken = {};
+  let previousDue = 0;
+  let inversions = 0;
+  for (const name of order) {
+    taken[name] = (taken[name] || 0) + 1;
+    const due = (taken[name] * 100) / speedByName[name];
+    if (due < previousDue - 1e-9) inversions++;
+    previousDue = Math.max(previousDue, due);
+  }
+  return inversions;
+}
+
+test("real roster stays in true SPD time order and turn counts match SPD over a full cycle", () => {
+  const roster = [
+    ["Zenki", 110, "ally"],
+    ["Elishia", 95, "ally"],
+    ["Jazen", 70, "ally"],
+    ["Training Drone", 70, "enemy"],
+    ["Rogue Automaton", 60, "enemy"],
+    ["Siege Turret", 35, "enemy"],
+  ];
+  const units = roster.map(([name, speed, side]) => actor(name, speed, { side }));
+  const speeds = Object.fromEntries(roster.map(([name, speed]) => [name, speed]));
+  const { order } = scheduleOrder(units, 440);
+
+  assert.equal(countTimeOrderInversions(order, speeds), 0);
+  for (const [name, speed] of roster) {
+    assert.equal(order.filter((entry) => entry === name).length, speed, name);
+  }
+});
+
+test("random rosters stay in time order and track SPD share", () => {
+  let seed = 20260807;
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+
+  for (let trial = 0; trial < 100; trial++) {
+    const speeds = Array.from({ length: 6 }, () => 55 + Math.floor(random() * 71));
+    const units = speeds.map((speed, index) =>
+      actor(`U${index}`, speed, { side: index < 3 ? "ally" : "enemy" }),
+    );
+    const speedByName = Object.fromEntries(units.map((unit) => [unit.name, unit.stats.SPD]));
+    const turns = 200;
+    const { order } = scheduleOrder(units, turns);
+
+    assert.equal(countTimeOrderInversions(order, speedByName), 0, `trial ${trial}`);
+    const totalSpeed = speeds.reduce((sum, speed) => sum + speed, 0);
+    for (const unit of units) {
+      const expected = (turns * unit.stats.SPD) / totalSpeed;
+      const actual = order.filter((name) => name === unit.name).length;
+      assert.ok(Math.abs(actual - expected) <= 2, `trial ${trial} ${unit.name}: ${actual} vs ${expected.toFixed(1)}`);
+    }
+  }
+});
+
+test("scheduler bookkeeping lives on state, so a cloned state previews the real future", () => {
+  const units = [
+    actor("Zenki", 110),
+    actor("Elishia", 95),
+    actor("Jazen", 70),
+    actor("Training Drone", 70, { side: "enemy" }),
+    actor("Rogue Automaton", 60, { side: "enemy" }),
+    actor("Siege Turret", 35, { side: "enemy" }),
+  ];
+  const { state } = scheduleOrder(units, 37);
+  assert.ok(state.scheduler, "scheduler state should be stored on the battle state");
+
+  const preview = structuredClone(state);
+  const scheduler = createThresholdScheduler();
+  const advance = (target, count) => {
+    const order = [];
+    for (let index = 0; index < count; index++) {
+      const next = scheduler.nextActor(target, effectiveStat);
+      order.push(next.name);
+      scheduler.resetCR(next);
+    }
+    return order;
+  };
+
+  assert.deepEqual(advance(preview, 60), advance(state, 60));
+});
+
+test("two battles sharing one scheduler instance do not share queue or tie state", () => {
+  const scheduler = createThresholdScheduler();
+  const makeState = () => {
+    const state = createBattleState();
+    state.actors = [actor("Alpha", 100), actor("Bravo", 100), actor("Charlie", 100)];
+    return state;
+  };
+  const run = (state) => {
+    const order = [];
+    for (let index = 0; index < 7; index++) {
+      const next = scheduler.nextActor(state, effectiveStat);
+      order.push(next.name);
+      scheduler.resetCR(next);
+    }
+    return order;
+  };
+
+  const first = makeState();
+  const second = makeState();
+  run(first);
+  assert.deepEqual(run(second), run(makeState()));
+  assert.notEqual(first.scheduler, second.scheduler);
+});
+
+test("CR-pulled actors are ordered by CR, then SPD, then stable key (not side or name)", () => {
+  const scheduler = createThresholdScheduler();
+  const state = createBattleState();
+  const alpha = actor("Alpha", 50);
+  const mid = actor("Mid", 65);
+  const zeta = actor("Zeta", 80, { side: "enemy" });
+  state.actors = [alpha, mid, zeta];
+
+  for (const unit of state.actors) scheduler.adjustCR(unit, 999);
+
+  const order = [];
+  for (let index = 0; index < 3; index++) {
+    const next = scheduler.nextActor(state, effectiveStat);
+    order.push(next.name);
+    scheduler.resetCR(next);
+  }
+  assert.deepEqual(order, ["Zeta", "Mid", "Alpha"]);
+});
+
+test("CR-pulled actors with equal CR and SPD fall back to stable key, independent of formation order", () => {
+  const pull = (units) => {
+    const scheduler = createThresholdScheduler();
+    const state = createBattleState();
+    state.actors = units;
+    for (const unit of units) scheduler.adjustCR(unit, 999);
+    return [0, 1, 2].map(() => {
+      const next = scheduler.nextActor(state, effectiveStat);
+      scheduler.resetCR(next);
+      return next.name;
+    });
+  };
+  const forward = pull([actor("Alpha", 90), actor("Bravo", 90), actor("Charlie", 90)]);
+  const backward = pull([actor("Charlie", 90), actor("Bravo", 90), actor("Alpha", 90)]);
+  assert.deepEqual(forward, backward);
+});
