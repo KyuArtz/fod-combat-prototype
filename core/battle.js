@@ -10,36 +10,27 @@ const { createTurnEngine } = require("./turnEngine");
 const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
 const { addShield, tickShields } = require("../systems/shields");
-const {
-  applyDamage,
-  heal,
-} = require("../systems/damageApplication");
-const {
-  addStatus,
-  effectiveStat: getEffectiveStat,
-  tickStatuses,
-} = require("../systems/statusEffects");
+const { applyDamage, heal, } = require("../systems/damageApplication");
+const { addStatus, effectiveStat: getEffectiveStat, tickStatuses, } = require("../systems/statusEffects");
 const { createBattleLog } = require("../ui/battleLog");
 const { createBattleMenu } = require("../ui/battleMenu");
 const { createDeploymentSelector } = require("../ui/deploymentSelection");
 const { showParty, showStatus } = require("../ui/statusDisplay");
-const combatReadiness = require("../systems/combatReadiness");
+const thresholdCombatReadiness = require("../systems/thresholdCombatReadiness");
 
 function createBattle({
   input = process.stdin,
   promptOutput = process.stdout,
   output = console,
+  readinessScheduler = thresholdCombatReadiness,
 } = {}) {
   const state = createBattleState();
   const prompts = readline.createInterface({ input, output: promptOutput });
-  const ask = (question) =>
-    new Promise((resolve) => prompts.question(question, resolve));
+  const ask = (question) => new Promise((resolve) => prompts.question(question, resolve));
   const { say } = createBattleLog(state, output);
   const deploymentSelector = createDeploymentSelector({ ask, output });
-  const effectiveStat = (actor, stat) =>
-    getEffectiveStat(state, actor, stat);
-  const applyTargetDamage = (target, amount) =>
-    applyDamage(target, amount, say, (downedActor) => {
+  const effectiveStat = (actor, stat) => getEffectiveStat(state, actor, stat);
+  const applyTargetDamage = (target, amount) => applyDamage(target, amount, say, (downedActor) => {
       const replacement = formation.deployFirstReserve(
         state,
         downedActor.side,
@@ -83,14 +74,14 @@ function createBattle({
     tickCooldowns: cooldowns.tickCooldowns,
     tickShields,
     tickStatuses,
-    adjustCR: combatReadiness.adjustCR,
+    adjustCR: readinessScheduler.adjustCR,
   };
   const { skills, meoTurn } = createSkills(context);
   const battleMenu = createBattleMenu({ ...context, skills });
   const enemyAI = createEnemyAI(context);
   const turnEngine = createTurnEngine({
     ...context,
-    combatReadiness,
+    combatReadiness: readinessScheduler,
     getResult: () => formation.result(state),
     playerTurn: battleMenu.playerTurn,
     enemyTurn: enemyAI.enemyTurn,
