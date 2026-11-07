@@ -6,9 +6,11 @@
 node --test
 ```
 
-Current test file: `test/thresholdCombatReadiness.test.js`.
+Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`, `test/eventBus.test.js`, `test/determinism.test.js`, `test/openingInitiative.test.js` (**52 tests, all passing** as of 2026-11-07).
 
-## Current verified test inventory (18)
+## Current verified test inventory (52)
+
+### Scheduler (`thresholdCombatReadiness.test.js`, 18)
 
 1. Fastest actor reaches readiness first; other actors preserve fractional CR.
 2. Equal-SPD tie order is deterministic and independent of formation array order.
@@ -29,12 +31,58 @@ Current test file: `test/thresholdCombatReadiness.test.js`.
 17. CR-pulled actors order by CR, SPD, stable key—not side/name.
 18. Equal CR/equal SPD fallback is formation-order independent.
 
+### Seeded RNG (`rng.test.js`, 8)
+
+1. Same seed gives the same sequence; different seeds differ.
+2. Golden values lock the algorithm so saved seeds keep replaying the same way.
+3. Values stay in [0, 1) and are roughly uniform.
+4. `rollPercent`: 0 never succeeds, 100 always does, 25 is about a quarter.
+5. RNG state is plain data: `structuredClone` continues the identical sequence.
+6. Seeds accept integers and numeric strings and normalise to 32 bits.
+7. Invalid seeds throw `TypeError`.
+8. An omitted seed is random and recorded so it can be replayed.
+
+### Event bus (`eventBus.test.js`, 7)
+
+1. Typed delivery with payload and increasing `seq`.
+2. `onAny` and handler ordering.
+3. Unsubscribe, including from inside a handler.
+4. Payload cannot override `type` or `seq`.
+5. Optional recorded history is structured-clone friendly.
+6. No-subscriber emit is fine; bad arguments throw.
+7. A throwing handler propagates to the emitter.
+
+### Determinism (`determinism.test.js`, 7)
+
+1. Same seed and same choices replay the exact same full battle.
+2. Different seeds produce different battles.
+3. The seed is printed and kept on state.
+4. Console output, `state.log`, and `Log` events carry the same lines.
+5. Cloned battle state continues the same RNG sequence.
+6. `createBattleLog` still works without a bus.
+7. A second subscriber on a shared bus sees log lines without touching console output.
+
+### Opening initiative (`openingInitiative.test.js`, 12)
+
+1. Documents the problem: with pure SPD order the enemy Recon Drone opens the real 5v5 battle.
+2. Player-first: Zenki opens, then Recon Drone; the rest of the opening cycle is unchanged.
+3. Head start equals the readiness gap (plus margin), scaled by each ally's SPD; enemies untouched; no ally starts ready.
+4. Long-run turn counts stay SPD-proportional and in (shifted) time order over 800 turns.
+5. No-op when allies are already faster.
+6. An exact speed tie goes to the player regardless of array order or tie rotation.
+7. The legacy scheduler also opens with the player once the rule is applied.
+8. Summons and downed units are ignored when finding the fastest unit.
+9. `firstSide` can be flipped for future ambush encounters; invalid sides throw.
+10. Full seeded battles: the player acts first across seeds; the log line appears once; the event payload is plain data.
+11. `openingInitiative: "speed"` keeps pure SPD order and logs nothing extra.
+12. Unknown option values are rejected before anything starts.
+
 ## Playtest matrix
 
 | Scenario | Purpose | Status |
 |---|---|---|
-| 5 Falcon vs 5 enemies, threshold | Current baseline battle | Manual testing needed |
-| Same 5v5, legacy | Scheduler comparison | Manual testing needed |
+| 5 Falcon vs 5 enemies, threshold | Current baseline battle | Played once (2026-11-07 log): VICTORY, 3 rounds, no back-to-back turns, Recon Drone (enemy) opened, which led to the player-first rule (see ADR-010); more runs and seeds needed |
+| Same 5v5, legacy | Scheduler comparison | Compared via scripted seeded battles and the fixed roster (see below); a hand-played legacy 5v5 log has not been collected |
 | 4v5 | Numerical disadvantage / formation limit | Earlier experiment |
 | Roster > active limit | Reserve queue and auto replacement | Existing mechanics; more integration tests needed |
 | Active agent downed with reserve | Replacement slot and CR reset | More integration tests needed |
@@ -43,6 +91,18 @@ Current test file: `test/thresholdCombatReadiness.test.js`.
 | SPD buff/debuff | Time-order response | Unit test exists; battle balance test needed |
 | CR-pull skill | Ready queue and tie handling | Scheduler tests cover behavior; skill not yet present |
 | Clone state for turn-order preview | GUI prediction foundation | Unit test exists |
+
+## Scripted comparison tool
+
+`node tools/compareSchedulers.js [battles]` runs (1) the real 5v5 roster through each scheduler by itself and (2) full seeded battles with a scripted player (always option 1) for legacy and threshold, with and without the player-first opening. Use it to check scheduler or opening-rule changes. Only differences between rows are meaningful; the scripted policy says little about absolute balance.
+
+## Replaying a battle
+
+```bash
+FOD_SEED=12345 node index.js
+```
+
+The same seed **and the same menu choices** replay the same battle. Redirecting a file into stdin (`node index.js < answers.txt`) stops at the first prompt because readline drops lines that arrive before a question is asked (also true of the original code); drive prompts interactively or use the harness in `test/determinism.test.js`.
 
 ## Suggested metrics to record
 
@@ -66,7 +126,7 @@ Date / commit:
 Branch:
 Scheduler:
 Formation:
-Random seed (if available):
+Random seed (printed as `Seed: N` at battle start):
 Result:
 Rounds:
 Actions by actor:
@@ -87,4 +147,4 @@ Follow-up:
 - [ ] Check status effects, cooldowns, shields, MP and summons.
 - [ ] Review logs for SPD fairness and unintended loops.
 - [ ] Update changelog and status docs.
-- [ ] Confirm source and documentation agree on `maxActive`.
+- [ ] Confirm source and documentation agree on `maxActive` (5 for both parties as of 2026-11-07).

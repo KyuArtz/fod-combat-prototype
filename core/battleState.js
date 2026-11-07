@@ -1,5 +1,8 @@
-function createBattleState() {
+const { createRngState } = require("./rng");
+
+function createBattleState({ seed } = {}) {
   return {
+    rng: createRngState(seed), // seeded RNG, plain data so it clones with the state
     actors: [],
     round: 1,
     schedulerTicks: 0,

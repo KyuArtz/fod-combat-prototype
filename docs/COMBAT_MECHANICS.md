@@ -63,6 +63,14 @@ The damage module supports physical and mastery damage, power multipliers, defen
 
 Damage application consumes shields before HP. Downed actors are marked and may trigger formation replacement.
 
+## Opening initiative
+
+In PvE the player's side acts first. If the enemy's fastest unit would otherwise be ready first or tied (in the 5v5 roster Recon Drone, SPD 115, versus Zenki, SPD 110), every living ally starts with a small CR head start, equal to its own SPD times the readiness gap between the two fastest units (about 0.04 time units; Zenki starts with about 4.35 CR). The head start never makes an ally start ready, does not change relative SPD order among allies, and does not change long-run turn share. If allies are already the fastest, nothing changes. Use `FOD_OPENING=speed` to disable it and see pure SPD order.
+
+## Randomness
+
+All combat randomness (critical hits, enemy evasion checks, enemy skill-use chances) draws from the battle's seeded generator, `state.rng`, so a battle is reproducible from its seed plus the same menu choices. The seed is printed as `Seed: N` at battle start; set it with `FOD_SEED`. See [Architecture](ARCHITECTURE.md#randomness).
+
 ## Evasion
 
 Enemy basic attacks check target effective Evasion, clamped between 0 and 75, then roll against it. Evasion is currently implemented in enemy basic-attack behavior; do not assume every skill or damage path checks evasion.

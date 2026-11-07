@@ -6,6 +6,9 @@ const { createSkills } = require("../characters/skills");
 const { makeActor } = require("../characters/actorFactory");
 const { createActionResolver } = require("./actionResolver");
 const { createBattleState } = require("./battleState");
+const { createEventBus } = require("./eventBus");
+const { nextFloat } = require("./rng");
+const { applyOpeningInitiative } = require("../systems/openingInitiative");
 const { createTurnEngine } = require("./turnEngine");
 const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
@@ -23,11 +26,21 @@ function createBattle({
   promptOutput = process.stdout,
   output = console,
   readinessScheduler = thresholdCombatReadiness,
+  seed,
+  events = createEventBus(),
+  // "player-first": the player's side acts first (PvE default). "speed": pure SPD order.
+  openingInitiative = "player-first",
 } = {}) {
-  const state = createBattleState();
+  if (openingInitiative !== "player-first" && openingInitiative !== "speed") {
+    throw new TypeError(
+      `Unknown openingInitiative "${openingInitiative}". Use "player-first" or "speed".`,
+    );
+  }
+  const state = createBattleState({ seed });
+  const random = () => nextFloat(state.rng);
   const prompts = readline.createInterface({ input, output: promptOutput });
   const ask = (question) => new Promise((resolve) => prompts.question(question, resolve));
-  const { say } = createBattleLog(state, output);
+  const { say } = createBattleLog(state, output, events);
   const deploymentSelector = createDeploymentSelector({ ask, output });
   const effectiveStat = (actor, stat) => getEffectiveStat(state, actor, stat);
   const applyTargetDamage = (target, amount) => applyDamage(target, amount, say, (downedActor) => {
@@ -47,6 +60,7 @@ function createBattle({
     effectiveStat,
     applyDamage: applyTargetDamage,
     say,
+    random,
   });
 
   const context = {
@@ -54,6 +68,8 @@ function createBattle({
     ask,
     output,
     say,
+    events,
+    random,
     alive: formation.alive,
     addShield,
     addStatus,
@@ -93,6 +109,7 @@ function createBattle({
     output.log(
       "=== F.O.D. COMBAT SIMULATOR: =======================================================",
     );
+    output.log(`Seed: ${state.rng.seed}`);
     const allyRoster = createFalconParty();
     const selectedParty = await deploymentSelector.selectFormation(
       allyRoster,
@@ -103,6 +120,14 @@ function createBattle({
     formation.setupEnemyParty(state, enemyRoster);
     showParty(state.enemyParty, output, "ENEMY FORMATION");
     battleMenu.showParty();
+
+    if (openingInitiative === "player-first") {
+      const opening = applyOpeningInitiative(state, effectiveStat, { firstSide: "ally" });
+      if (opening.applied) {
+        say("The Falcon team seizes the initiative!");
+        events.emit("OpeningInitiative", opening);
+      }
+    }
 
     await turnEngine.runRounds();
     output.log(
@@ -116,6 +141,7 @@ function createBattle({
     run,
     close: () => prompts.close(),
     state,
+    events,
   };
 }
 
