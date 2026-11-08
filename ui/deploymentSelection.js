@@ -1,5 +1,5 @@
 function createDeploymentSelector({ ask, output }) {
-  async function selectFormation(roster, activeCount = 3) {
+  async function selectFormation(roster, activeCount = 4) {
     const remaining = [...roster];
     const order = [];
 

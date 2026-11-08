@@ -14,28 +14,42 @@ function compareActors(left, right) {
   return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
 }
 
+// Scheduler bookkeeping (elapsed time, tie rotation cursor, ready queue) lives on
+// `state.scheduler`, not in a hidden side table. That keeps it with the battle
+// state, so structuredClone(state) can be used for turn-order previews, saves and
+// replays. Clone with structuredClone (it keeps actor references shared); a
+// JSON round-trip would break the queue's actor references.
 function createThresholdScheduler({ onDiagnostic } = {}) {
-  const schedulerStates = new WeakMap();
-
   function getSchedulerState(state) {
-    let schedulerState = schedulerStates.get(state);
-    if (!schedulerState) {
-      schedulerState = { time: 0, tieCursor: 0, readyQueue: [] };
-      schedulerStates.set(state, schedulerState);
+    if (!state.scheduler) {
+      state.scheduler = { time: 0, tieCursor: 0, readyQueue: [] };
     }
-    return schedulerState;
+    return state.scheduler;
   }
 
   function diagnose(event) {
     if (typeof onDiagnostic === "function") onDiagnostic(event);
   }
 
-  function enqueueUntrackedReady(schedulerState, deployed) {
+  function validSpeed(actor, effectiveStat) {
+    const speed = effectiveStat(actor, "SPD");
+    return Number.isFinite(speed) && speed > 0 ? speed : 0;
+  }
+
+  // Actors that became ready outside normal advancement (for example a CR pull
+  // skill setting several units to 100) are ordered by CR, then SPD, and only
+  // then by the stable actor key. Side and name never decide the order on their own.
+  function enqueueUntrackedReady(schedulerState, deployed, effectiveStat) {
     const queued = new Set(schedulerState.readyQueue.map((entry) => entry.actor));
     const untracked = deployed.filter(
       (actor) => actor.cr >= MAX_CR && !queued.has(actor),
     );
-    untracked.sort(compareActors);
+    untracked.sort(
+      (left, right) =>
+        right.cr - left.cr ||
+        validSpeed(right, effectiveStat) - validSpeed(left, effectiveStat) ||
+        compareActors(left, right),
+    );
     for (const actor of untracked) {
       schedulerState.readyQueue.push({
         actor,
@@ -54,8 +68,7 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
         if (!Number.isFinite(actor.cr)) {
           throw new TypeError("Actor CR must be a finite number.");
         }
-        const speed = effectiveStat(actor, "SPD");
-        return [actor, Number.isFinite(speed) && speed > 0 ? speed : 0];
+        return [actor, validSpeed(actor, effectiveStat)];
       }),
     );
     const timeToReady = new Map();
@@ -128,7 +141,7 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
       schedulerState.readyQueue = schedulerState.readyQueue.filter(
         ({ actor }) => deployedSet.has(actor) && actor.cr >= MAX_CR,
       );
-      enqueueUntrackedReady(schedulerState, deployed);
+      enqueueUntrackedReady(schedulerState, deployed, effectiveStat);
 
       if (schedulerState.readyQueue.length) {
         const selected = schedulerState.readyQueue.shift();
