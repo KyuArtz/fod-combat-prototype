@@ -23,6 +23,7 @@ async function playScripted({ seed }) {
   });
   const lines = [];
   const logEvents = [];
+  const allEvents = [];
   const battle = createBattle({
     input,
     promptOutput: prompts,
@@ -30,9 +31,10 @@ async function playScripted({ seed }) {
     seed,
   });
   battle.events.on("Log", (event) => logEvents.push(event));
+  battle.events.onAny((event) => allEvents.push(event));
   try {
     const result = await battle.run();
-    return { result, lines, logEvents, state: battle.state };
+    return { result, lines, logEvents, allEvents, state: battle.state };
   } finally {
     battle.close();
   }
@@ -61,7 +63,7 @@ test("the seed is printed so a battle can be replayed, and kept on the state", a
 });
 
 test("terminal output, state.log and Log events all carry the same lines", async () => {
-  const { lines, logEvents, state } = await playScripted({ seed: 31337 });
+  const { lines, logEvents, allEvents, state } = await playScripted({ seed: 31337 });
   assert.deepEqual(logEvents.map((event) => event.message), state.log);
   // Everything say() printed appears, in order, in the console output.
   let cursor = 0;
@@ -70,7 +72,10 @@ test("terminal output, state.log and Log events all carry the same lines", async
     assert.notEqual(found, -1, `missing from console: ${message}`);
     cursor = found + 1;
   }
-  assert.ok(logEvents.every((event, index) => event.seq === index + 1 && Number.isInteger(event.round)));
+  // seq is shared by every event type on the bus, so it is contiguous across all
+  // events (Log, OpeningInitiative, ...), not across Log events alone.
+  assert.ok(allEvents.every((event, index) => event.seq === index + 1));
+  assert.ok(logEvents.every((event) => Number.isInteger(event.round)));
 });
 
 test("battle state with its RNG can be cloned and continues identically", () => {

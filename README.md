@@ -2,7 +2,7 @@
 
 A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.D.)** combat mechanics. This repository is a development/playtest project, not yet the production combat implementation.
 
-> **Current development direction (2026-11-07):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are now **seeded and replayable** (`FOD_SEED`), and battle log lines flow through an **event bus** (engine/view separation, step 1).
+> **Current development direction (2026-11-07):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are now **seeded and replayable** (`FOD_SEED`), and battle log lines flow through an **event bus** (engine/view separation, step 1). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110).
 
 ## Quick start
 
@@ -41,6 +41,26 @@ $env:FOD_SEED="12345"; node index.js
 
 Every battle prints `Seed: N` at the start. Leave `FOD_SEED` unset for a random seed. The same seed **plus the same menu choices** replays the same battle.
 
+Opening initiative (who acts first):
+
+```bash
+# Default: the player's side opens the battle
+FOD_OPENING=player-first node index.js
+
+# Pure SPD order (the fastest unit opens, even if it is an enemy)
+FOD_OPENING=speed node index.js
+```
+
+```powershell
+$env:FOD_OPENING="speed"; node index.js
+```
+
+Compare the schedulers and the opening rule without playing by hand:
+
+```bash
+node tools/compareSchedulers.js 60
+```
+
 Run tests:
 
 ```bash
@@ -65,9 +85,10 @@ node --test
 ai/                 Enemy decision-making and target selection
 characters/          Actor factory, Falcon roster, enemies, skills
 core/               Battle orchestration, state, action resolution, turn engine, seeded RNG, event bus
-systems/             Readiness, formation, damage, cooldown, shield, status systems
+systems/             Readiness, opening initiative, formation, damage, cooldown, shield, status systems
 ui/                 Terminal menus, deployment selection, logs, status display
-test/               Automated tests (scheduler, RNG, event bus, battle determinism)
+test/               Automated tests (scheduler, RNG, event bus, determinism, opening initiative)
+tools/              Dev tools (scheduler / opening-rule comparison)
 docs/               Project reference and development history
 index.js             Entry point and scheduler selection
 ```

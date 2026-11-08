@@ -8,6 +8,7 @@ const { createActionResolver } = require("./actionResolver");
 const { createBattleState } = require("./battleState");
 const { createEventBus } = require("./eventBus");
 const { nextFloat } = require("./rng");
+const { applyOpeningInitiative } = require("../systems/openingInitiative");
 const { createTurnEngine } = require("./turnEngine");
 const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
@@ -27,7 +28,14 @@ function createBattle({
   readinessScheduler = thresholdCombatReadiness,
   seed,
   events = createEventBus(),
+  // "player-first": the player's side acts first (PvE default). "speed": pure SPD order.
+  openingInitiative = "player-first",
 } = {}) {
+  if (openingInitiative !== "player-first" && openingInitiative !== "speed") {
+    throw new TypeError(
+      `Unknown openingInitiative "${openingInitiative}". Use "player-first" or "speed".`,
+    );
+  }
   const state = createBattleState({ seed });
   const random = () => nextFloat(state.rng);
   const prompts = readline.createInterface({ input, output: promptOutput });
@@ -112,6 +120,14 @@ function createBattle({
     formation.setupEnemyParty(state, enemyRoster);
     showParty(state.enemyParty, output, "ENEMY FORMATION");
     battleMenu.showParty();
+
+    if (openingInitiative === "player-first") {
+      const opening = applyOpeningInitiative(state, effectiveStat, { firstSide: "ally" });
+      if (opening.applied) {
+        say("The Falcon team seizes the initiative!");
+        events.emit("OpeningInitiative", opening);
+      }
+    }
 
     await turnEngine.runRounds();
     output.log(

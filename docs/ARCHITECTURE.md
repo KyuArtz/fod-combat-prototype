@@ -9,6 +9,7 @@ index.js
         ├─ creates battle state (seeded RNG), event bus and terminal I/O
         ├─ builds Falcon/enemy rosters
         ├─ runs formation selection and setup
+        ├─ applies opening initiative (player-first) once, before the first turn
         ├─ wires action resolver, skills, menu, enemy AI
         └─ core/turnEngine.js
              ├─ asks scheduler for next actor
@@ -38,6 +39,7 @@ index.js
 | `ai/targeting.js` | Enemy target-selection rules |
 | `systems/combatReadiness.js` | Legacy CR scheduler and shared CR helpers |
 | `systems/thresholdCombatReadiness.js` | Continuous-time threshold scheduler |
+| `systems/openingInitiative.js` | One-time opening rule: gives a side a uniform time head start so it acts first |
 | `systems/formation.js` | Formation setup, active/reserve management, replacement, battle result |
 | `systems/damage.js` | Physical/mastery damage formula |
 | `systems/damageApplication.js` | Applies damage, shields, HP and down-state behavior |
@@ -52,6 +54,8 @@ index.js
 | `test/rng.test.js` | Seeded RNG: reproducibility, golden values, clone safety, seed validation (8) |
 | `test/eventBus.test.js` | Event bus: delivery order, unsubscribe, history, error handling (7) |
 | `test/determinism.test.js` | Full scripted 5v5 battle replays identically per seed; log/event consistency (7) |
+| `test/openingInitiative.test.js` | Player-first opening: roster, ties, legacy, summons, full battles, option validation (12) |
+| `tools/compareSchedulers.js` | Dev tool: legacy vs threshold, with and without the opening rule |
 
 ## Dependency/injection pattern
 
@@ -92,6 +96,12 @@ The readiness scheduler is injected into the turn engine. This keeps the engine 
 ```
 
 `actors` is the scheduler/action-loop collection. Party containers retain roster and formation bookkeeping. Summons are inserted into `actors` and are not ordinary roster members.
+
+## Opening initiative
+
+- `core/battle.js` calls `applyOpeningInitiative(state, effectiveStat, { firstSide: "ally" })` once, after both formations exist and before `turnEngine.runRounds()`, unless `openingInitiative` is `"speed"`.
+- It compares each side's fastest time-to-ready (`(100 - CR) / SPD`, living non-summon units). If the enemy would be ready first or tied, all allies get `CR += SPD * delta` so the fastest ally is ready strictly (by 1e-6) before the fastest enemy.
+- It only edits starting CR, so it works with either scheduler and adds no scheduler state. When it applies, battle emits `OpeningInitiative { applied, side, deltaTime, opener }` and logs one line.
 
 ## Randomness
 

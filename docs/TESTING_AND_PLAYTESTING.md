@@ -6,9 +6,9 @@
 node --test
 ```
 
-Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`, `test/eventBus.test.js`, `test/determinism.test.js` (**40 tests, all passing** as of 2026-11-07).
+Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`, `test/eventBus.test.js`, `test/determinism.test.js`, `test/openingInitiative.test.js` (**52 tests, all passing** as of 2026-11-07).
 
-## Current verified test inventory (40)
+## Current verified test inventory (52)
 
 ### Scheduler (`thresholdCombatReadiness.test.js`, 18)
 
@@ -62,12 +62,27 @@ Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`,
 6. `createBattleLog` still works without a bus.
 7. A second subscriber on a shared bus sees log lines without touching console output.
 
+### Opening initiative (`openingInitiative.test.js`, 12)
+
+1. Documents the problem: with pure SPD order the enemy Recon Drone opens the real 5v5 battle.
+2. Player-first: Zenki opens, then Recon Drone; the rest of the opening cycle is unchanged.
+3. Head start equals the readiness gap (plus margin), scaled by each ally's SPD; enemies untouched; no ally starts ready.
+4. Long-run turn counts stay SPD-proportional and in (shifted) time order over 800 turns.
+5. No-op when allies are already faster.
+6. An exact speed tie goes to the player regardless of array order or tie rotation.
+7. The legacy scheduler also opens with the player once the rule is applied.
+8. Summons and downed units are ignored when finding the fastest unit.
+9. `firstSide` can be flipped for future ambush encounters; invalid sides throw.
+10. Full seeded battles: the player acts first across seeds; the log line appears once; the event payload is plain data.
+11. `openingInitiative: "speed"` keeps pure SPD order and logs nothing extra.
+12. Unknown option values are rejected before anything starts.
+
 ## Playtest matrix
 
 | Scenario | Purpose | Status |
 |---|---|---|
-| 5 Falcon vs 5 enemies, threshold | Current baseline battle | Played once (2026-11-07 log): VICTORY, 3 rounds, no back-to-back turns, opening order matched SPD; more runs and seeds needed |
-| Same 5v5, legacy | Scheduler comparison | Manual testing needed |
+| 5 Falcon vs 5 enemies, threshold | Current baseline battle | Played once (2026-11-07 log): VICTORY, 3 rounds, no back-to-back turns, Recon Drone (enemy) opened, which led to the player-first rule (see ADR-010); more runs and seeds needed |
+| Same 5v5, legacy | Scheduler comparison | Compared via scripted seeded battles and the fixed roster (see below); a hand-played legacy 5v5 log has not been collected |
 | 4v5 | Numerical disadvantage / formation limit | Earlier experiment |
 | Roster > active limit | Reserve queue and auto replacement | Existing mechanics; more integration tests needed |
 | Active agent downed with reserve | Replacement slot and CR reset | More integration tests needed |
@@ -76,6 +91,10 @@ Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`,
 | SPD buff/debuff | Time-order response | Unit test exists; battle balance test needed |
 | CR-pull skill | Ready queue and tie handling | Scheduler tests cover behavior; skill not yet present |
 | Clone state for turn-order preview | GUI prediction foundation | Unit test exists |
+
+## Scripted comparison tool
+
+`node tools/compareSchedulers.js [battles]` runs (1) the real 5v5 roster through each scheduler by itself and (2) full seeded battles with a scripted player (always option 1) for legacy and threshold, with and without the player-first opening. Use it to check scheduler or opening-rule changes. Only differences between rows are meaningful; the scripted policy says little about absolute balance.
 
 ## Replaying a battle
 

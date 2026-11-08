@@ -62,3 +62,11 @@
 **Reason:** A GUI, headless simulator, or test must be able to observe battles without parsing console text.  
 **Constraints:** Event payloads are plain, structured-clone-friendly data. Handler errors propagate to the emitter so a broken view fails loudly instead of desyncing from the engine.
 
+## ADR-010 — Player-first opening initiative (PvE)
+
+**Status:** Accepted (2026-11-07)  
+**Decision:** At battle start the player's side acts first. If the enemy's fastest unit would be ready first or tied, every living ally gets a uniform time head start (`CR += SPD * delta`) just large enough that the fastest ally is ready strictly first. Selectable with `openingInitiative: "player-first" | "speed"` / `FOD_OPENING`; default `player-first`.  
+**Reason:** Accurate SPD ordering exposed that the fastest unit in 5v5 is an enemy (Recon Drone 115 vs Zenki 110), so the enemy opened the battle. The legacy scheduler only avoided this by accident (clamped CR ties resolved by array order). In PvE the player should start.  
+**Alternatives rejected:** a free extra opening turn for one ally (adds a turn to the player's share); per-ally flat CR bonuses (do not guarantee the fastest-vs-fastest outcome); forcing the first pick in the scheduler (violates time order and needs per-scheduler changes).  
+**Trade-off:** Allies gain a small phase advantage (about 0.04 time units on the real roster), so a few early close calls can flip in the player's favor; long-run turn share is unchanged. `applyOpeningInitiative` supports `firstSide: "enemy"` for future ambush stages; PvP policy is undecided.
+

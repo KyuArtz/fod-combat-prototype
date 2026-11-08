@@ -18,6 +18,7 @@ The prototype is a modular, terminal-driven turn-based combat sandbox. It curren
 - Two readiness schedulers: legacy fixed-step CR and threshold/continuous-time readiness.
 - An environment-variable switch for scheduler A/B testing.
 - Seeded, replayable randomness (`FOD_SEED`, `Seed: N` printed at battle start) and an event bus that carries battle log lines (`Log` events).
+- A player-first opening initiative for PvE (`FOD_OPENING=player-first|speed`), so the player acts first even though the fastest 5v5 unit is an enemy.
 - Automated tests for threshold scheduler correctness, tie handling, cloned-state preview, and related battle integration.
 
 ## Current configuration (latest user-reported development state)
@@ -50,11 +51,31 @@ Reported comparison (Claude's test report; not independently reproduced here):
 
 The project owner selected the threshold scheduler and incorporated improvements inspired by the comparison rather than replacing the project scheduler with Claude's patch.
 
+## Legacy vs threshold on the 5v5 roster (measured 2026-11-07)
+
+Reproduce with `node tools/compareSchedulers.js`.
+
+| Measure (real 10-unit roster, scheduler only, 800 turns) | Legacy | Threshold |
+|---|---:|---:|
+| Time-order errors | 706 | 0 |
+| Worst turn-count error vs SPD share | 27.6 (Zenki) | 0.6 |
+| Ally share of turns (SPD share 54.6%) | 51.8% | 54.6% |
+| Zenki / Recon Drone / Elishia turns | 138 / 137 / 69 | 111 / 116 / 96 |
+
+| Measure (120 seeded battles, scripted player) | Legacy | Threshold, speed order | Threshold, player-first |
+|---|---:|---:|---:|
+| Player acts first | 100% (array-order accident) | 0% (Recon Drone opens) | 100% |
+| Average rounds | 10.36 | 8.96 | 8.56 |
+| Average turns | 97.8 | 93.2 | 92.3 |
+| Ally share of turns | 61.1% | 64.1% | 65.0% |
+
+The scripted player always picks option 1, so only differences between columns are meaningful, not absolute win rates.
+
 ## Verification performed against uploaded ZIP
 
 Command: `node --test`
 
-Result: **40 tests passed, 0 failed** (2026-11-07, after step 1): scheduler 18, RNG 8, event bus 7, battle determinism 7.
+Result: **52 tests passed, 0 failed** (2026-11-07): scheduler 18, RNG 8, event bus 7, battle determinism 7, opening initiative 12.
 
 The determinism tests play a full scripted 5v5 battle to completion, but the suite still does not prove every battle, AI, skill, damage, or formation scenario is correct.
 

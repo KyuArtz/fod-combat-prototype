@@ -43,9 +43,18 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 - Only `Log` events exist so far. Typed events (`DamageDealt`, `TurnStarted`, ...) are planned.
 - Redirected stdin (`node index.js < file`) stops at the first prompt (readline limitation, also true of the original code). Drive prompts interactively or use the `createBattle` test harness in `test/determinism.test.js`.
 
+## Opening initiative (added 2026-11-07)
+
+- Problem: with accurate SPD ordering the fastest unit opens the battle, and in 5v5 that is an enemy (Recon Drone 115 vs Zenki 110). The legacy scheduler only opened with the player by accident (clamped ties resolved by array order).
+- Rule (`systems/openingInitiative.js`): applied once after both parties are set up, before the first turn. If the enemy's fastest unit would be ready first (or tied), every living non-summon ally gets the same head start in *time* (`cr += SPD * delta`, `delta = tAllyFastest - tEnemyFastest + 1e-6`). Relative SPD order among allies and long-run turn share are unchanged. If allies are already faster, nothing changes.
+- Real roster result: delta about 0.0395 time units (Zenki +4.35 CR, other allies about +2.8 to +3.8); opening becomes Zenki, Recon Drone, Elishia, Zackry, Toxic Stalker, ...
+- Option: `createBattle({ openingInitiative: "player-first" | "speed" })`, `FOD_OPENING` in `index.js`. Default `player-first`; unknown values throw. When applied, the log says "The Falcon team seizes the initiative!" and an `OpeningInitiative` event is emitted.
+- `applyOpeningInitiative(state, effectiveStat, { firstSide })` accepts `"enemy"` for future ambush encounters; not exposed as a battle option yet.
+- Effect over 120 seeded scripted battles (threshold): 8.96 -> 8.56 average rounds, 93.2 -> 92.3 average turns, ally turn share 64.1% -> 65.0%.
+
 ## Verified test status (2026-11-07 snapshot)
 
-`node --test`: **40 passing, 0 failing** (scheduler 18, RNG 8, event bus 7, determinism 7). The determinism tests play a full scripted 5v5 battle to completion; there are still no focused tests for victory/defeat variants, individual skills, AI, or reserve transitions.
+`node --test`: **52 passing, 0 failing** (scheduler 18, RNG 8, event bus 7, determinism 7, opening initiative 12). `tools/compareSchedulers.js` is a dev tool, not part of the test run. The determinism tests play a full scripted 5v5 battle to completion; there are still no focused tests for victory/defeat variants, individual skills, AI, or reserve transitions.
 
 ## Future direction
 
@@ -63,7 +72,7 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 2. State which behavior is confirmed versus proposed.
 3. Do not duplicate stats/data structures unnecessarily.
 4. Keep mechanics internally consistent and test them.
-5. Run `node --test` after changes. Keep new randomness on `state.rng`; keep event payloads plain data.
+5. Run `node --test` after changes. Keep new randomness on `state.rng`; keep event payloads plain data. Event `seq` is shared by all event types on the bus.
 6. Add tests for bug fixes and edge cases.
 7. Update `docs/CHANGELOG.md`, status, and relevant mechanics docs when behavior changes.
 8. Explain any source/document mismatch rather than silently guessing.

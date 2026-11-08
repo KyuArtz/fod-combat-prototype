@@ -10,12 +10,19 @@ function getReadinessScheduler(name = process.env.FOD_SCHEDULER || "threshold") 
   );
 }
 
+function getOpeningInitiative(name = process.env.FOD_OPENING || "player-first") {
+  if (name === "player-first" || name === "speed") return name;
+  throw new Error(`Unknown FOD_OPENING "${name}". Use "player-first" or "speed".`);
+}
+
 async function main() {
   const schedulerName = process.env.FOD_SCHEDULER || "threshold";
   // FOD_SEED=12345 replays the same crits and enemy rolls. Unset = random seed.
   const battle = createBattle({
     readinessScheduler: getReadinessScheduler(schedulerName),
     seed: process.env.FOD_SEED,
+    // FOD_OPENING=speed turns off the player-first opening and uses pure SPD order.
+    openingInitiative: getOpeningInitiative(),
   });
   try {
     console.log(`Readiness scheduler: ${schedulerName}`);
@@ -32,4 +39,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { getReadinessScheduler, main };
+module.exports = { getReadinessScheduler, getOpeningInitiative, main };

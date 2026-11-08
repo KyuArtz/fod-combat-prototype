@@ -19,7 +19,9 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 
 ## Phase B — Battle balance
 
-- [ ] Compare 5v5 threshold and legacy logs.
+- [x] Compare 5v5 threshold and legacy (scheduler-only and 120 seeded scripted battles, `tools/compareSchedulers.js`); a hand-played legacy 5v5 log has not been collected.
+- [x] Player-first opening initiative for PvE (`FOD_OPENING`, ADR-010).
+- [ ] Decide opening-initiative policy for PvP and ambush encounters (`firstSide: "enemy"` exists in code).
 - [ ] Tune SPD against MP regeneration and cooldown pacing.
 - [ ] Review damage/defense/resistance scaling.
 - [ ] Evaluate enemy target selection and action variety.
