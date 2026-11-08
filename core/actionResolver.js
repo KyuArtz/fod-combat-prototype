@@ -1,9 +1,16 @@
+const { nextFloat } = require("./rng");
 const {
   calculateMasteryDamage,
   calculatePhysicalDamage,
 } = require("../systems/damage");
 
-function createActionResolver({ state, effectiveStat, applyDamage, say }) {
+function createActionResolver({
+  state,
+  effectiveStat,
+  applyDamage,
+  say,
+  random = () => nextFloat(state.rng),
+}) {
   const calculatePhysical = (attacker, target, power = 1, canCrit = true) =>
     calculatePhysicalDamage(
       attacker,
@@ -11,6 +18,7 @@ function createActionResolver({ state, effectiveStat, applyDamage, say }) {
       (actor, stat) => effectiveStat(actor, stat),
       power,
       canCrit,
+      random,
     );
 
   const calculateMastery = (
@@ -27,6 +35,7 @@ function createActionResolver({ state, effectiveStat, applyDamage, say }) {
       (actor, stat) => effectiveStat(actor, stat),
       power,
       canCrit,
+      random,
     );
 
   function hitPhysical(attacker, target, power = 1, canCrit = true) {

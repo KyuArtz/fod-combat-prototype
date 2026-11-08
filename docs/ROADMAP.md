@@ -14,8 +14,8 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] Threshold continuous-readiness scheduler.
 - [x] Scheduler injection and `FOD_SCHEDULER` A/B selection.
 - [x] Scheduler tests for time ordering, ties, cloned previews, state isolation.
-- [ ] Reconcile source snapshot with latest 5v5 configuration.
-- [ ] Full 5v5 battle integration/regression tests.
+- [x] Reconcile source snapshot with latest 5v5 configuration.
+- [ ] Full 5v5 battle integration/regression tests (partial: determinism tests play a full scripted 5v5 battle; victory/defeat variants, skills, AI, and reserve transitions are not yet asserted individually).
 
 ## Phase B — Battle balance
 
@@ -23,7 +23,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [ ] Tune SPD against MP regeneration and cooldown pacing.
 - [ ] Review damage/defense/resistance scaling.
 - [ ] Evaluate enemy target selection and action variety.
-- [ ] Add deterministic RNG/seed option for reproducible simulations.
+- [x] Add deterministic RNG/seed option for reproducible simulations (`FOD_SEED`, `state.rng`).
 - [ ] Add combat analytics summary (actions, damage, healing, resource use).
 
 ## Phase C — Agent management
@@ -47,9 +47,18 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 
 - [ ] GUI battle view.
 - [ ] Turn-order preview using cloned battle state.
-- [ ] Combat log export and replay.
+- [x] Event bus carrying `Log` events (step 1).
+- [ ] Combat log export and replay (needs a recorded choice log in addition to the seed).
 - [ ] Save/load battle snapshots.
 - [ ] Data-driven skill and encounter configuration.
+
+## Phase F — Engine/view separation (planned order)
+
+- [x] Step 1: seeded RNG and event bus.
+- [ ] Step 2: controller interface; `playerTurn` and `enemyAI` become interchangeable controllers (terminal, GUI, simulator).
+- [ ] Step 3: data-driven skills with an effect interpreter, migrated one skill at a time with old-vs-new golden tests (same seed, compare HP/shields/statuses).
+- [ ] Step 4: typed events (`TurnStarted`, `DamageDealt`, ...) alongside text logs.
+- [ ] Step 5: headless simulator CLI for balance runs.
 
 ## Release/merge gate
 

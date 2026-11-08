@@ -8,6 +8,7 @@ function createEnemyAI(context) {
     effectiveStat,
     say,
     state,
+    random = Math.random,
   } = context;
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const enemySkillReady = (actor, skill) =>
@@ -61,7 +62,7 @@ function createEnemyAI(context) {
     if (
       actor.name === "Training Drone" &&
       enemySkillReady(actor, "pulseShot") &&
-      Math.random() < 0.25
+      random() < 0.25
     ) {
       pulseShot(actor, target);
       return;
@@ -76,19 +77,19 @@ function createEnemyAI(context) {
       if (
         !target.statuses.defDown &&
         enemySkillReady(actor, "scan") &&
-        Math.random() < 0.35
+        random() < 0.35
       ) {
         scanTarget(actor, target);
         return;
       }
-      if (enemySkillReady(actor, "heavyStrike") && Math.random() < 0.4) {
+      if (enemySkillReady(actor, "heavyStrike") && random() < 0.4) {
         heavyStrike(actor, target);
         return;
       }
     }
 
     const dodge = clamp(effectiveStat(target, "Evasion"), 0, 75);
-    if (Math.random() * 100 < dodge) {
+    if (random() * 100 < dodge) {
       say(`${actor.name} attacks ${target.name}, but ${target.name} evades!`);
       return;
     }

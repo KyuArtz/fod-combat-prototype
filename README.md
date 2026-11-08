@@ -2,7 +2,7 @@
 
 A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.D.)** combat mechanics. This repository is a development/playtest project, not yet the production combat implementation.
 
-> **Current development direction (2026-11-07):** threshold-based continuous readiness is the preferred scheduler; development testing has moved to a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members.
+> **Current development direction (2026-11-07):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are now **seeded and replayable** (`FOD_SEED`), and battle log lines flow through an **event bus** (engine/view separation, step 1).
 
 ## Quick start
 
@@ -29,6 +29,18 @@ $env:FOD_SCHEDULER="threshold"; node index.js
 $env:FOD_SCHEDULER="legacy"; node index.js
 ```
 
+Replay a battle with a fixed seed (crits, evasion and enemy skill rolls are reproducible):
+
+```bash
+FOD_SEED=12345 node index.js
+```
+
+```powershell
+$env:FOD_SEED="12345"; node index.js
+```
+
+Every battle prints `Seed: N` at the start. Leave `FOD_SEED` unset for a random seed. The same seed **plus the same menu choices** replays the same battle.
+
 Run tests:
 
 ```bash
@@ -52,10 +64,10 @@ node --test
 ```text
 ai/                 Enemy decision-making and target selection
 characters/          Actor factory, Falcon roster, enemies, skills
-core/               Battle orchestration, state, action resolution, turn engine
+core/               Battle orchestration, state, action resolution, turn engine, seeded RNG, event bus
 systems/             Readiness, formation, damage, cooldown, shield, status systems
 ui/                 Terminal menus, deployment selection, logs, status display
-test/               Automated scheduler tests
+test/               Automated tests (scheduler, RNG, event bus, battle determinism)
 docs/               Project reference and development history
 index.js             Entry point and scheduler selection
 ```
@@ -67,6 +79,6 @@ index.js             Entry point and scheduler selection
 - Keep scheduler comparisons and experimental combat tuning in `development`.
 - Merge to `main` only after tests, battle regression, and playtest review are satisfactory.
 
-## Scope caveat
+## Source / documentation status
 
-The uploaded ZIP's `core/battleState.js` sets `party.maxActive` to **4**, while the latest project update described in the conversation says development is now **5v5**. The docs record the latest intended test configuration as 5v5, but the source snapshot must be reconciled before assuming the ZIP itself launches 5v5. See [Project status](docs/PROJECT_STATUS.md).
+As of the 2026-11-07 snapshot, `core/battleState.js` sets `maxActive` to **5** for both parties, so source and documentation agree on 5v5. See [Project status](docs/PROJECT_STATUS.md).

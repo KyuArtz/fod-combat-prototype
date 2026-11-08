@@ -12,8 +12,10 @@ function getReadinessScheduler(name = process.env.FOD_SCHEDULER || "threshold") 
 
 async function main() {
   const schedulerName = process.env.FOD_SCHEDULER || "threshold";
+  // FOD_SEED=12345 replays the same crits and enemy rolls. Unset = random seed.
   const battle = createBattle({
     readinessScheduler: getReadinessScheduler(schedulerName),
+    seed: process.env.FOD_SEED,
   });
   try {
     console.log(`Readiness scheduler: ${schedulerName}`);

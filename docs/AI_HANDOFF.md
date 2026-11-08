@@ -28,13 +28,24 @@ You are helping develop the user's **F.O.D. (Fragments of Decay) combat prototyp
 
 ## Current formation/test setup
 
-Latest owner-reported development battle: **5 active Falcon agents vs 5 active enemies (5v5)**. Reserve structure remains implemented; no reserves are held in this setup. The inspected ZIP had Falcon `maxActive: 4`, so reconcile source before assuming it is current.
+Current development battle: **5 active Falcon agents vs 5 active enemies (5v5)**. Confirmed in source (2026-11-07): `core/battleState.js` has `maxActive: 5` for both parties. Reserve structure remains implemented; no reserves are held in this setup.
 
 Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Training Drone, Rogue Automaton, Siege Turret, Recon Drone, Toxic Stalker.
 
-## Verified test status (uploaded snapshot)
+## Randomness and events (added 2026-11-07, step 1 of engine/view separation)
 
-`node --test`: 18 passing, 0 failing. Test file is scheduler-focused; add battle-level integration tests for full 5v5, victory/defeat, AI, skills, and reserve transitions.
+- Battle randomness is seeded. `state.rng` is plain data `{ seed, state }` (mulberry32 in `core/rng.js`), so `structuredClone(state)` copies it and cloned previews continue the same rolls.
+- `createBattle({ seed })`, or `FOD_SEED=<int>` via `index.js`. Unset = random seed. The seed is printed as `Seed: N` at battle start.
+- All engine rolls (crits, enemy evasion check, enemy skill chances) use `random()` from the battle context, which draws from `state.rng`. Do **not** call `Math.random()` in engine code; it remains only as a default parameter fallback in `systems/damage.js` and `ai/enemyAI.js`.
+- Replay = seed + the same menu choices. Choices are not recorded yet.
+- `core/eventBus.js`: synchronous bus (`on`, `onAny`, `emit`). Events are plain data `{ type, seq, ...payload }`. Handler errors propagate to the emitter.
+- `say()` now records to `state.log` and emits a `Log` event (`{ message, round }`); the terminal printer subscribes to it in `ui/battleLog.js`. `createBattle` returns `events` so a GUI, simulator, or test can subscribe.
+- Only `Log` events exist so far. Typed events (`DamageDealt`, `TurnStarted`, ...) are planned.
+- Redirected stdin (`node index.js < file`) stops at the first prompt (readline limitation, also true of the original code). Drive prompts interactively or use the `createBattle` test harness in `test/determinism.test.js`.
+
+## Verified test status (2026-11-07 snapshot)
+
+`node --test`: **40 passing, 0 failing** (scheduler 18, RNG 8, event bus 7, determinism 7). The determinism tests play a full scripted 5v5 battle to completion; there are still no focused tests for victory/defeat variants, individual skills, AI, or reserve transitions.
 
 ## Future direction
 
@@ -42,7 +53,9 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 - Full 5v5 playtest/regression.
 - Agent management and formation expansion.
 - Leveling and stage mechanics.
-- Deterministic random seed, analytics, GUI turn-order preview, saves/replays (planned).
+- Planned engine/view steps: (2) controller interface so `playerTurn`/`enemyAI` become interchangeable controllers (terminal, GUI, simulator); (3) data-driven skills with an effect interpreter, migrated one skill at a time with old-vs-new golden tests; (4) typed events alongside text logs; (5) headless simulator CLI.
+- Also planned: recorded choice log for exact replays, analytics, GUI turn-order preview, saves/replays.
+- Done: deterministic random seed (2026-11-07).
 
 ## Working rules
 
@@ -50,7 +63,7 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 2. State which behavior is confirmed versus proposed.
 3. Do not duplicate stats/data structures unnecessarily.
 4. Keep mechanics internally consistent and test them.
-5. Run `node --test` after changes.
+5. Run `node --test` after changes. Keep new randomness on `state.rng`; keep event payloads plain data.
 6. Add tests for bug fixes and edge cases.
 7. Update `docs/CHANGELOG.md`, status, and relevant mechanics docs when behavior changes.
 8. Explain any source/document mismatch rather than silently guessing.

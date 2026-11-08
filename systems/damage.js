@@ -13,10 +13,11 @@ function calculatePhysicalDamage(
   effectiveStat,
   power = 1,
   canCrit = true,
+  random = Math.random,
 ) {
   let raw = effectiveStat(attacker, "ATK") * power;
   const crit =
-    canCrit && Math.random() * 100 < (attacker.stats.CritRate || 0);
+    canCrit && random() * 100 < (attacker.stats.CritRate || 0);
   if (crit) raw *= 1.5;
   raw *= 100 / (100 + effectiveStat(target, "DEF"));
   raw *= markMultiplier(target);
@@ -30,13 +31,14 @@ function calculateMasteryDamage(
   effectiveStat,
   power = 1,
   canCrit = true,
+  random = Math.random,
 ) {
   let raw =
     effectiveStat(attacker, "MPow") *
     power *
     (1 + (attacker.stats.masteryBonus?.[type] || 0) / 100);
   const crit =
-    canCrit && Math.random() * 100 < (attacker.stats.CritRate || 0);
+    canCrit && random() * 100 < (attacker.stats.CritRate || 0);
   if (crit) raw *= 1.5;
   raw *= 100 / (100 + effectiveStat(target, "RES"));
   raw *=

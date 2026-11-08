@@ -63,6 +63,10 @@ The damage module supports physical and mastery damage, power multipliers, defen
 
 Damage application consumes shields before HP. Downed actors are marked and may trigger formation replacement.
 
+## Randomness
+
+All combat randomness (critical hits, enemy evasion checks, enemy skill-use chances) draws from the battle's seeded generator, `state.rng`, so a battle is reproducible from its seed plus the same menu choices. The seed is printed as `Seed: N` at battle start; set it with `FOD_SEED`. See [Architecture](ARCHITECTURE.md#randomness).
+
 ## Evasion
 
 Enemy basic attacks check target effective Evasion, clamped between 0 and 75, then roll against it. Evasion is currently implemented in enemy basic-attack behavior; do not assume every skill or damage path checks evasion.
