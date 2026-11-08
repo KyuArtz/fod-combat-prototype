@@ -37,7 +37,7 @@ function createBattleMenu(context) {
     }
 
     const activeIndex =
-      Number(await ask("Active member to replace (1-3): ")) - 1;
+      Number(await ask(`Active member to replace (1-${state.party.active.length}): `)) - 1;
     output.log("-------------------------------------------------------------------------------------\n");
     const switched = switchPartyMember(state, reserveIndex, activeIndex);
     if (!switched.changed) {
