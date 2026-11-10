@@ -50,17 +50,18 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [ ] GUI battle view.
 - [ ] Turn-order preview using cloned battle state.
 - [x] Event bus carrying `Log` events (step 1).
-- [ ] Combat log export and replay (needs a recorded choice log in addition to the seed).
+- [x] Replay from seed + party order + recorded decisions (`createDecisionRecorder`, `createScriptedController`).
+- [ ] Combat log export to a file and a command-line replay tool.
 - [ ] Save/load battle snapshots.
 - [ ] Data-driven skill and encounter configuration.
 
 ## Phase F — Engine/view separation (planned order)
 
 - [x] Step 1: seeded RNG and event bus.
-- [ ] Step 2: controller interface; `playerTurn` and `enemyAI` become interchangeable controllers (terminal, GUI, simulator).
+- [x] Step 2: controller interface; the terminal menu and enemy AI are controllers, with headless, random and scripted controllers, decision validation and exact replays (ADR-011, ADR-012).
 - [ ] Step 3: data-driven skills with an effect interpreter, migrated one skill at a time with old-vs-new golden tests (same seed, compare HP/shields/statuses).
 - [ ] Step 4: typed events (`TurnStarted`, `DamageDealt`, ...) alongside text logs.
-- [ ] Step 5: headless simulator CLI for balance runs.
+- [ ] Step 5: headless simulator CLI for balance runs (building blocks exist: `tools/lib/headless.js`, random and basic-attack controllers).
 
 ## Release/merge gate
 

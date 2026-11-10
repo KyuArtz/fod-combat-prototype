@@ -5,13 +5,12 @@
 //
 // Part 1 runs the real 10-unit 5v5 roster through each scheduler on its own (no
 // player choices involved). Part 2 plays full seeded 5v5 battles with a scripted
-// player: every menu answer after formation setup is "1" (first option, first
-// target). That policy is deliberately simple and identical for every row, so rows
+// player: a basic attack on the first living enemy every turn (the same policy as
+// answering "1" to every menu). It is deliberately simple and identical for every row, so rows
 // are comparable with each other, but absolute win rates and per-unit turn counts
 // say little about real balance.
 
-const { PassThrough, Writable } = require("node:stream");
-const { createBattle } = require("../core/battle");
+const { playHeadless } = require("./lib/headless");
 const { createBattleState } = require("../core/battleState");
 const { createFalconParty } = require("../characters/falcon");
 const { createTrainingEnemies } = require("../characters/enemies");
@@ -59,40 +58,8 @@ function fixedRoster(scheduler, turns = 800) {
 }
 
 async function playBattle({ scheduler, seed, openingInitiative }) {
-  const picks = [];
-  const recording = {
-    ...scheduler,
-    nextActor(state, stat) {
-      const actor = scheduler.nextActor(state, stat);
-      if (actor) picks.push(actor);
-      return actor;
-    },
-  };
-  const setup = ["5", "1", "3", "1", "1", "1"];
-  const input = new PassThrough();
-  let answered = 0;
-  const prompts = new Writable({
-    write(chunk, encoding, done) {
-      const answer = answered < setup.length ? setup[answered] : "1";
-      answered++;
-      setImmediate(() => input.write(`${answer}\n`));
-      done();
-    },
-  });
-  const battle = createBattle({
-    input,
-    promptOutput: prompts,
-    output: { log() {} },
-    readinessScheduler: recording,
-    seed,
-    openingInitiative,
-  });
-  try {
-    const result = await battle.run();
-    return { picks, result, rounds: battle.state.round };
-  } finally {
-    battle.close();
-  }
+  const { picks, result, rounds } = await playHeadless({ scheduler, seed, openingInitiative });
+  return { picks, result, rounds };
 }
 
 async function seededRow(schedulerName, openingInitiative, battles) {
@@ -131,7 +98,7 @@ async function main() {
     Object.fromEntries(Object.entries(SCHEDULERS).map(([name, scheduler]) => [name, fixedRoster(scheduler)])),
   );
 
-  console.log(`Part 2 - ${battles} seeded 5v5 battles per row, scripted player ("1" for every choice)`);
+  console.log(`Part 2 - ${battles} seeded 5v5 battles per row, scripted player (basic attack on the first enemy every turn)`);
   const rows = [];
   for (const [name, opening] of [
     ["legacy", "speed"],

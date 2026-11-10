@@ -2,6 +2,23 @@
 
 This changelog records notable project decisions and implementation milestones. It is not a substitute for Git history.
 
+## 2026-11-07 — Step 2: controller interface, decisions and replays
+
+**Branch:** `development` (not committed at time of writing)
+
+- **Before touching the turn flow:** recorded 5 golden transcripts (full terminal battles, seeded chaos input, 20k to 29k lines each) from the pre-controller build and added `test/goldenTranscripts.test.js` plus `tools/updateGolden.js` (see ADR-012).
+- Added `core/turnView.js` (plain-data turn view, view ids), `core/decisions.js` (`validateDecision`), `core/turnRunner.js` (view, controller, validate, execute, retry) and `core/controllers.js` (scripted, basic-attack and random controllers, decision recorder). See ADR-011.
+- `ui/battleMenu.js` is now the **terminal controller**: it prints the same menus and prompts, returns decisions, and no longer executes anything. Skills in `characters/skills.js` are declarative (`targeting`, `modes`, `run`) with no prompting. `ai/enemyAI.js` is split into `decide` (same roll order as before) and `useSkill` / `basicAttack`; `enemyAI.controller` is the built-in enemy controller.
+- `createBattle` gained `controllers` (`player`, `enemy`, `summon`) and `partyOrder` (skips the formation prompts). The readline interface is now created lazily, so fully headless battles never touch stdin. New events: `FormationSelected`, `ActionChosen`, `DecisionRejected`.
+- `core/turnEngine.js` takes an optional `takeTurn`; the old `playerTurn` / `enemyTurn` / `meoTurn` parameters still work for callers that supply them.
+- `tools/compareSchedulers.js` now uses a headless player (`tools/lib/headless.js`) instead of scripted stdin.
+- **Verification:** the 5 golden transcripts matched byte for byte on the first run after the refactor; real `node index.js` output was identical before and after for seeds 7, 21 and 33 (about 63,000 lines); `compareSchedulers` output was identical to the pre-refactor baseline (all rows). Mutation checks: a one-word menu change, a swap of two enemy random rolls, and a validator that accepts everything are all caught by the tests.
+- **Replays:** a terminal battle recorded with `createDecisionRecorder` is reproduced exactly by seed + `partyOrder` + `createScriptedController` (same final unit states and random-number state), including a battle with party switching. Drift fails loudly with the decision number.
+- **Tests:** `node --test` -> **84/84 passing** (52 before + 5 golden + 14 turn view/decisions + 13 controllers). Includes a 60-battle fuzz run with random player and enemy controllers: no illegal actions, all battles finish.
+- Moved test helpers out of `test/` (Node ran the helper as a test and over-counted).
+- **Known limitations:** player and enemy `basic` attacks still use separate code; summon behaviour is a single `summonAuto` decision; the terminal controller still writes two menu-only messages ("No valid target selected.", "Invalid formation slot.") into `state.log`, as before.
+- **Next:** step 3, data-driven skills with an effect interpreter, migrated one skill at a time against the golden transcripts; consider per-turn scheduler logging for balance analysis.
+
 ## 2026-11-07 — Legacy comparison and player-first opening initiative
 
 **Branch:** `development` (not committed at time of writing)

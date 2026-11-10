@@ -14,6 +14,7 @@ function createTurnEngine(context) {
     getResult,
     heal,
     output,
+    takeTurn,
     playerTurn,
     enemyTurn,
     meoTurn,
@@ -67,7 +68,10 @@ function createTurnEngine(context) {
       if (!actor) break;
 
       turnStart(actor);
-      if (actor.side === "ally" && !actor.summon) {
+      if (takeTurn) {
+        // Controller-driven turn: view -> decision -> validate -> execute.
+        await takeTurn(actor);
+      } else if (actor.side === "ally" && !actor.summon) {
         await playerTurn(actor);
       } else if (actor.side === "enemy") {
         await enemyTurn(actor);

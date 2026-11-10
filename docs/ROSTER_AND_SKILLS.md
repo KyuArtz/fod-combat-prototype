@@ -39,7 +39,7 @@ Enemy default critical rate is 5%; Recon Drone has 12 Evasion. (The table's Crit
 
 ## Skill implementation notes
 
-Skill functions are in `characters/skills.js`. The current source includes:
+Skill functions are in `characters/skills.js`. Each skill entry is declarative: `key`, `cost`, `targeting` (`enemy`, `ally`, `none`, or `mode` for Nano Swarm's three sub-choices) and a `run(actor, { target, mode })` that executes an already-validated choice. Skills never prompt; controllers (terminal menu, GUI, AI, scripts) choose targets and modes. The current source includes:
 
 ### Elishia
 - **Nano Swarm** — 20 MP, cooldown 2; can repair an ally (15% max HP), disrupt an enemy (Nanotech damage at 0.6 power + SPD −10% for 2 turns), or create a decoy (+15 Evasion for 2 turns).

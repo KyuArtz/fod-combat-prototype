@@ -2,7 +2,7 @@
 
 A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.D.)** combat mechanics. This repository is a development/playtest project, not yet the production combat implementation.
 
-> **Current development direction (2026-11-07):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are now **seeded and replayable** (`FOD_SEED`), and battle log lines flow through an **event bus** (engine/view separation, step 1). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110).
+> **Current development direction (2026-11-07):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are now **seeded and replayable** (`FOD_SEED`), and battle log lines flow through an **event bus** (engine/view separation, step 1). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, the enemy AI, and headless/scripted players all plug into the same view-and-decision interface (engine/view separation, step 2).
 
 ## Quick start
 
@@ -61,6 +61,23 @@ Compare the schedulers and the opening rule without playing by hand:
 node tools/compareSchedulers.js 60
 ```
 
+Play without a terminal (controllers, headless runs, replays):
+
+```js
+const { createBattle } = require("./core/battle");
+const { createRandomController } = require("./core/controllers");
+
+const battle = createBattle({
+  seed: 12,
+  output: { log() {} },                                   // silence the console
+  partyOrder: ["zenki", "elishia", "jazen", "evalete", "zackry"],   // skips the formation prompts
+  controllers: { player: createRandomController({ seed: 1 }) },
+});
+const result = await battle.run();                         // "VICTORY" or "DEFEAT"
+```
+
+A controller is a function (or an object with `chooseAction(view)`) that returns a decision such as `{ type: "basic", targetId: "recon-drone" }`. `battle.events` emits `ActionChosen` for every accepted decision, so a battle can be replayed from its seed, party order and recorded decisions (`createDecisionRecorder` / `createScriptedController` in `core/controllers.js`). See [Architecture](docs/ARCHITECTURE.md#turns-controllers-and-decisions).
+
 Run tests:
 
 ```bash
@@ -87,8 +104,8 @@ characters/          Actor factory, Falcon roster, enemies, skills
 core/               Battle orchestration, state, action resolution, turn engine, seeded RNG, event bus
 systems/             Readiness, opening initiative, formation, damage, cooldown, shield, status systems
 ui/                 Terminal menus, deployment selection, logs, status display
-test/               Automated tests (scheduler, RNG, event bus, determinism, opening initiative)
-tools/              Dev tools (scheduler / opening-rule comparison)
+test/               Automated tests (scheduler, RNG, event bus, determinism, opening initiative, controllers, golden transcripts)
+tools/              Dev tools (scheduler comparison, golden-transcript updater) and helpers in tools/lib/
 docs/               Project reference and development history
 index.js             Entry point and scheduler selection
 ```
