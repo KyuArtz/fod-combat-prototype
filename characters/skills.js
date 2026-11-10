@@ -14,7 +14,6 @@ function createSkills(context) {
     ready,
     say,
     state,
-    output,
   } = context;
   const pct = (value, percent) => Math.floor((value * percent) / 100);
 
@@ -366,15 +365,17 @@ function createSkills(context) {
     return true;
   }
 
-  const needs = (side, action) => async (actor, chooseTarget) => {
-    const target = await chooseTarget(side);
-    if (!target) {
-      say("No valid target selected.");
-      return false;
-    }
-    return action(actor, target);
-  };
-  const instant = (action) => async (actor) => action(actor);
+  // Skills are declarative: `targeting` says what a controller must pick
+  // ("enemy", "ally", "none", or "mode" for a skill with sub-choices) and `run`
+  // executes the already-validated choice. Prompting lives in the controllers.
+  const needs = (targeting, action) => ({
+    targeting,
+    run: (actor, { target }) => action(actor, target),
+  });
+  const instant = (action) => ({
+    targeting: "none",
+    run: (actor) => action(actor),
+  });
 
   const skills = {
     elishia: [
@@ -382,48 +383,41 @@ function createSkills(context) {
         name: "Nano Swarm",
         key: "nano",
         cost: 20,
-        use: async (actor, chooseTarget) => {
-          output.log("Nano Swarm: 1 Repair | 2 Disrupt | 3 Decoy");
-          const mode = (await context.ask("Choose mode (1-3): ")).trim();
-          output.log("-------------------------------------------------------------------------------------\n");
-          if (mode === "1" || mode === "2") {
-            const target = await chooseTarget(mode === "1" ? "ally" : "enemy");
-            if (!target) return false;
-            nanoSwarm(actor, mode === "1" ? "Repair" : "Disrupt", target);
-          } else if (mode === "3") {
-            nanoSwarm(actor, "Decoy");
-          } else {
-            return false;
-          }
-        },
+        targeting: "mode",
+        modes: [
+          { id: "Repair", label: "Repair", targeting: "ally" },
+          { id: "Disrupt", label: "Disrupt", targeting: "enemy" },
+          { id: "Decoy", label: "Decoy", targeting: "none" },
+        ],
+        run: (actor, { mode, target }) => nanoSwarm(actor, mode, target),
       },
-      { name: "Adaptive Barrier", key: "barrier", cost: 25, use: needs("ally", adaptiveBarrier) },
-      { name: "Meo-9", key: "meo", cost: 35, use: instant(deployMeo) },
-      { name: "Nanotech Singularity", category: "Ultimate", key: "ultimate", cost: 65, use: instant(ultimate) },
+      { name: "Adaptive Barrier", key: "barrier", cost: 25, ...needs("ally", adaptiveBarrier) },
+      { name: "Meo-9", key: "meo", cost: 35, ...instant(deployMeo) },
+      { name: "Nanotech Singularity", category: "Ultimate", key: "ultimate", cost: 65, ...instant(ultimate) },
     ],
     evalete: [
-      { name: "Sentinel Pulse", key: "pulse", cost: 20, use: needs("enemy", sentinelPulse) },
-      { name: "Aegis Protocol", key: "aegis", cost: 25, use: needs("ally", aegisProtocol) },
-      { name: "Guardian Field", key: "guardian", cost: 40, use: instant(guardianField) },
-      { name: "Catalyst Overdrive", key: "catalyst", cost: 65, use: instant(catalystOverdrive) },
+      { name: "Sentinel Pulse", key: "pulse", cost: 20, ...needs("enemy", sentinelPulse) },
+      { name: "Aegis Protocol", key: "aegis", cost: 25, ...needs("ally", aegisProtocol) },
+      { name: "Guardian Field", key: "guardian", cost: 40, ...instant(guardianField) },
+      { name: "Catalyst Overdrive", key: "catalyst", cost: 65, ...instant(catalystOverdrive) },
     ],
     zackry: [
-      { name: "Tactical Mark", key: "mark", cost: 20, use: needs("enemy", tacticalMark) },
-      { name: "Command Uplink", key: "uplink", cost: 30, use: instant(commandUplink) },
-      { name: "Suppression Order", key: "suppression", cost: 35, use: needs("enemy", suppressionOrder) },
-      { name: "Dominion Directive", key: "dominion", cost: 70, use: instant(dominionDirective) },
+      { name: "Tactical Mark", key: "mark", cost: 20, ...needs("enemy", tacticalMark) },
+      { name: "Command Uplink", key: "uplink", cost: 30, ...instant(commandUplink) },
+      { name: "Suppression Order", key: "suppression", cost: 35, ...needs("enemy", suppressionOrder) },
+      { name: "Dominion Directive", key: "dominion", cost: 70, ...instant(dominionDirective) },
     ],
     jazen: [
-      { name: "Impact Grenade", key: "impactGrenade", cost: 20, use: instant(impactGrenade) },
-      { name: "Breach Charge", key: "breachCharge", cost: 30, use: needs("enemy", breachCharge) },
-      { name: "Reinforced Plating", key: "reinforcedPlating", cost: 25, use: instant(reinforcedPlating) },
-      { name: "Cataclysmic Payload", key: "cataclysmicPayload", cost: 65, use: instant(cataclysmicPayload) },
+      { name: "Impact Grenade", key: "impactGrenade", cost: 20, ...instant(impactGrenade) },
+      { name: "Breach Charge", key: "breachCharge", cost: 30, ...needs("enemy", breachCharge) },
+      { name: "Reinforced Plating", key: "reinforcedPlating", cost: 25, ...instant(reinforcedPlating) },
+      { name: "Cataclysmic Payload", key: "cataclysmicPayload", cost: 65, ...instant(cataclysmicPayload) },
     ],
     zenki: [
-      { name: "System Breach", key: "systemBreach", cost: 20, use: needs("enemy", systemBreach) },
-      { name: "Ghost Protocol", key: "ghostProtocol", cost: 25, use: instant(ghostProtocol) },
-      { name: "Neural Disruption", key: "neuralDisruption", cost: 35, use: needs("enemy", neuralDisruption) },
-      { name: "Shadow Override", key: "shadowOverride", cost: 70, use: instant(shadowOverride) },
+      { name: "System Breach", key: "systemBreach", cost: 20, ...needs("enemy", systemBreach) },
+      { name: "Ghost Protocol", key: "ghostProtocol", cost: 25, ...instant(ghostProtocol) },
+      { name: "Neural Disruption", key: "neuralDisruption", cost: 35, ...needs("enemy", neuralDisruption) },
+      { name: "Shadow Override", key: "shadowOverride", cost: 70, ...instant(shadowOverride) },
     ],
   };
 

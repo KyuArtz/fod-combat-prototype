@@ -70,3 +70,18 @@
 **Alternatives rejected:** a free extra opening turn for one ally (adds a turn to the player's share); per-ally flat CR bonuses (do not guarantee the fastest-vs-fastest outcome); forcing the first pick in the scheduler (violates time order and needs per-scheduler changes).  
 **Trade-off:** Allies gain a small phase advantage (about 0.04 time units on the real roster), so a few early close calls can flip in the player's favor; long-run turn share is unchanged. `applyOpeningInitiative` supports `firstSide: "enemy"` for future ambush stages; PvP policy is undecided.
 
+## ADR-011 — Turns are controller-driven: views in, decisions out
+
+**Status:** Accepted (2026-11-07)  
+**Decision:** Each turn builds a plain-data view of the legal actions, asks a controller for a decision, validates it, then executes it in the engine. The terminal menu, the enemy AI, summons, scripted replays and random/headless players are all controllers. Skills are declarative (`targeting`, `modes`, `run`) and never prompt.  
+**Reason:** A GUI, a headless simulator and replays need to drive the battle without parsing console text or reading stdin, and enemy AI variants should be swappable. Validation means a buggy controller can never run an illegal action.  
+**Alternatives rejected:** leaving prompts inside skills with a pluggable `ask` (a GUI would still be coupled to terminal-shaped prompts); a big-bang rewrite into data-driven skills (that is step 3, now safe to do against the golden transcripts).  
+**Trade-offs:** The terminal controller still records two menu-only messages in `state.log` (kept so the original output is preserved exactly). Player and enemy `basic` attacks use different code. Summon behaviour is one `summonAuto` decision until skills become data.
+
+## ADR-012 — Golden transcripts guard refactors of the turn flow
+
+**Status:** Accepted (2026-11-07)  
+**Decision:** Five full terminal battles (seeded RNG plus seeded random-digit input, including invalid choices, party switching, every skill type and the enemy AI) are stored as gzipped transcripts of every prompt, answer and output line. `test/goldenTranscripts.test.js` requires byte-identical reproduction. `node tools/updateGolden.js` regenerates them after an intentional change.  
+**Reason:** A turn-flow refactor can silently change prompt order, messages or the order of random rolls. The transcripts were recorded from the pre-controller build; the controller refactor matched them on the first run. A deliberate swap in the order of two random rolls fails all five.  
+**Trade-offs:** About 100 KB of fixtures. Any intentional output or balance change needs a regeneration and a review of the behavior diff.
+

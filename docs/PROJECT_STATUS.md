@@ -19,6 +19,7 @@ The prototype is a modular, terminal-driven turn-based combat sandbox. It curren
 - An environment-variable switch for scheduler A/B testing.
 - Seeded, replayable randomness (`FOD_SEED`, `Seed: N` printed at battle start) and an event bus that carries battle log lines (`Log` events).
 - A player-first opening initiative for PvE (`FOD_OPENING=player-first|speed`), so the player acts first even though the fastest 5v5 unit is an enemy.
+- Controller-driven turns: the terminal menu, enemy AI, summons, scripted replays and random/headless players share one view-and-decision interface, with decision validation and exact replays from recorded decisions.
 - Automated tests for threshold scheduler correctness, tie handling, cloned-state preview, and related battle integration.
 
 ## Current configuration (latest user-reported development state)
@@ -75,7 +76,7 @@ The scripted player always picks option 1, so only differences between columns a
 
 Command: `node --test`
 
-Result: **52 tests passed, 0 failed** (2026-11-07): scheduler 18, RNG 8, event bus 7, battle determinism 7, opening initiative 12.
+Result: **84 tests passed, 0 failed** (2026-11-07): scheduler 18, RNG 8, event bus 7, battle determinism 7, opening initiative 12, golden transcripts 5, turn view and decisions 14, controllers 13.
 
 The determinism tests play a full scripted 5v5 battle to completion, but the suite still does not prove every battle, AI, skill, damage, or formation scenario is correct.
 
@@ -85,7 +86,8 @@ The determinism tests play a full scripted 5v5 battle to completion, but the sui
 
 - No package manifest is present in the inspected ZIP; commands use Node's built-in runtime/test runner.
 - Combat is currently terminal/CLI driven.
-- Battles are reproducible from the printed seed plus identical menu choices. Menu choices are not recorded yet, so a replay must be re-entered by hand or driven by a script.
+- Battles are reproducible from the printed seed plus the party order and the accepted player decisions (`ActionChosen` events). A recorded battle replays exactly through `createScriptedController`; a hand-typed replay still needs the same menu choices.
+- Player and enemy `basic` attacks resolve through different code, and summon behaviour is a single automatic decision, until skills become data-driven (step 3).
 - Skill balance and SPD economy need additional playtesting.
 - Full 5v5 end-to-end regression tests are not yet represented by the scheduler test suite.
 - Leveling, stage progression, reward systems, and persistent agent progression are future work—not implemented features.

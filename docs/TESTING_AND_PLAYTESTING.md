@@ -6,9 +6,9 @@
 node --test
 ```
 
-Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`, `test/eventBus.test.js`, `test/determinism.test.js`, `test/openingInitiative.test.js` (**52 tests, all passing** as of 2026-11-07).
+Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`, `test/eventBus.test.js`, `test/determinism.test.js`, `test/openingInitiative.test.js`, `test/goldenTranscripts.test.js`, `test/turnViewAndDecisions.test.js`, `test/controllers.test.js` (**84 tests, all passing** as of 2026-11-07). Test helpers live in `tools/lib/` (not in `test/`, because Node would run them as tests).
 
-## Current verified test inventory (52)
+## Current verified test inventory (84)
 
 ### Scheduler (`thresholdCombatReadiness.test.js`, 18)
 
@@ -77,6 +77,43 @@ Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`,
 11. `openingInitiative: "speed"` keeps pure SPD order and logs nothing extra.
 12. Unknown option values are rejected before anything starts.
 
+### Golden transcripts (`goldenTranscripts.test.js`, 5)
+
+Five full terminal battles (seeds 101, 202, 303, 404, 505; the last three with 3 active + 2 reserve) driven by seeded random-digit input, including invalid choices, unavailable skills, party switching (valid and invalid slots), all three Nano Swarm modes, every enemy skill, retaliation, Meo-9 and Singularity. Each must reproduce the recorded transcript (every prompt, answer and output line) byte for byte. They were recorded from the pre-controller build.
+
+### Turn view and decisions (`turnViewAndDecisions.test.js`, 14)
+
+1. Valid decisions of every shape are accepted.
+2. Malformed or unknown decisions are rejected with a reason.
+3. Targets must be present and legal for the action.
+4. Skills must exist and be usable; modes must be valid and match their target rules.
+5. Switch decisions need a living reserve and a real active slot.
+6. Actions the actor does not have are rejected (an enemy cannot switch, a player cannot pass).
+7. Enemy skills follow the same usable/target rules.
+8. View ids: unique ids stay as they are; duplicates get `#n` and round-trip.
+9. Reserves can be found by id although they are not deployed.
+10. Every skill in the registry is declarative (targeting, `run`, consistent modes, no legacy `use`).
+11. Terminal controller: basic attack with target choice.
+12. Terminal controller: Nano Swarm Repair and Decoy.
+13. Terminal controller: unavailable skill message, re-prompt, invalid input.
+14. Terminal controller: out-of-range target for a skill.
+
+### Controllers (`controllers.test.js`, 13)
+
+1. A fully headless battle never touches stdin.
+2. Events: `FormationSelected` once, `ActionChosen` per accepted action, plain-data payloads.
+3. Views are plain data with consistent targets (including summon turns and enemy skills).
+4. Fuzz: 60 battles with random player and random enemy controllers always finish, with zero rejected decisions.
+5. The enemy controller is interchangeable (a custom enemy never uses the built-in AI skills).
+6. Replay of a terminal 5v5 battle is exact (engine log, final unit states, random-number state).
+7. Replay of a terminal battle with party switching is exact.
+8. Recorded decisions survive a JSON round trip.
+9. A drifted or exhausted replay fails loudly with the decision number.
+10. An invalid decision is rejected with a reason and the controller is asked again.
+11. A controller that never produces a legal action stops the battle with a clear error after 10 attempts.
+12. Controllers may be plain functions and may be async.
+13. Option validation: unknown controller names, non-controllers and bad party orders.
+
 ## Playtest matrix
 
 | Scenario | Purpose | Status |
@@ -94,7 +131,15 @@ Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`,
 
 ## Scripted comparison tool
 
-`node tools/compareSchedulers.js [battles]` runs (1) the real 5v5 roster through each scheduler by itself and (2) full seeded battles with a scripted player (always option 1) for legacy and threshold, with and without the player-first opening. Use it to check scheduler or opening-rule changes. Only differences between rows are meaningful; the scripted policy says little about absolute balance.
+`node tools/compareSchedulers.js [battles]` runs (1) the real 5v5 roster through each scheduler by itself and (2) full seeded battles with a headless player (basic attack on the first enemy every turn, the same policy as answering "1" to every menu) for legacy and threshold, with and without the player-first opening. Use it to check scheduler or opening-rule changes. Only differences between rows are meaningful; the scripted policy says little about absolute balance.
+
+## Golden transcripts
+
+`test/goldenTranscripts.test.js` is the safety net for changes to the turn flow, menu text, prompt order or enemy random rolls. If it fails after a refactor, behavior changed. If the change is intentional (new menu text, new prompts, rebalanced numbers), regenerate with `node tools/updateGolden.js`, review what changed, and record it in the changelog. The fixtures are gzipped transcripts in `test/fixtures/golden/`.
+
+## Playing without a terminal
+
+`tools/lib/headless.js` exports `playHeadless({ seed, controllers, partyOrder, maxActive, scheduler, openingInitiative, events })`, a full battle with no prompts. `core/controllers.js` provides `createBasicAttackController`, `createRandomController({ seed, allowSwitch })` and `createScriptedController(decisions)`. Use them for scheduler experiments, fuzzing and replays.
 
 ## Replaying a battle
 
@@ -102,7 +147,7 @@ Current test files: `test/thresholdCombatReadiness.test.js`, `test/rng.test.js`,
 FOD_SEED=12345 node index.js
 ```
 
-The same seed **and the same menu choices** replay the same battle. Redirecting a file into stdin (`node index.js < answers.txt`) stops at the first prompt because readline drops lines that arrive before a question is asked (also true of the original code); drive prompts interactively or use the harness in `test/determinism.test.js`.
+The same seed **and the same menu choices** replay the same battle. Redirecting a file into stdin (`node index.js < answers.txt`) stops at the first prompt because readline drops lines that arrive before a question is asked (also true of the original code); drive prompts interactively, or replay headlessly from recorded decisions (`createDecisionRecorder` + `createScriptedController` with the same seed and `partyOrder`, see `test/controllers.test.js`).
 
 ## Suggested metrics to record
 

@@ -10,6 +10,7 @@ const { createEventBus } = require("./eventBus");
 const { nextFloat } = require("./rng");
 const { applyOpeningInitiative } = require("../systems/openingInitiative");
 const { createTurnEngine } = require("./turnEngine");
+const { createTurnRunner } = require("./turnRunner");
 const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
 const { addShield, tickShields } = require("../systems/shields");
@@ -21,6 +22,18 @@ const { createDeploymentSelector } = require("../ui/deploymentSelection");
 const { showParty, showStatus } = require("../ui/statusDisplay");
 const thresholdCombatReadiness = require("../systems/thresholdCombatReadiness");
 
+// Returns the roster in the given id order; the ids must be exactly the roster's.
+function orderRoster(roster, ids) {
+  const byId = new Map(roster.map((actor) => [actor.id, actor]));
+  const unique = new Set(ids);
+  if (unique.size !== ids.length || ids.length !== roster.length || !ids.every((id) => byId.has(id))) {
+    throw new Error(
+      `partyOrder must list each roster member exactly once (${roster.map((actor) => actor.id).join(", ")}).`,
+    );
+  }
+  return ids.map((id) => byId.get(id));
+}
+
 function createBattle({
   input = process.stdin,
   promptOutput = process.stdout,
@@ -30,16 +43,37 @@ function createBattle({
   events = createEventBus(),
   // "player-first": the player's side acts first (PvE default). "speed": pure SPD order.
   openingInitiative = "player-first",
+  // Who decides each turn. Defaults: the terminal menu for the player's party, the
+  // built-in AI for enemies, automatic behaviour for summons. Each is a function or
+  // an object with chooseAction(view). See core/controllers.js for headless ones.
+  controllers = {},
+  // Optional party order by actor id (a permutation of the Falcon roster). When
+  // given, the interactive formation prompts are skipped.
+  partyOrder,
 } = {}) {
   if (openingInitiative !== "player-first" && openingInitiative !== "speed") {
     throw new TypeError(
       `Unknown openingInitiative "${openingInitiative}". Use "player-first" or "speed".`,
     );
   }
+  for (const key of Object.keys(controllers)) {
+    if (key !== "player" && key !== "enemy" && key !== "summon") {
+      throw new TypeError(`Unknown controller "${key}". Use "player", "enemy" or "summon".`);
+    }
+  }
+  if (partyOrder !== undefined && !(Array.isArray(partyOrder) && partyOrder.every((id) => typeof id === "string"))) {
+    throw new TypeError("partyOrder must be an array of actor id strings.");
+  }
   const state = createBattleState({ seed });
   const random = () => nextFloat(state.rng);
-  const prompts = readline.createInterface({ input, output: promptOutput });
-  const ask = (question) => new Promise((resolve) => prompts.question(question, resolve));
+  // The readline interface is created on first use, so fully headless battles
+  // (scripted controllers plus partyOrder) never touch stdin.
+  let prompts = null;
+  const ask = (question) =>
+    new Promise((resolve) => {
+      if (!prompts) prompts = readline.createInterface({ input, output: promptOutput });
+      prompts.question(question, resolve);
+    });
   const { say } = createBattleLog(state, output, events);
   const deploymentSelector = createDeploymentSelector({ ask, output });
   const effectiveStat = (actor, stat) => getEffectiveStat(state, actor, stat);
@@ -93,14 +127,31 @@ function createBattle({
     adjustCR: readinessScheduler.adjustCR,
   };
   const { skills, meoTurn } = createSkills(context);
-  const battleMenu = createBattleMenu({ ...context, skills });
+  const battleMenu = createBattleMenu(context);
   const enemyAI = createEnemyAI(context);
+  const turnRunner = createTurnRunner({
+    state,
+    events,
+    skills,
+    enemyAI,
+    meoTurn,
+    basicAttack: actionResolver.basicAttack,
+    alive: formation.alive,
+    ready: cooldowns.ready,
+    say,
+    formation,
+    controllers: {
+      player: battleMenu,
+      enemy: enemyAI.controller,
+      summon: { chooseAction: () => ({ type: "summonAuto" }) },
+      ...controllers,
+    },
+  });
   const turnEngine = createTurnEngine({
     ...context,
     combatReadiness: readinessScheduler,
     getResult: () => formation.result(state),
-    playerTurn: battleMenu.playerTurn,
-    enemyTurn: enemyAI.enemyTurn,
+    takeTurn: turnRunner.runTurn,
     meoTurn,
     showStatus,
   });
@@ -111,10 +162,10 @@ function createBattle({
     );
     output.log(`Seed: ${state.rng.seed}`);
     const allyRoster = createFalconParty();
-    const selectedParty = await deploymentSelector.selectFormation(
-      allyRoster,
-      state.party.maxActive,
-    );
+    const selectedParty = partyOrder
+      ? orderRoster(allyRoster, partyOrder)
+      : await deploymentSelector.selectFormation(allyRoster, state.party.maxActive);
+    events.emit("FormationSelected", { ids: selectedParty.map((actor) => actor.id) });
     formation.setupParty(state, selectedParty);
     const enemyRoster = createTrainingEnemies();
     formation.setupEnemyParty(state, enemyRoster);
@@ -139,7 +190,9 @@ function createBattle({
 
   return {
     run,
-    close: () => prompts.close(),
+    close: () => {
+      if (prompts) prompts.close();
+    },
     state,
     events,
   };
