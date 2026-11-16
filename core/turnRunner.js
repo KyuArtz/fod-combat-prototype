@@ -1,3 +1,5 @@
+const { emitCombatEvent } = require("./combatEvents");
+const { createEventBus } = require("./eventBus");
 const { validateDecision } = require("./decisions");
 const { buildTurnView, controllerKindOf, findByViewId } = require("./turnView");
 
@@ -14,22 +16,26 @@ const MAX_ATTEMPTS = 10;
 
 function normalizeController(kind, controller) {
   if (typeof controller === "function") return { chooseAction: controller };
-  if (controller && typeof controller.chooseAction === "function") return controller;
-  throw new TypeError(`The ${kind} controller must be a function or have a chooseAction(view) method.`);
+  if (controller && typeof controller.chooseAction === "function")
+    return controller;
+  throw new TypeError(
+    `The ${kind} controller must be a function or have a chooseAction(view) method.`,
+  );
 }
 
 function createTurnRunner({
   state,
-  events,
+  events = createEventBus(),
   controllers,
   skills,
   enemyAI,
-  meoTurn,
+  summonTurn,
   basicAttack,
   alive,
   ready,
   say,
   formation,
+  onEnemySkillTargeted = () => {},
 }) {
   const resolved = {
     player: normalizeController("player", controllers.player),
@@ -42,36 +48,70 @@ function createTurnRunner({
       case "basic": {
         const target = findByViewId(state, decision.targetId);
         if (!target) return false;
-        if (actor.side === "enemy") return enemyAI.basicAttack(actor, target);
-        basicAttack(actor, target);
-        return true;
+        if (
+          actor.side === "ally" &&
+          target.side === "enemy" &&
+          actor.id !== "zackry"
+        )
+          target.targetedByAllyId = actor.id;
+        if (actor.side === "enemy" && target.side === "ally")
+          target.targetedByEnemySinceLastTurn = true;
+        return basicAttack(actor, target);
       }
 
       case "skill": {
-        const skill = (skills[actor.id] || []).find((candidate) => candidate.key === decision.skillKey);
+        const skill = (skills[actor.id] || []).find(
+          (candidate) => candidate.key === decision.skillKey,
+        );
         if (!skill) return false;
-        const target = decision.targetId === undefined ? undefined : findByViewId(state, decision.targetId);
+        const target =
+          decision.targetId === undefined
+            ? undefined
+            : findByViewId(state, decision.targetId);
+        if (
+          actor.side === "ally" &&
+          target?.side === "enemy" &&
+          actor.id !== "zackry"
+        )
+          target.targetedByAllyId = actor.id;
         return skill.run(actor, { mode: decision.mode, target }) !== false;
       }
 
       case "enemySkill": {
-        const target = decision.targetId === undefined ? undefined : findByViewId(state, decision.targetId);
+        const target =
+          decision.targetId === undefined
+            ? undefined
+            : findByViewId(state, decision.targetId);
+        if (target?.side === "ally") onEnemySkillTargeted(actor, target);
         return enemyAI.useSkill(actor, decision.skillKey, target) !== false;
       }
 
       case "switch": {
         formation.removeIncapacitatedReserves(state.party);
-        const reserveIndex = state.party.reserve.findIndex((member) => member.id === decision.reserveId);
-        const activeIndex = state.party.active.findIndex((member) => member.id === decision.activeId);
-        const switched = formation.switchPartyMember(state, reserveIndex, activeIndex);
+        const reserveIndex = state.party.reserve.findIndex(
+          (member) => member.id === decision.reserveId,
+        );
+        const activeIndex = state.party.active.findIndex(
+          (member) => member.id === decision.activeId,
+        );
+        const switched = formation.switchPartyMember(
+          state,
+          reserveIndex,
+          activeIndex,
+        );
         if (!switched.changed) return false;
         say(`${switched.incoming.name} joins the active formation!`);
         say(`${switched.outgoing.name} moves to reserve.`);
+        emitCombatEvent(events, "PartySwitched", {
+          incomingId: switched.incoming.id,
+          outgoingId: switched.outgoing.id,
+          round: state.round,
+        });
         return true;
       }
 
       case "summonAuto":
-        meoTurn(actor);
+        summonTurn(actor);
         return true;
 
       case "pass":
@@ -100,20 +140,76 @@ function createTurnRunner({
         ready,
         alive,
       });
-      const decision = await controller.chooseAction(view, { actor, rejection });
+      const decision = await controller.chooseAction(view, {
+        actor,
+        rejection,
+      });
 
       const check = validateDecision(view, decision);
       if (!check.ok) {
         rejection = { reason: check.reason };
-        events.emit("DecisionRejected", { actorId: view.actor.id, kind, reason: check.reason, decision });
+        emitCombatEvent(events, "DecisionRejected", {
+          actorId: view.actor.id,
+          kind,
+          reason: check.reason,
+          decision,
+        });
         continue;
       }
 
-      events.emit("ActionChosen", { actorId: view.actor.id, kind, round: state.round, decision });
+      emitCombatEvent(events, "ActionChosen", {
+        actorId: view.actor.id,
+        kind,
+        round: state.round,
+        decision,
+      });
+      const mpBefore = actor.mp;
+      const actorIdsBefore = new Set(state.actors.map((unit) => unit));
       if ((await execute(actor, decision)) === false) {
         rejection = { reason: "action-failed" };
-        events.emit("DecisionRejected", { actorId: view.actor.id, kind, reason: "action-failed", decision });
+        emitCombatEvent(events, "DecisionRejected", {
+          actorId: view.actor.id,
+          kind,
+          reason: "action-failed",
+          decision,
+        });
         continue;
+      }
+      if (decision.type === "skill" || decision.type === "enemySkill") {
+        emitCombatEvent(events, "SkillUsed", {
+          actorId: actor.id,
+          skillKey: decision.skillKey,
+          round: state.round,
+          mpBefore,
+          mpAfter: actor.mp,
+        });
+      } else if (decision.type === "basic") {
+        emitCombatEvent(events, "BasicAttackUsed", {
+          actorId: actor.id,
+          targetId: decision.targetId,
+          round: state.round,
+        });
+      }
+      if (
+        decision.type === "summonAuto" &&
+        actor.summon &&
+        actor.summonTurns <= 0
+      ) {
+        emitCombatEvent(events, "ActorSummonExpired", {
+          actorId: actor.id,
+          ownerId: actor.ownerId || "unknown",
+          round: state.round,
+        });
+      }
+      for (const unit of state.actors) {
+        if (!actorIdsBefore.has(unit) && unit.summon) {
+          emitCombatEvent(events, "ActorSummoned", {
+            actorId: unit.id,
+            ownerId: unit.ownerId || actor.id,
+            side: unit.side,
+            round: state.round,
+          });
+        }
       }
       return;
     }

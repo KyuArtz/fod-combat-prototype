@@ -3,7 +3,9 @@ function createDeploymentSelector({ ask, output }) {
     const remaining = [...roster];
     const order = [];
 
-    output.log("\n=== FORMATION SETUP ================================================================");
+    output.log(
+      "\n=== FORMATION SETUP ================================================================",
+    );
     output.log(
       `Select ${roster.length} combatants in order. The first ${activeCount} deploy; the rest form the reserve queue.`,
     );
@@ -15,8 +17,14 @@ function createDeploymentSelector({ ask, output }) {
       });
 
       const selectedIndex =
-        Number(await ask(`Select combatant (${remaining.length ? `1-${remaining.length}` : ""}): `)) - 1;
-        output.log("-------------------------------------------------------------------------------------");
+        Number(
+          await ask(
+            `Select combatant (${remaining.length ? `1-${remaining.length}` : ""}): `,
+          ),
+        ) - 1;
+      output.log(
+        "-------------------------------------------------------------------------------------",
+      );
       if (
         !Number.isInteger(selectedIndex) ||
         selectedIndex < 0 ||
@@ -28,12 +36,24 @@ function createDeploymentSelector({ ask, output }) {
 
       order.push(remaining.splice(selectedIndex, 1)[0]);
       if (order.length === activeCount) {
-        output.log("Active formation selected. Choose the reserve queue order.");
+        output.log(
+          "Active formation selected. Choose the reserve queue order.",
+        );
       }
     }
 
-    output.log(`Active: ${order.slice(0, activeCount).map((actor) => actor.name).join(", ")}`);
-    output.log(`Reserve queue: ${order.slice(activeCount).map((actor) => actor.name).join(", ")}`);
+    output.log(
+      `Active: ${order
+        .slice(0, activeCount)
+        .map((actor) => actor.name)
+        .join(", ")}`,
+    );
+    output.log(
+      `Reserve queue: ${order
+        .slice(activeCount)
+        .map((actor) => actor.name)
+        .join(", ")}`,
+    );
     return order;
   }
 

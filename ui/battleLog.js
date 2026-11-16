@@ -1,4 +1,5 @@
 const { createEventBus } = require("../core/eventBus");
+const { emitCombatEvent } = require("../core/combatEvents");
 
 // say(message) records the line, emits it as a "Log" event, and the terminal
 // printer (subscribed here) writes it to the console. A GUI or test can subscribe
@@ -8,7 +9,7 @@ function createBattleLog(state, output = console, events = createEventBus()) {
 
   function say(message) {
     state.log.push(message);
-    events.emit("Log", { message, round: state.round });
+    emitCombatEvent(events, "Log", { message, round: state.round });
   }
 
   return { say, events };

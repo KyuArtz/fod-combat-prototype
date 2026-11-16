@@ -85,3 +85,26 @@
 **Reason:** A turn-flow refactor can silently change prompt order, messages or the order of random rolls. The transcripts were recorded from the pre-controller build; the controller refactor matched them on the first run. A deliberate swap in the order of two random rolls fails all five.  
 **Trade-offs:** About 100 KB of fixtures. Any intentional output or balance change needs a regeneration and a review of the behavior diff.
 
+## ADR-013 — Skills are data run by an interpreter, migrated one agent at a time
+
+**Status:** Accepted (2026-11-09); Elishia migrated  
+**Decision:** A skill is plain data (cost, cooldown, tags, targeting, ordered effects, result message). `core/skillInterpreter.js` runs it and validates the data when loaded. Passives are data (`statMods`, `onSkillUsed` hooks). Summons are templates with data-defined behavior. The other agents stay imperative until their turn.  
+**Reason:** Finalizing and balancing a skill becomes one edit in one place, MP/cooldown/text can be generated or synced to the roster JSON later, and the same effect handlers serve every character.  
+**Method:** Convert with identical behavior first (golden recordings must not change), then change behavior deliberately in a separate step with new tests and regenerated recordings.  
+**Trade-offs:** Message text duplicates some numbers (for example "SPD -10% (2 turns)") and is not generated from the effect data yet. Effects not needed by Elishia (for example damage over time) will be added when another agent needs them.
+
+## ADR-014 — Elishia's roster-text gaps are filled with explicit prototype values
+
+**Status:** Accepted for balancing review (2026-11-09)  
+**Decision:** The roster text is the design intent; MP costs and cooldowns stay at the prototype's values. Where the text leaves a number open the prototype picks one and marks it in the data: stabilize returns an ally at 15% Max HP (once per deployment, automatic), the EMP is Electromagnetic at 100% of Meo-9's MPow to all enemies with SPD −15% for 1 turn, adaptive resistance lasts for the barrier's remaining turns even if the shield is used up, scan boosts all of Elishia's damage and does not stack, and all four skills carry the Nanotech tag.  
+**Open issue:** Enemies cannot target summons, so Meo-9's EMP is dormant in normal play. Enabling it requires an enemy-targeting decision.
+
+
+
+## ADR-015 — Owner-provided Falcon skills supersede prototype skill values (2026-11-16)
+
+**Decision:** The original character reference supplied by the project owner is canonical for Falcon skill names, descriptions, MP costs, cooldowns, stats and passive mechanics. Updated project ZIPs include only the selected stats, skills and stat descriptions in `references/characterTerraData.js`, not the full original file or format. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
+
+**Implementation rule:** implement mechanics only when the source provides enough values and triggers. Do not guess Meo-v9 Final Protocol EMP scaling, Nanotech Singularity DoT scaling, or Catalyst Wing HP/destruction trigger. Zackry's +10 Accuracy currently applies to the basic-attack accuracy check; a general skill-hit accuracy model remains future work.
+
+**Scope:** this ADR aligns skills/passives only. Falcon base stats in `characters/falcon.js` remain prototype values pending a separate owner-approved stat synchronization.

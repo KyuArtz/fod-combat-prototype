@@ -1,6 +1,8 @@
 function enemyTarget(state, actor, alive) {
   const targets = alive(state, "ally").filter((target) => !target.summon);
   if (!targets.length) return null;
+  const taunter = targets.find((target) => target.statuses?.taunt);
+  if (taunter) return taunter;
 
   if (actor.name === "Training Drone") return targets[0];
   return targets.reduce((weakest, current) =>

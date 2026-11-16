@@ -58,7 +58,7 @@ test("head start equals the readiness gap (plus margin), scaled by each ally's o
   assert.ok(Math.abs(result.deltaTime - expectedDelta) < 1e-12);
   for (const actor of state.actors) {
     if (actor.side === "ally") {
-      assert.ok(Math.abs(actor.cr - actor.stats.SPD * expectedDelta) < 1e-9, actor.name);
+      assert.ok(Math.abs(actor.cr - statFor(state)(actor, "SPD") * expectedDelta) < 1e-9, actor.name);
       assert.ok(actor.cr < 100, `${actor.name} must not start ready`);
     } else {
       assert.equal(actor.cr, 0, actor.name);
@@ -70,7 +70,8 @@ test("only a head start in time: long-run turn counts stay SPD-proportional and 
   const state = realState();
   const es = statFor(state);
   const { deltaTime } = applyOpeningInitiative(state, es);
-  const spd = Object.fromEntries(state.actors.map((actor) => [actor.name, actor.stats.SPD]));
+  // Effective SPD: Elishia's Biotech Overdrive makes hers 104, not her base 95.
+  const spd = Object.fromEntries(state.actors.map((actor) => [actor.name, statFor(state)(actor, "SPD")]));
   const isAlly = Object.fromEntries(state.actors.map((actor) => [actor.name, actor.side === "ally"]));
   const turns = 800;
   const order = pickOrder(threshold, state, turns);
@@ -125,7 +126,10 @@ test("an exact speed tie goes to the player, regardless of array order or tie ro
 test("the legacy scheduler also opens with the player after the rule is applied", () => {
   const state = realState();
   applyOpeningInitiative(state, statFor(state));
-  assert.equal(pickOrder(legacy, state, 1)[0], "Zenki");
+  // Legacy clamps CR, so every ally at SPD 100+ ties and array order decides:
+  // an ally (Elishia, first in the array) opens. The point is that it is the player's side.
+  const first = pickOrder(legacy, state, 1)[0];
+  assert.ok(state.actors.find((actor) => actor.name === first).side === "ally", first);
 });
 
 test("summons and downed units are ignored when finding the fastest unit", () => {

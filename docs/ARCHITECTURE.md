@@ -30,41 +30,54 @@ index.js
 | `core/battleState.js` | Creates battle-state object, seeded RNG state, party containers, round and scheduler fields |
 | `core/rng.js` | Seeded RNG (mulberry32). State is plain data `{ seed, state }`; `nextFloat`, `rollPercent`, `createRngState` |
 | `core/eventBus.js` | Synchronous event bus (`on`, `onAny`, `emit`); events are plain data `{ type, seq, ...payload }` |
-| `core/turnEngine.js` | Readiness/action loop, turn-start resource/effect ticks, round bookkeeping; delegates each turn to the turn runner |
+| `core/turnEngine.js` | Readiness/action loop, turn-start resources, post-turn status/shield ticks, passive lifecycle callbacks and round bookkeeping |
 | `core/turnView.js` | Builds the plain-data turn view (units, legal actions, targets, usability); view ids; controller kind per actor |
 | `core/decisions.js` | `validateDecision(view, decision)`: legality check for every decision type |
 | `core/turnRunner.js` | Runs a turn: view, controller, validation, execution, retry/reject; executes basic, skill, enemy skill, switch, summon, pass |
 | `core/controllers.js` | Headless controllers: scripted (replay), basic-attack, random (own seeded RNG); decision recorder |
-| `core/actionResolver.js` | Shared physical/mastery action calculations and hit application |
+| `core/actionResolver.js` | Shared physical/mastery calculations, hit application, and the single basic-attack execution path |
 | `characters/actorFactory.js` | Normalizes actor construction and initializes runtime fields |
 | `characters/falcon.js` | Five Falcon playable-agent definitions and F.O.D. mastery types |
 | `characters/enemies.js` | Five training enemy definitions |
-| `characters/skills.js` | Falcon skills, declarative: each declares `targeting` (and `modes`) plus a `run(actor, { target, mode })` that executes an already-validated choice; costs, cooldowns, summon and ultimate effects |
-| `ai/enemyAI.js` | Enemy AI: `decide(actor)` chooses (and rolls skill chances), `useSkill` / `basicAttack` execute; `controller` is the built-in enemy controller |
+| `characters/skills.js` | Assembles the shared skill registry by building all five Falcon definitions through the interpreter |
+| `ai/enemyAI.js` | Enemy AI: `decide(actor)` chooses and rolls skill chances; `useSkill` executes enemy skills; basic attacks delegate to the shared action resolver; `controller` is the built-in enemy controller |
 | `ai/targeting.js` | Enemy target-selection rules |
 | `systems/combatReadiness.js` | Legacy CR scheduler and shared CR helpers |
 | `systems/thresholdCombatReadiness.js` | Continuous-time threshold scheduler |
 | `systems/openingInitiative.js` | One-time opening rule: gives a side a uniform time head start so it acts first |
 | `systems/formation.js` | Formation setup, active/reserve management, replacement, battle result |
-| `systems/damage.js` | Physical/mastery damage formula |
-| `systems/damageApplication.js` | Applies damage, shields, HP and down-state behavior |
+| `systems/damage.js` | Physical/mastery damage formula; adaptive resistance and outside bonus multiplier |
+| `systems/damageApplication.js` | Applies typed damage, shields (adaptive shields adapt here), HP and down-state behavior |
+| `core/skillInterpreter.js` | Runs owner-aligned Falcon skill data; applies reusable effects and passive lifecycle hooks; validates skill data on load |
+| `data/skills/elishia.js` | Elishia's owner-aligned skills, Biotech Overdrive and Meo-v9 template |
+| `data/skills/evalete.js` | Evalete's four skills as plain data |
+| `data/skills/zackry.js` | Zackry's four skills as plain data |
+| `data/skills/jazen.js` | Jazen's four skills as plain data |
+| `data/skills/zenki.js` | Zenki's four skills as plain data |
 | `systems/cooldowns.js` | Skill readiness, MP payment, cooldown ticking |
-| `systems/shields.js` | Shield creation, expiry, absorption |
-| `systems/statusEffects.js` | Status application, effective stats, duration ticking |
+| `systems/shields.js` | Shield creation (optionally adaptive), expiry, absorption |
+| `systems/statusEffects.js` | Status application, effective stats (statuses, passives, marks and accuracy/evasion modifiers), duration ticking |
 | `ui/battleMenu.js` | Terminal player controller: prints the menu, prompts with readline, returns decisions; never changes the battle itself |
 | `ui/deploymentSelection.js` | Player roster ordering and active/reserve selection |
 | `ui/statusDisplay.js` | Actor, status, cooldown, formation display |
 | `ui/battleLog.js` | State-backed battle logging; `say()` emits `Log` events, terminal printer subscribes |
 | `test/thresholdCombatReadiness.test.js` | Scheduler and scheduler-adjacent regression tests (18) |
 | `test/rng.test.js` | Seeded RNG: reproducibility, golden values, clone safety, seed validation (8) |
-| `test/eventBus.test.js` | Event bus: delivery order, unsubscribe, history, error handling (7) |
+| `test/eventBus.test.js` | Event bus: delivery order, unsubscribe, history, typed event contracts, error handling (8) |
 | `test/determinism.test.js` | Full scripted 5v5 battle replays identically per seed; log/event consistency (7) |
 | `test/openingInitiative.test.js` | Player-first opening: roster, ties, legacy, summons, full battles, option validation (12) |
 | `test/goldenTranscripts.test.js` | 5 full terminal battles (valid and invalid input, switching, all skill types) reproduced byte for byte (5) |
+| `test/goldenElishia.test.js` | 6 headless battles where Elishia cycles every skill and mode; engine log, RNG state and final unit states reproduced exactly (6) |
+| `test/skillData.test.js` | Owner-reference data validation, interpreter, costs/cooldowns and MP discount (6) |
+| `test/falconSkillData.test.js` | Validates all five Falcon definitions, passive attachment and owner costs/cooldowns (3) |
+| `test/elishiaMechanics.test.js` | Timed Biotech Overdrive, Adaptive Barrier, scan, Emergency Field and Singularity (24) |
+| `test/ownerFalconMechanics.test.js` | Owner-aligned active skills and passive mechanics for all five Falcon agents (16) |
+| `test/basicAttack.test.js` | Shared basic-attack execution, evasion and retaliation (4) |
 | `test/turnViewAndDecisions.test.js` | Decision validation, view ids, declarative skill registry, terminal controller prompts (14) |
 | `test/controllers.test.js` | Headless play, fuzz, replay, rejection/retry, interchangeable enemy controller, option validation (13) |
 | `tools/compareSchedulers.js` | Dev tool: legacy vs threshold, with and without the opening rule |
-| `tools/updateGolden.js` | Regenerates `test/fixtures/golden/*.txt.gz` (only after an intentional output change) |
+| `tools/updateGolden.js` | Regenerates all golden fixtures in `test/fixtures/golden/` (only after an intentional output change) |
+| `tools/lib/elishiaScenarios.js` | Elishia-dense golden scenarios and the skill-cycling controller |
 | `tools/lib/headless.js` | `playHeadless(...)`: full battle with controllers and no terminal; used by tests and tools |
 | `tools/lib/transcript.js` | Records a full terminal battle (prompts, answers, output) from seeded "chaos" answers; golden scenarios |
 
@@ -125,9 +138,10 @@ The readiness scheduler is injected into the turn engine. This keeps the engine 
 
 - `core/battle.js` creates (or accepts) an event bus and returns it as `events`.
 - `ui/battleLog.js` subscribes the terminal printer to `Log` events. `say(message)` appends to `state.log` and emits `Log { message, round }`.
-- Events today: `Log { message, round }`, `OpeningInitiative { applied, side, deltaTime, opener }`, `FormationSelected { ids }`, `ActionChosen { actorId, kind, round, decision }`, `DecisionRejected { actorId, kind, reason, decision }`.
-- Planned typed events: `TurnStarted`, `SkillUsed`, `DamageDealt`, `Healed`, `ShieldGained`, `StatusApplied`/`StatusExpired`, `ActorDied`, `ActorSummoned`, `PartySwitched`, `RoundEnded`, `BattleEnded`.
-- Keep payloads structured-clone friendly (ids, numbers, strings; no functions or actor objects).
+- The full typed event vocabulary and required payload fields live in `core/combatEvents.js`; `docs/STEP4_TYPED_COMBAT_EVENTS.md` documents meanings and ordering.
+- Lifecycle and combat events include `BattleStarted`, `RoundStarted`/`RoundEnded`, `TurnStarted`/`TurnEnded`, `SkillUsed`, `BasicAttackUsed`, `DamageApplied`, `Healed`, `ShieldGained`/`ShieldExpired`, `StatusApplied`/`StatusExpired`, `ActorDied`, `ActorSummoned`/`ActorSummonExpired`, `PartySwitched`, `ReserveDeployed`, and `BattleEnded`.
+- Existing events remain supported: `Log`, `FormationSelected`, `OpeningInitiative`, `ActionChosen`, and `DecisionRejected`.
+- `emitCombatEvent` validates required fields and structured-clone safety. Payloads use IDs and plain serializable data, never live actor objects. `seq` is shared globally across event types.
 
 ## Turns, controllers and decisions
 
@@ -145,7 +159,32 @@ Plugging in a controller: `createBattle({ controllers: { player, enemy, summon }
 
 Recording and replay: `createDecisionRecorder(battle.events)` collects `FormationSelected` and each accepted player decision; replaying with `seed`, `partyOrder` and `createScriptedController(decisions)` reproduces the battle exactly (same final unit states, same random-number state). The scripted controller names the decision where a replay drifts.
 
-Known limits: the player and enemy `basic` attacks still resolve through different code (`actionResolver.basicAttack` vs `enemyAI.basicAttack`); summon behaviour is a single automatic decision (`summonAuto`); the terminal controller records two menu-only messages ("No valid target selected.", "Invalid formation slot.") in `state.log`, as the original menu did, so replays exclude them.
+Known limits: summon behaviour is a single automatic decision (`summonAuto`); the terminal controller records two menu-only messages ("No valid target selected.", "Invalid formation slot.") in `state.log`, as the original menu did, so replays exclude them.
+
+## Shared basic-attack resolution
+
+Every `{ type: "basic", targetId }` decision now executes through `core/actionResolver.js`, regardless of whether the acting unit is player-controlled or enemy-controlled. `core/turnRunner.js` no longer branches on actor side for basic attacks. `ai/enemyAI.js` remains responsible for deciding when to use a basic attack, but delegates execution to the shared resolver (including its direct `enemyTurn` compatibility method).
+
+The resolver preserves the prototype's existing side-specific defensive behavior:
+
+- When an enemy attacks an ally, the target's Evasion is checked (clamped to 0–75%). A successful evade prevents damage and retaliation.
+- After a successful enemy hit, an ally's `retaliation` status returns the configured percentage of the hit's calculated damage, provided both actors remain alive.
+- Player basic attacks retain their existing behavior: normally no enemy-Evasion roll and no retaliation proc. Zackry's +10 Accuracy token is the exception: it is consumed by the next basic attack and can overcome enemy Evasion.
+- The enemy-side evasion RNG roll is still consumed even at 0% Evasion, preserving seeded random-number sequences and the recorded golden transcripts.
+
+Focused coverage lives in `test/basicAttack.test.js`.
+
+## Owner-aligned data-driven Falcon skills
+
+The owner's original character reference is the canonical design source for skill names, descriptions, MP costs, cooldowns, passive rules, stats and stat descriptions. The project archive intentionally bundles only the selected stats, skills and stat-description objects in `references/characterTerraData.js`; it does not include the full original file or original format. `docs/OWNER_SKILL_REFERENCE.md` is the readable extracted reference. `data/skills/<character>.js` implements the five Falcon skill sets; `characters/skills.js` assembles the registry.
+
+`core/skillInterpreter.js` checks readiness, pays MP, sets cooldowns, applies declarative effects and invokes passive hooks. Elishia's Biotech Overdrive uses a three-turn battle-start counter; her Nanotech-skill MP discount is a separate flat 8 MP token. Controllers only choose actions and targets. Current effect families include single/area healing, healing-over-time, cleanse, typed mastery hits, status and stat effects, shields, damage-taken/dealt modifiers, Tactical/Cipher marks, conditional attacks, Stagger, summons and Singularity.
+
+Passive lifecycle hooks run at battle start, actor turn start/end, damage taken, enemy skill targeting, round start and unit defeat. They implement Elishia's three-turn battle-start buff and flat 8 MP next-skill discount; Evalete's Catalyst Wing pulse; Zackry's Overwatch/mark reward; Jazen's Recoil Dampeners and Stagger immunity; and Zenki's Unobserved/Railshot state.
+
+**Do not invent missing owner values.** Meo-v9 Final Protocol's EMP scaling, Singularity's DoT amount, and Catalyst Wing's HP/destruction trigger are not specified in the reference and remain deferred. Zackry's Accuracy bonus currently applies to the existing basic-attack accuracy check; the engine has no general skill-hit accuracy model.
+
+See `docs/FALCON_SKILL_MIGRATION.md` for this milestone's implementation scope and `docs/OWNER_SKILL_REFERENCE.md` for the complete source-derived skill descriptions.
 
 ## Actor lifecycle
 

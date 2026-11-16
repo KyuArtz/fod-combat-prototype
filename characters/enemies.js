@@ -55,15 +55,19 @@ function createTrainingEnemies() {
       SPD: 115,
       Evasion: 12,
     }),
-    createEnemy("Toxic Stalker", {
-      HP: 760,
-      MP: 0,
-      ATK: 72,
-      MPow: 85,
-      DEF: 45,
-      RES: 60,
-      SPD: 82,
-    }, "Toxic"),
+    createEnemy(
+      "Toxic Stalker",
+      {
+        HP: 760,
+        MP: 0,
+        ATK: 72,
+        MPow: 85,
+        DEF: 45,
+        RES: 60,
+        SPD: 82,
+      },
+      "Toxic",
+    ),
   ];
 }
 

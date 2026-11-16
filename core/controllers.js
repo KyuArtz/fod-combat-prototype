@@ -13,11 +13,18 @@ function createScriptedController(entries) {
   return {
     chooseAction(view) {
       if (!queue.length) {
-        throw new Error(`Scripted controller ran out of decisions at ${view.actor.name}'s turn (used ${consumed}).`);
+        throw new Error(
+          `Scripted controller ran out of decisions at ${view.actor.name}'s turn (used ${consumed}).`,
+        );
       }
       const entry = queue.shift();
       consumed++;
-      if (entry && entry.decision && entry.actorId !== undefined && entry.actorId !== view.actor.id) {
+      if (
+        entry &&
+        entry.decision &&
+        entry.actorId !== undefined &&
+        entry.actorId !== view.actor.id
+      ) {
         throw new Error(
           `Replay desync at decision ${consumed}: expected ${entry.actorId}'s turn but it is ${view.actor.id}'s.`,
         );
@@ -48,8 +55,14 @@ function createRandomController({ seed = 1, allowSwitch = false } = {}) {
       const options = [];
       for (const action of view.actions) {
         if (action.type === "basic" && action.targets.length) {
-          options.push(() => ({ type: "basic", targetId: pick(action.targets) }));
-        } else if ((action.type === "skill" || action.type === "enemySkill") && action.usable) {
+          options.push(() => ({
+            type: "basic",
+            targetId: pick(action.targets),
+          }));
+        } else if (
+          (action.type === "skill" || action.type === "enemySkill") &&
+          action.usable
+        ) {
           if (action.targeting === "mode") {
             for (const mode of action.modes) {
               if (mode.targeting === "none" || mode.targets.length) {
@@ -57,19 +70,29 @@ function createRandomController({ seed = 1, allowSwitch = false } = {}) {
                   type: action.type,
                   skillKey: action.key,
                   mode: mode.id,
-                  ...(mode.targeting === "none" ? {} : { targetId: pick(mode.targets) }),
+                  ...(mode.targeting === "none"
+                    ? {}
+                    : { targetId: pick(mode.targets) }),
                 }));
               }
             }
           } else if (action.targeting === "none") {
             options.push(() => ({ type: action.type, skillKey: action.key }));
           } else if (action.targets.length) {
-            options.push(() => ({ type: action.type, skillKey: action.key, targetId: pick(action.targets) }));
+            options.push(() => ({
+              type: action.type,
+              skillKey: action.key,
+              targetId: pick(action.targets),
+            }));
           }
         } else if (action.type === "switch" && allowSwitch) {
           const reserves = action.reserves.filter((member) => member.alive);
           if (reserves.length && action.active.length) {
-            options.push(() => ({ type: "switch", reserveId: pick(reserves).id, activeId: pick(action.active).id }));
+            options.push(() => ({
+              type: "switch",
+              reserveId: pick(reserves).id,
+              activeId: pick(action.active).id,
+            }));
           }
         } else if (action.type === "summonAuto" || action.type === "pass") {
           options.push(() => ({ type: action.type }));
@@ -88,7 +111,10 @@ function createDecisionRecorder(events) {
     recording.formation = [...event.ids];
   });
   events.on("ActionChosen", (event) => {
-    const entry = { actorId: event.actorId, decision: structuredClone(event.decision) };
+    const entry = {
+      actorId: event.actorId,
+      decision: structuredClone(event.decision),
+    };
     recording.all.push({ ...entry, kind: event.kind });
     if (event.kind === "player") recording.decisions.push(entry);
   });

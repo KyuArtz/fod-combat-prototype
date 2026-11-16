@@ -15,6 +15,13 @@ function makeActor(data) {
     summon: data.summon || false,
     summonTurns: data.summonTurns || 0,
     discount: false,
+    mpDiscount: 0,
+    nextAttackAccuracy: 0,
+    _isTakingTurn: false,
+    targetedByAllyId: null,
+    targetedByEnemySinceLastTurn: false,
+    enemySkillTargetedThisRound: false,
+    unobservedSuppressed: false,
     cr: 0,
   };
 }

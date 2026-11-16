@@ -2,7 +2,11 @@
 // order is given up front, and nothing is printed. Used by tests and dev tools.
 
 const { createBattle } = require("../../core/battle");
-const { createBasicAttackController } = require("../../core/controllers");
+const {
+  createBasicAttackController,
+  createRandomController,
+} = require("../../core/controllers");
+const { createEventBus } = require("../../core/eventBus");
 const threshold = require("../../systems/thresholdCombatReadiness");
 
 // Matches the old scripted "1" policy's formation (Zenki, Elishia, Jazen, Evalete, Zackry).
@@ -16,6 +20,8 @@ async function playHeadless({
   partyOrder = DEFAULT_PARTY_ORDER,
   maxActive,
   events,
+  policy = "basic",
+  policySeed = 1,
 } = {}) {
   const picks = [];
   const recording = {
@@ -26,19 +32,37 @@ async function playHeadless({
       return actor;
     },
   };
+  const playerController =
+    controllers.player ||
+    (policy === "basic"
+      ? createBasicAttackController()
+      : policy === "random"
+        ? createRandomController({ seed: policySeed })
+        : null);
+  if (!playerController)
+    throw new TypeError(
+      `Unknown headless policy "${policy}". Use "basic" or "random".`,
+    );
+  const eventBus = events || createEventBus({ record: true });
   const battle = createBattle({
     output: { log() {} },
     readinessScheduler: recording,
     seed,
     ...(openingInitiative ? { openingInitiative } : {}),
-    ...(events ? { events } : {}),
-    controllers: { player: createBasicAttackController(), ...controllers },
+    events: eventBus,
+    controllers: { player: playerController, ...controllers },
     partyOrder,
   });
   if (maxActive) battle.state.party.maxActive = maxActive;
   try {
     const result = await battle.run();
-    return { result, picks, rounds: battle.state.round, state: battle.state, events: battle.events };
+    return {
+      result,
+      picks,
+      rounds: battle.state.round,
+      state: battle.state,
+      events: battle.events,
+    };
   } finally {
     battle.close();
   }

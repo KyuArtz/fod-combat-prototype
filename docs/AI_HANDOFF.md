@@ -40,7 +40,7 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 - Replay = seed + party order + the accepted player decisions (recorded as `ActionChosen` events; see "Controllers and decisions").
 - `core/eventBus.js`: synchronous bus (`on`, `onAny`, `emit`). Events are plain data `{ type, seq, ...payload }`. Handler errors propagate to the emitter.
 - `say()` now records to `state.log` and emits a `Log` event (`{ message, round }`); the terminal printer subscribes to it in `ui/battleLog.js`. `createBattle` returns `events` so a GUI, simulator, or test can subscribe.
-- Events so far: `Log`, `OpeningInitiative`, `FormationSelected`, `ActionChosen`, `DecisionRejected`. Typed combat events (`DamageDealt`, `TurnStarted`, ...) are planned (step 4).
+- Event vocabulary and payload validation: `core/combatEvents.js`; see `docs/STEP4_TYPED_COMBAT_EVENTS.md`. Events cover battle/round/turn lifecycle, accepted/rejected actions, skills, basic attacks, damage, healing, shields, statuses, incapacitation, summons and formation deployment/switching.
 - Redirected stdin (`node index.js < file`) stops at the first prompt (readline limitation, also true of the original code). Drive prompts interactively or use the `createBattle` test harness in `test/determinism.test.js`.
 
 ## Opening initiative (added 2026-11-07)
@@ -57,15 +57,33 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 - Every turn goes through `core/turnRunner.js`: build a plain-data **view** (`core/turnView.js`), ask the actor's **controller** for a **decision**, validate it (`core/decisions.js`), then execute it. Controllers only decide; the engine executes. Full description: `docs/ARCHITECTURE.md`, "Turns, controllers and decisions".
 - `createBattle({ controllers: { player, enemy, summon }, partyOrder })`. Defaults: terminal menu (`ui/battleMenu.js`), built-in AI (`enemyAI.controller`), automatic summon. Headless controllers in `core/controllers.js`: `createBasicAttackController`, `createRandomController({ seed, allowSwitch })` (own RNG), `createScriptedController(decisions)`, `createDecisionRecorder(events)`. `tools/lib/headless.js` has `playHeadless(...)`.
 - Skills in `characters/skills.js` are declarative: `{ name, key, cost, targeting: "enemy" | "ally" | "none" | "mode", modes?, run(actor, { target, mode }) }`. A skill must never prompt or read input; the terminal controller does the prompting. A new skill needs `targeting` and `run`, nothing else.
-- Enemy AI is split: `decide(actor)` returns a decision and rolls skill chances in the original order; `useSkill` and `basicAttack` execute. Keep the order of `random()` calls unchanged unless you intend to change the golden transcripts.
-- Events added: `FormationSelected`, `ActionChosen`, `DecisionRejected`. Replay = seed + `partyOrder` + recorded player decisions.
+- Enemy AI is split: `decide(actor)` returns a decision and rolls skill chances in the original order; `useSkill` executes enemy skills. Basic attacks from both sides execute through `core/actionResolver.js`; `enemyAI.basicAttack` is a compatibility alias to that shared resolver. Keep the order of `random()` calls unchanged unless you intend to change the golden transcripts.
+- Shared basic attacks preserve the current asymmetric rules: enemy attacks check ally Evasion and can trigger ally Retaliation; player attacks do not roll enemy Evasion or trigger Retaliation. The enemy evasion roll is still consumed at 0% Evasion for replay compatibility. See `docs/ARCHITECTURE.md`, "Shared basic-attack resolution".
+- Events include `FormationSelected`, `ActionChosen`, `DecisionRejected` and the typed combat lifecycle events. Replay = seed + `partyOrder` + recorded player decisions.
 - **Golden transcripts** (`test/goldenTranscripts.test.js`, fixtures in `test/fixtures/golden/*.txt.gz`) play 5 full terminal battles with seeded chaos input and must match byte for byte. If you change menu text, prompt order, enemy rolls or balance **on purpose**, run `node tools/updateGolden.js` and review the behavior change; otherwise a failing golden test means the refactor changed behavior.
 - Refactor verification at the time: golden transcripts recorded from the pre-controller build matched exactly after the refactor, real `index.js` output was identical for three seeds, and the comparison tool reproduced the earlier numbers exactly.
-- Known limits: player vs enemy basic attacks use separate code; summon behavior is one `summonAuto` decision; the terminal controller puts two menu-only messages into `state.log` (replays exclude them).
+- Known limits: summon behavior is one `summonAuto` decision; the terminal controller puts two menu-only messages into `state.log` (replays exclude them).
 
-## Verified test status (2026-11-07 snapshot)
+## Owner-aligned Falcon skills (2026-11-16)
 
-`node --test`: **84 passing, 0 failing** (scheduler 18, RNG 8, event bus 7, determinism 7, opening initiative 12, golden transcripts 5, turn view and decisions 14, controllers 13). `tools/compareSchedulers.js` is a dev tool, not part of the test run. Full battles are covered by the golden transcripts, the determinism tests and a 60-battle fuzz run with random player and enemy controllers; there are still no focused tests for individual skill numbers or enemy AI target rules.
+- **Canonical source:** the original character reference uploaded by the owner. The full original file is not bundled. `references/characterTerraData.js` contains only the extracted character stats, skills and stat descriptions; use it together with `docs/OWNER_SKILL_REFERENCE.md` before changing any Falcon skill.
+- All 20 active skills and five passive definitions are represented in `data/skills/` and assembled by `characters/skills.js` through `core/skillInterpreter.js`.
+- The interpreter now supports area healing, HOT, cleanse, typed damage, shields, stat modifiers, marks, conditional effects, Stagger, Taunt, accuracy tokens and lifecycle passive callbacks.
+- Do not restore old prototype values when they conflict with the owner source. The old Meo-v9 revive/EMP-on-destruction prototype behavior is removed; Emergency Field heals a living low-HP ally.
+- Do not invent missing numbers: Meo-v9 Final Protocol EMP scaling, Singularity DoT scaling, and Catalyst Wing HP/destruction trigger are explicitly pending. Zackry's Accuracy currently applies to basic attacks only because the engine has no general skill accuracy model. Status and shield durations tick after the affected actor completes their turn; newly applied self-effects do not immediately lose a duration tick.
+- Falcon base stats remain prototype values pending a separate stat-sheet sync decision.
+
+## Current verification snapshot
+
+Run `node --test`. Focused owner-alignment coverage lives in `test/ownerFalconMechanics.test.js`, with data/registry checks in `test/skillData.test.js` and `test/falconSkillData.test.js`. Golden fixtures are regenerated only after deliberate behavior changes and review. Current exact count is recorded in `docs/TESTING_AND_PLAYTESTING.md`.
+
+## Step 3 completed — full-battle regression coverage
+
+`test/fullBattleRegression.test.js` adds 27 battle-level tests covering all 20 Falcon active skills, all five agents in one encounter, Taunt and Stagger behavior, manual reserve switching with deterministic replay, automatic reserve deployment, victory/defeat checks, and shield/cooldown timing. At Step 3 completion, `node --test` reported 171 passed; Step 4 added event coverage; Step 5 adds simulator coverage, and the current suite is 178/178. Details: `docs/STEP3_FULL_BATTLE_REGRESSION.md` and `docs/STEP4_TYPED_COMBAT_EVENTS.md`.
+
+## Step 4 completed — typed combat events
+
+`core/combatEvents.js` defines and validates the event vocabulary. `docs/STEP4_TYPED_COMBAT_EVENTS.md` lists required fields, event semantics, ordering, test coverage and current limitations. The full suite currently passes 178/178. Keep payloads plain and clone-safe; event observers are read-only. Step 5 delivered `node tools/simulate.js` for deterministic batch balance runs and is complete. See `docs/STEP5_HEADLESS_SIMULATOR.md`.
 
 ## Future direction
 
@@ -73,9 +91,9 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 - Full 5v5 playtest/regression.
 - Agent management and formation expansion.
 - Leveling and stage mechanics.
-- Planned engine/view steps: (3) data-driven skills with an effect interpreter, migrated one skill at a time, checked against the golden transcripts and old-vs-new comparisons; (4) typed events alongside text logs; (5) headless simulator CLI (a headless player and a random controller already exist).
-- Done: (2) controller interface, recorded decisions and exact replays.
-- Also planned: analytics, GUI turn-order preview, saves.
+- Completed engine sequence: (1) data-driven Falcon skills and shared interpreter; (2) controller interface, recorded decisions and exact replays; (3) full-battle regression; (4) typed events alongside text logs; (5) headless simulator CLI.
+- Completed: (5) headless simulator CLI for balance runs. Enemy skill migration is the next larger engine task after reviewing simulator baselines.
+- Also planned: source-attributed combat analytics, GUI turn-order preview, saves.
 - Done: deterministic random seed (2026-11-07).
 
 ## Working rules
@@ -84,7 +102,12 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 2. State which behavior is confirmed versus proposed.
 3. Do not duplicate stats/data structures unnecessarily.
 4. Keep mechanics internally consistent and test them.
-5. Run `node --test` after changes. Keep new randomness on `state.rng`; keep event payloads plain data. Event `seq` is shared by all event types on the bus.
+5. Run `node --test` after changes. Keep new randomness on `state.rng`; use `emitCombatEvent` for engine events. Payloads must be plain structured-clone-safe data; dispatch receives an isolated copy. Event `seq` is shared by all event types on the bus.
 6. Add tests for bug fixes and edge cases. Skills and AI must not prompt; only controllers talk to the player.
 7. Update `docs/CHANGELOG.md`, status, and relevant mechanics docs when behavior changes.
 8. Explain any source/document mismatch rather than silently guessing.
+
+
+## Step 5 completed — headless simulator
+
+`tools/simulate.js` runs seeded complete battles without terminal prompts. Use `--battles`, `--seed`, `--scheduler`, `--opening`, `--policy`, `--format`, and `--out`; output formats are table, JSON and CSV. It reports outcomes, rounds/turns, skill/basic action counts, HP damage received by side, shield absorption, healing, MP spent and rejected decisions. Per-actor received damage/support is included in JSON. Source-attributed damage is not yet available because `DamageApplied` does not identify the source actor. Read `docs/STEP5_HEADLESS_SIMULATOR.md` before interpreting balance results.
