@@ -2,7 +2,7 @@
 
 A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.D.)** combat mechanics. This repository is a development/playtest project, not yet the production combat implementation.
 
-> **Current development direction (2026-11-16):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are **seeded and replayable** (`FOD_SEED`), and readable battle logs plus structured combat events flow through the typed event bus (steps 1 and 4). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, enemy AI, and headless/scripted players share the same view-and-decision interface (step 2). All five Falcon agents' skills are **data-driven and aligned to the owner's reference**. The project bundles only selected character stats, skills, and stat descriptions in `references/characterTerraData.js`; `core/skillInterpreter.js` runs active skills and supported passives. See `docs/OWNER_SKILL_REFERENCE.md`. Full-battle regression coverage and typed combat events are complete. Step 5 headless balance simulation is complete; see the Step 5 guide for CLI usage and metric limitations. Enemy skills remain outside the Falcon migration.
+> **Current development direction (2026-11-16):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are **seeded and replayable** (`FOD_SEED`), and readable battle logs plus structured combat events flow through the typed event bus (steps 1 and 4). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, enemy AI, and headless/scripted players share the same view-and-decision interface (step 2). All five Falcon agents' skills are **data-driven and aligned to the owner's reference**. The project bundles only selected character stats, skills, and stat descriptions in `references/characterTerraData.js`; `core/skillInterpreter.js` runs active skills and supported passives. See `docs/OWNER_SKILL_REFERENCE.md`. Full-battle regression coverage and typed combat events are complete. Step 5 headless balance simulation is complete; see the Step 5 guide for CLI usage and metric limitations. The Training Drone and Rogue Automaton enemy skills have now also moved to the shared data/interpreter architecture (Step 6); see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. Other enemies remain unchanged.
 
 ## Quick start
 
@@ -80,11 +80,11 @@ const { createRandomController } = require("./core/controllers");
 
 const battle = createBattle({
   seed: 12,
-  output: { log() {} }, // silence the console
-  partyOrder: ["zenki", "elishia", "jazen", "evalete", "zackry"], // skips the formation prompts
+  output: { log() {} },                                   // silence the console
+  partyOrder: ["zenki", "elishia", "jazen", "evalete", "zackry"],   // skips the formation prompts
   controllers: { player: createRandomController({ seed: 1 }) },
 });
-const result = await battle.run(); // "VICTORY" or "DEFEAT"
+const result = await battle.run();                         // "VICTORY" or "DEFEAT"
 ```
 
 A controller is a function (or an object with `chooseAction(view)`) that returns a decision such as `{ type: "basic", targetId: "recon-drone" }`. `battle.events` emits `ActionChosen` for every accepted decision, so a battle can be replayed from its seed, party order and recorded decisions (`createDecisionRecorder` / `createScriptedController` in `core/controllers.js`). See [Architecture](docs/ARCHITECTURE.md#turns-controllers-and-decisions).

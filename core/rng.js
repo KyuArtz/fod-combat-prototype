@@ -9,13 +9,8 @@ const { randomInt } = require("node:crypto");
 // fully reproducible from its seed plus the sequence of player choices.
 
 function normalizeSeed(seed) {
-  const value =
-    typeof seed === "string" && seed.trim() !== "" ? Number(seed) : seed;
-  if (
-    typeof value !== "number" ||
-    !Number.isFinite(value) ||
-    !Number.isInteger(value)
-  ) {
+  const value = typeof seed === "string" && seed.trim() !== "" ? Number(seed) : seed;
+  if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value)) {
     throw new TypeError(`Seed must be an integer, received ${String(seed)}.`);
   }
   return value >>> 0;
@@ -44,10 +39,4 @@ function rollPercent(rng, percent) {
   return nextFloat(rng) * 100 < percent;
 }
 
-module.exports = {
-  createRngState,
-  nextFloat,
-  normalizeSeed,
-  randomSeed,
-  rollPercent,
-};
+module.exports = { createRngState, nextFloat, normalizeSeed, randomSeed, rollPercent };

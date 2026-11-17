@@ -32,9 +32,7 @@ function emitCombatEvent(events, type, payload) {
   if (!required) throw new TypeError(`Unknown combat event type "${type}".`);
   for (const field of required) {
     if (!Object.prototype.hasOwnProperty.call(payload, field)) {
-      throw new TypeError(
-        `${type} event is missing required field "${field}".`,
-      );
+      throw new TypeError(`${type} event is missing required field "${field}".`);
     }
   }
   let safePayload;
@@ -43,9 +41,7 @@ function emitCombatEvent(events, type, payload) {
     // event object without being able to mutate a live controller decision.
     safePayload = structuredClone(payload);
   } catch {
-    throw new TypeError(
-      `${type} event payload must contain structured-clone-safe data.`,
-    );
+    throw new TypeError(`${type} event payload must contain structured-clone-safe data.`);
   }
   return events.emit(type, safePayload);
 }

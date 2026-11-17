@@ -2,10 +2,7 @@
 // order is given up front, and nothing is printed. Used by tests and dev tools.
 
 const { createBattle } = require("../../core/battle");
-const {
-  createBasicAttackController,
-  createRandomController,
-} = require("../../core/controllers");
+const { createBasicAttackController, createRandomController } = require("../../core/controllers");
 const { createEventBus } = require("../../core/eventBus");
 const threshold = require("../../systems/thresholdCombatReadiness");
 
@@ -32,17 +29,14 @@ async function playHeadless({
       return actor;
     },
   };
-  const playerController =
-    controllers.player ||
-    (policy === "basic"
+  const playerController = controllers.player || (
+    policy === "basic"
       ? createBasicAttackController()
       : policy === "random"
         ? createRandomController({ seed: policySeed })
-        : null);
-  if (!playerController)
-    throw new TypeError(
-      `Unknown headless policy "${policy}". Use "basic" or "random".`,
-    );
+        : null
+  );
+  if (!playerController) throw new TypeError(`Unknown headless policy "${policy}". Use "basic" or "random".`);
   const eventBus = events || createEventBus({ record: true });
   const battle = createBattle({
     output: { log() {} },
@@ -56,13 +50,7 @@ async function playHeadless({
   if (maxActive) battle.state.party.maxActive = maxActive;
   try {
     const result = await battle.run();
-    return {
-      result,
-      picks,
-      rounds: battle.state.round,
-      state: battle.state,
-      events: battle.events,
-    };
+    return { result, picks, rounds: battle.state.round, state: battle.state, events: battle.events };
   } finally {
     battle.close();
   }

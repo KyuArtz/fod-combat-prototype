@@ -2,35 +2,12 @@ const { absorbDamage } = require("./shields");
 
 // damageType ("Physical" or a mastery type such as "Kinetic") lets adaptive shields
 // adapt to what they absorb; leave it out for typeless damage.
-function applyDamage(
-  target,
-  amount,
-  say,
-  onIncapacitated = () => {},
-  damageType = null,
-) {
-  const shieldBefore = target.shields.reduce(
-    (sum, shield) => sum + shield.value,
-    0,
-  );
-  const remaining = absorbDamage(
-    target,
-    amount,
-    damageType,
-    (type, resistance) => {
-      say(
-        `${target.name}'s Adaptive Barrier adapts to ${type} damage (+${resistance}% resistance).`,
-      );
-    },
-  );
-  const absorbedAmount = Math.max(
-    0,
-    Math.min(
-      amount,
-      shieldBefore -
-        target.shields.reduce((sum, shield) => sum + shield.value, 0),
-    ),
-  );
+function applyDamage(target, amount, say, onIncapacitated = () => {}, damageType = null) {
+  const shieldBefore = target.shields.reduce((sum, shield) => sum + shield.value, 0);
+  const remaining = absorbDamage(target, amount, damageType, (type, resistance) => {
+    say(`${target.name}'s Adaptive Barrier adapts to ${type} damage (+${resistance}% resistance).`);
+  });
+  const absorbedAmount = Math.max(0, Math.min(amount, shieldBefore - target.shields.reduce((sum, shield) => sum + shield.value, 0)));
   target.hp = Math.max(0, target.hp - remaining);
   if (target.hp <= 0 && target.alive) {
     const defeatStatuses = { ...target.statuses };
@@ -38,11 +15,7 @@ function applyDamage(
     target.statuses = {};
     target.shields = [];
     say(`${target.name} is incapacitated!`);
-    onIncapacitated(target, defeatStatuses, {
-      requestedAmount: amount,
-      remainingDamage: remaining,
-      absorbedAmount,
-    });
+    onIncapacitated(target, defeatStatuses, { requestedAmount: amount, remainingDamage: remaining, absorbedAmount });
   }
   return remaining;
 }

@@ -22,9 +22,7 @@ const MAX_CR = 100;
 const DEFAULT_MARGIN = 1e-6;
 
 function livingSide(state, side) {
-  return state.actors.filter(
-    (actor) => actor.alive && !actor.summon && actor.side === side,
-  );
+  return state.actors.filter((actor) => actor.alive && !actor.summon && actor.side === side);
 }
 
 function speedOf(actor, effectiveStat) {
@@ -52,20 +50,13 @@ function applyOpeningInitiative(
   { firstSide = "ally", margin = DEFAULT_MARGIN } = {},
 ) {
   if (firstSide !== "ally" && firstSide !== "enemy") {
-    throw new TypeError(
-      `firstSide must be "ally" or "enemy", received ${String(firstSide)}.`,
-    );
+    throw new TypeError(`firstSide must be "ally" or "enemy", received ${String(firstSide)}.`);
   }
   const otherSide = firstSide === "ally" ? "enemy" : "ally";
   const first = fastest(livingSide(state, firstSide), effectiveStat);
   const other = fastest(livingSide(state, otherSide), effectiveStat);
 
-  const none = {
-    applied: false,
-    side: firstSide,
-    deltaTime: 0,
-    opener: first.actor ? first.actor.name : null,
-  };
+  const none = { applied: false, side: firstSide, deltaTime: 0, opener: first.actor ? first.actor.name : null };
   if (!first.actor || !other.actor) return none;
 
   const deltaTime = first.time - other.time + margin;
@@ -75,12 +66,7 @@ function applyOpeningInitiative(
     const speed = speedOf(actor, effectiveStat);
     if (speed > 0) actor.cr += speed * deltaTime;
   }
-  return {
-    applied: true,
-    side: firstSide,
-    deltaTime,
-    opener: first.actor.name,
-  };
+  return { applied: true, side: firstSide, deltaTime, opener: first.actor.name };
 }
 
 module.exports = { applyOpeningInitiative, DEFAULT_MARGIN };

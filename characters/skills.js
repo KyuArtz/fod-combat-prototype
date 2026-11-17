@@ -1,4 +1,4 @@
-// Character skill registry. All Falcon skills are declarative data interpreted by
+// Character and enemy skill registries. Both use declarative data interpreted by
 // core/skillInterpreter.js; controllers remain responsible for choosing targets.
 const { createSkillInterpreter } = require("../core/skillInterpreter");
 const skillData = {
@@ -7,6 +7,8 @@ const skillData = {
   zackry: require("../data/skills/zackry"),
   jazen: require("../data/skills/jazen"),
   zenki: require("../data/skills/zenki"),
+  trainingDrone: require("../data/enemySkills/trainingDrone"),
+  rogueAutomaton: require("../data/enemySkills/rogueAutomaton"),
 };
 
 function createSkills(context) {
@@ -17,8 +19,15 @@ function createSkills(context) {
       interpreter.buildSkills(data),
     ]),
   );
+  const enemySkills = {
+    trainingDrone: skills.trainingDrone,
+    rogueAutomaton: skills.rogueAutomaton,
+  };
+  delete skills.trainingDrone;
+  delete skills.rogueAutomaton;
   return {
     skills,
+    enemySkills,
     summonTurn: interpreter.summonTurn,
     summonDestroyed: interpreter.summonDestroyed,
     onBattleStart: interpreter.onBattleStart,

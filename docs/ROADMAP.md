@@ -54,7 +54,8 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] Replay from seed + party order + recorded decisions (`createDecisionRecorder`, `createScriptedController`).
 - [ ] Combat log export to a file and a command-line replay tool.
 - [ ] Save/load battle snapshots.
-- [ ] Data-driven enemy skills and encounter configuration (Falcon agent skills are complete).
+- [x] Data-driven skills for the Training Drone and Rogue Automaton (see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`).
+- [ ] Data-driven encounter configuration and migration of additional enemy kits.
 
 ## Phase F — Agreed combat-engine sequence
 
@@ -64,7 +65,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] **Step 3: full-battle regression coverage.** Added 27 battle-level tests; full suite at that milestone was 171/171 passing.
 - [x] **Step 4: typed combat events** alongside text logs; see `docs/STEP4_TYPED_COMBAT_EVENTS.md`.
 - [x] **Step 5: headless simulator CLI** for repeatable balance runs; see `docs/STEP5_HEADLESS_SIMULATOR.md`.
-- [ ] After simulator baseline and regression coverage: migrate enemy skills to the shared data/interpreter architecture.
+- [x] **Step 6: data-driven enemy skills** for the Training Drone and Rogue Automaton, using the shared interpreter and preserving existing AI policy.
 
 ### Owner-reference gaps to resolve
 

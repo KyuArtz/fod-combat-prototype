@@ -5,10 +5,7 @@ function discountFor(actor) {
 
 function actualCost(actor, cost) {
   const flat = discountFor(actor);
-  return Math.max(
-    0,
-    cost - flat - (actor.discount ? Math.ceil(cost * 0.1) : 0),
-  );
+  return Math.max(0, cost - flat - (actor.discount ? Math.ceil(cost * 0.1) : 0));
 }
 
 function pay(actor, cost) {

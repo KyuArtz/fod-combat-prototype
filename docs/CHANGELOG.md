@@ -1,3 +1,14 @@
+## 2026-11-16 — Step 6: data-driven enemy skills
+
+- Added declarative skill data for Training Drone Pulse Shot and Rogue Automaton Overload, Scan and Heavy Strike under `data/enemySkills/`.
+- Extended `core/skillInterpreter.js` with a reusable `physicalHit` effect; enemy skills now use the same interpreter and damage application path as Falcon skills.
+- Added enemy skill-set identifiers and a separate enemy skill registry. `ai/enemyAI.js` now reads skill metadata/readiness from that registry and delegates execution to the shared interpreter.
+- Preserved existing AI policy conditions and random-check order; Siege Turret, Recon Drone and Toxic Stalker remain unchanged because no special skill behavior was defined for them.
+- Added `test/enemySkillData.test.js`, validating all four enemy skills through complete headless battles and the existing event/decision pipeline.
+- Added `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`; updated roadmap, project status and AI handoff.
+- **Verification:** `node --test` -> **183 passed, 0 failed**.
+- **Scope note:** encounter configuration and additional enemy skill kits are not part of this milestone.
+
 ## 2026-11-16 — Step 3: full-battle regression coverage
 
 - Added `test/fullBattleRegression.test.js` with 27 battle-level tests.
