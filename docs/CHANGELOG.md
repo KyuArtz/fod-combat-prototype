@@ -21,6 +21,18 @@
 
 # Changelog
 
+## 2026-11-17 — Step 8: encounter progression, waves and reinforcements
+
+- Extended encounter definitions to support ordered waves while preserving legacy `enemies: [...]` single-wave definitions.
+- Added per-instance enemy stat overrides and optional unique instance IDs; archetype definitions are not mutated.
+- Added one-shot `enemyDefeatedCount` reinforcement triggers. Reinforcements enter the existing enemy reserve and use the existing automatic deployment path.
+- Added `EncounterStarted`, `EncounterWaveStarted`, `EncounterWaveCleared`, `ReinforcementsQueued` and `EncounterCompleted` typed events.
+- Added the `onEncounterComplete` callback with reward metadata as an integration hook; no reward inventory or persistent progression is implied.
+- Added the two-wave `siegeBreakthrough` encounter and simulator metrics for waves, reinforcement units and encounter completion.
+- Added focused progression tests and documentation.
+- **Verification:** `node --test` -> **191 passed, 0 failed**. A 10-battle seeded `siegeBreakthrough` simulator smoke run completed 10/10 victories, 2 waves per battle, 2 reinforcement units per battle and 0 rejected decisions (smoke-test sample only).
+
+
 ## 2026-11-16 — Step 5: headless simulator CLI
 
 - Added `tools/simulate.js` to run seeded batches of full battles without terminal prompts, with `threshold`/`legacy` scheduler selection, `player-first`/`speed` opening selection, and `random`/`basic` Falcon controller policies.

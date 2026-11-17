@@ -124,3 +124,15 @@ Run `node --test`. Focused owner-alignment coverage lives in `test/ownerFalconMe
 - Not migrated: enemy encounter configuration and any skills for Siege Turret, Recon Drone or Toxic Stalker; none were present in the existing prototype behavior.
 
 - Step 7: enemy archetypes/stats live in `data/enemies/`; ordered AI policy rules live in `data/enemyAI/`; encounter compositions live in `data/encounters/`. `createBattle({ encounter })` and simulator `--encounter` choose a registered roster. Current formation setup requires five enemy entries.
+
+
+## Step 8 completed — encounter progression, waves and reinforcements
+
+- Encounter definitions are in `data/encounters/`. Legacy `enemies: [...]` definitions remain one-wave compatible; multi-wave definitions use `waves: [{ id, name, enemies }]`.
+- A wave enemy entry may be an archetype ID string or `{ enemy, instanceId?, stats? }`. Numeric stat overrides are validated and merged into a fresh actor; they never mutate archetype data. Use `instanceId` for stable unique IDs when an archetype appears more than once across a multi-wave encounter.
+- Reinforcement groups use `trigger: { type: "enemyDefeatedCount", atLeast }`. Each group triggers once, appends actors to the enemy reserve, and relies on existing automatic reserve deployment. Do not create a second deployment path.
+- `createBattle({ encounter, onEncounterComplete })` and `playHeadless({ encounter, onEncounterComplete })` support the completion callback. Reward values are metadata only; no progression persistence or actual reward awarding exists.
+- Typed events added: `EncounterStarted`, `EncounterWaveStarted`, `EncounterWaveCleared`, `ReinforcementsQueued`, `EncounterCompleted`. Simulator output now reports wave and reinforcement counts.
+- `siegeBreakthrough` is the multi-wave reference encounter. Training Ground and Drone Calibration remain one-wave and preserve their existing roster behavior.
+- Current limits: five enemy entries per wave; only defeat-count reinforcement triggers; reinforcement arrivals use reserve replacement; no save/resume for an in-progress encounter.
+- Verification snapshot: **191 passed, 0 failed**. See `docs/STEP8_ENCOUNTER_PROGRESSION.md`.

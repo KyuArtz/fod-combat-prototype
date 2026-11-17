@@ -34,12 +34,14 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [ ] Define deployment restrictions and unavailable agents.
 - [ ] Define stage-specific active limits.
 - [ ] Add agent selection/management UI beyond terminal selection.
-- [ ] Validate enemy formation and reinforcement behavior.
+- [x] Validate enemy formation and reinforcement behavior through data-driven waves and reserve deployment.
+- [x] Add encounter waves, defeat-triggered reinforcement groups, per-instance stat overrides and completion/reward hooks (Step 8).
 
 ## Phase D — Progression / stage mechanics (future)
 
 - [ ] Agent leveling and experience.
-- [ ] Stage definitions and enemy encounter composition.
+- [x] Stage encounter composition and progression definitions (Steps 7–8).
+- [ ] Stage/level-based enemy scaling and branching stage progression.
 - [ ] Stage rewards and completion tracking.
 - [ ] Persistent agent data separate from battle runtime state.
 - [ ] Progression/save schema and migration strategy.
@@ -67,6 +69,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] **Step 5: headless simulator CLI** for repeatable balance runs; see `docs/STEP5_HEADLESS_SIMULATOR.md`.
 - [x] **Step 6: data-driven enemy skills** for the Training Drone and Rogue Automaton, using the shared interpreter and preserving existing AI policy.
 - [x] **Step 7: data-driven enemy AI and encounters.** Enemy archetypes/stats, rule-based AI policies and encounter rosters are data-defined; see `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.
+- [x] **Step 8: encounter progression, waves and reinforcements.** Added multi-wave progression, defeat-count reinforcement triggers, per-instance stat overrides, completion events and reward metadata hooks; see `docs/STEP8_ENCOUNTER_PROGRESSION.md`.
 
 ### Owner-reference gaps to resolve
 

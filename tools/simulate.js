@@ -57,6 +57,11 @@ function summarizeBattle(battle, index, seed) {
     mpSpentByAllies: 0,
     mpSpentByEnemies: 0,
     rejectedDecisions: 0,
+    wavesStarted: 0,
+    wavesCleared: 0,
+    reinforcementGroups: 0,
+    reinforcementUnits: 0,
+    encounterCompleted: false,
   };
   const perActor = {};
   for (const event of history) {
@@ -70,6 +75,13 @@ function summarizeBattle(battle, index, seed) {
     }
     if (event.type === "BasicAttackUsed") stats.basicAttacks++;
     if (event.type === "DecisionRejected") stats.rejectedDecisions++;
+    if (event.type === "EncounterWaveStarted") stats.wavesStarted++;
+    if (event.type === "EncounterWaveCleared") stats.wavesCleared++;
+    if (event.type === "ReinforcementsQueued") {
+      stats.reinforcementGroups++;
+      stats.reinforcementUnits += event.count;
+    }
+    if (event.type === "EncounterCompleted") stats.encounterCompleted = true;
     if (event.type === "DamageApplied") {
       const side = actorSide(battle.state, event.targetId);
       const hpLoss = Number(event.hpLoss) || 0;
@@ -139,6 +151,11 @@ async function simulateBattles(options = {}) {
       averageHealingToAllies: average("healingToAllies"),
       averageMpSpentByAllies: average("mpSpentByAllies"),
       rejectedDecisions: sum("rejectedDecisions"),
+      averageWavesStarted: average("wavesStarted"),
+      wavesCleared: sum("wavesCleared"),
+      reinforcementGroups: sum("reinforcementGroups"),
+      reinforcementUnits: sum("reinforcementUnits"),
+      completedEncounters: results.filter((row) => row.encounterCompleted).length,
     },
     battles: results,
   };
@@ -150,7 +167,7 @@ function csvEscape(value) {
 }
 
 function renderCsv(report) {
-  const fields = ["index", "seed", "result", "rounds", "turns", "skills", "basicAttacks", "hpDamageToAllies", "hpDamageToEnemies", "shieldAbsorbedByAllies", "shieldAbsorbedByEnemies", "healingToAllies", "healingToEnemies", "mpSpentByAllies", "mpSpentByEnemies", "rejectedDecisions"];
+  const fields = ["index", "seed", "result", "rounds", "turns", "skills", "basicAttacks", "hpDamageToAllies", "hpDamageToEnemies", "shieldAbsorbedByAllies", "shieldAbsorbedByEnemies", "healingToAllies", "healingToEnemies", "mpSpentByAllies", "mpSpentByEnemies", "rejectedDecisions", "wavesStarted", "wavesCleared", "reinforcementGroups", "reinforcementUnits", "encounterCompleted"];
   return [fields.join(","), ...report.battles.map((row) => fields.map((key) => csvEscape(row[key])).join(","))].join("\n") + "\n";
 }
 
@@ -168,13 +185,14 @@ function renderTable(report) {
     `Average HP damage: ${s.averageHpDamageToEnemies.toFixed(1)} to enemies | ${s.averageHpDamageToAllies.toFixed(1)} to allies`,
     `Average ally support: ${s.averageHealingToAllies.toFixed(1)} healing | ${s.averageShieldAbsorbedByAllies.toFixed(1)} shield absorption`,
     `Average ally MP spent: ${s.averageMpSpentByAllies.toFixed(1)} | Rejected decisions: ${s.rejectedDecisions}`,
+    `Encounter progression: ${s.averageWavesStarted.toFixed(2)} average waves | ${s.reinforcementUnits} reinforcement units | ${s.completedEncounters}/${s.battles} completed`,
     "",
     "Per-battle details: --format json for full report or --format csv for tabular rows.",
   ].join("\n");
 }
 
 function usage() {
-  return `Usage: node tools/simulate.js [options]\n\nOptions:\n  -n, --battles N       Number of battles (default 100; max 100000)\n      --seed N          First battle seed (default 1)\n      --scheduler NAME  threshold or legacy (default threshold)\n      --opening NAME    player-first or speed (default player-first)\n      --policy NAME     random or basic player controller (default random)\n      --encounter NAME  trainingGround or droneCalibration (default trainingGround)\n      --format NAME     table, json or csv (default table)\n      --out FILE        Write output to a file instead of stdout\n  -h, --help            Show this help\n\nExamples:\n  node tools/simulate.js --battles 1000 --seed 42\n  node tools/simulate.js -n 250 --policy basic --format csv --out results.csv\n  node tools/simulate.js -n 100 --scheduler legacy --format json --out legacy.json`;
+  return `Usage: node tools/simulate.js [options]\n\nOptions:\n  -n, --battles N       Number of battles (default 100; max 100000)\n      --seed N          First battle seed (default 1)\n      --scheduler NAME  threshold or legacy (default threshold)\n      --opening NAME    player-first or speed (default player-first)\n      --policy NAME     random or basic player controller (default random)\n      --encounter NAME  trainingGround, droneCalibration or siegeBreakthrough (default trainingGround)\n      --format NAME     table, json or csv (default table)\n      --out FILE        Write output to a file instead of stdout\n  -h, --help            Show this help\n\nExamples:\n  node tools/simulate.js --battles 1000 --seed 42\n  node tools/simulate.js -n 250 --policy basic --format csv --out results.csv\n  node tools/simulate.js -n 100 --scheduler legacy --format json --out legacy.json`;
 }
 
 async function main(argv = process.argv.slice(2)) {
