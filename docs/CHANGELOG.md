@@ -179,3 +179,12 @@ For every future milestone, add:
 - Tests run and results.
 - Playtest outcome.
 - Known limitations and next steps.
+
+## Step 7 — data-driven enemy AI and encounters
+
+- Moved all five training enemy archetypes and their combat stats into `data/enemies/` definitions.
+- Moved Training Drone, Rogue Automaton and basic-only AI behavior into declarative rule sets under `data/enemyAI/`.
+- Replaced enemy-specific conditional branches with a reusable policy evaluator in `ai/enemyAI.js`; rule order and conditional RNG consumption preserve the original Training Drone/Rogue Automaton behavior.
+- Added encounter definitions under `data/encounters/`, including the original five-enemy Training Ground and a Drone Calibration variant.
+- Added `createEncounterEnemies()` and an `encounter` option to battles, headless runs and the simulator CLI (`--encounter`).
+- Added validation and regression tests for enemy definitions, AI policies, encounter references and alternate encounter execution.

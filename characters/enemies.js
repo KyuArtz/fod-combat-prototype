@@ -1,5 +1,17 @@
 const { makeActor } = require("./actorFactory");
 
+const enemyDefinitions = {
+  "training-drone": require("../data/enemies/trainingDrone"),
+  "rogue-automaton": require("../data/enemies/rogueAutomaton"),
+  "siege-turret": require("../data/enemies/siegeTurret"),
+  "recon-drone": require("../data/enemies/reconDrone"),
+  "toxic-stalker": require("../data/enemies/toxicStalker"),
+};
+const encounters = {
+  trainingGround: require("../data/encounters/trainingGround"),
+  droneCalibration: require("../data/encounters/droneCalibration"),
+};
+
 function createEnemy(name, stats, mastery = "Kinetic", skillSet = null) {
   return makeActor({
     id: name.toLowerCase().replaceAll(" ", "-"),
@@ -7,65 +19,65 @@ function createEnemy(name, stats, mastery = "Kinetic", skillSet = null) {
     side: "enemy",
     mastery,
     ...(skillSet ? { skillSet } : {}),
+    aiPolicy: "basicOnly",
+    stats: {
+      CritRate: 5, Evasion: 0, masteryBonus: {}, masteryResistance: {}, ...stats,
+    },
+  });
+}
+
+function createEnemyFromDefinition(definition) {
+  if (!definition || !definition.id || !definition.name || !definition.stats) {
+    throw new TypeError("Invalid enemy definition: id, name and stats are required.");
+  }
+  return makeActor({
+    id: definition.id,
+    name: definition.name,
+    side: "enemy",
+    mastery: definition.mastery || "Kinetic",
+    ...(definition.skillSet ? { skillSet: definition.skillSet } : {}),
+    aiPolicy: definition.aiPolicy || "basicOnly",
     stats: {
       CritRate: 5,
       Evasion: 0,
       masteryBonus: {},
       masteryResistance: {},
-      ...stats,
+      ...structuredClone(definition.stats),
     },
   });
 }
 
-function createTrainingEnemies() {
-  return [
-    createEnemy("Training Drone", {
-      HP: 700,
-      MP: 0,
-      ATK: 65,
-      MPow: 50,
-      DEF: 45,
-      RES: 45,
-      SPD: 70,
-    }, "Kinetic", "trainingDrone"),
-    createEnemy("Rogue Automaton", {
-      HP: 850,
-      MP: 0,
-      ATK: 75,
-      MPow: 60,
-      DEF: 55,
-      RES: 50,
-      SPD: 60,
-    }, "Kinetic", "rogueAutomaton"),
-    createEnemy("Siege Turret", {
-      HP: 900,
-      MP: 0,
-      ATK: 90,
-      MPow: 45,
-      DEF: 70,
-      RES: 40,
-      SPD: 35,
-    }),
-    createEnemy("Recon Drone", {
-      HP: 620,
-      MP: 0,
-      ATK: 58,
-      MPow: 70,
-      DEF: 35,
-      RES: 65,
-      SPD: 115,
-      Evasion: 12,
-    }),
-    createEnemy("Toxic Stalker", {
-      HP: 760,
-      MP: 0,
-      ATK: 72,
-      MPow: 85,
-      DEF: 45,
-      RES: 60,
-      SPD: 82,
-    }, "Toxic"),
-  ];
+function createEncounterEnemies(encounterId = "trainingGround") {
+  const encounter = encounters[encounterId];
+  if (!encounter) throw new Error(`Unknown encounter "${encounterId}".`);
+  return encounter.enemies.map((enemyId) => {
+    const definition = enemyDefinitions[enemyId];
+    if (!definition) throw new Error(`Encounter "${encounterId}" references unknown enemy "${enemyId}".`);
+    return createEnemyFromDefinition(definition);
+  });
 }
 
-module.exports = { createEnemy, createTrainingEnemies };
+// Backwards-compatible factory used by existing tests and tooling.
+function createTrainingEnemies() {
+  return createEncounterEnemies("trainingGround");
+}
+
+function validateEncounterData(encounter, definitions = enemyDefinitions) {
+  if (!encounter || typeof encounter.id !== "string" || !Array.isArray(encounter.enemies) || !encounter.enemies.length) {
+    throw new TypeError("Encounter needs an id and a non-empty enemies array.");
+  }
+  for (const enemyId of encounter.enemies) {
+    if (typeof enemyId !== "string" || !definitions[enemyId]) throw new Error(`Encounter "${encounter.id}" references unknown enemy "${enemyId}".`);
+  }
+  return true;
+}
+
+module.exports = {
+  createEnemy,
+  createEnemyFromDefinition,
+  createEncounterEnemies,
+  createTrainingEnemies,
+  validateEncounterData,
+  enemyDefinitions,
+  encounters,
+};

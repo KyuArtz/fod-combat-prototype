@@ -40,7 +40,7 @@ index.js
 | `characters/falcon.js` | Five Falcon playable-agent definitions and F.O.D. mastery types |
 | `characters/enemies.js` | Five training enemy definitions |
 | `characters/skills.js` | Assembles the shared skill registry by building all five Falcon definitions through the interpreter |
-| `ai/enemyAI.js` | Enemy AI: `decide(actor)` chooses and rolls skill chances; `useSkill` executes enemy skills; basic attacks delegate to the shared action resolver; `controller` is the built-in enemy controller |
+| `ai/enemyAI.js` | Evaluates ordered data-defined enemy AI policy rules; executes selected enemy skills through the shared interpreter and basic attacks through the shared action resolver |
 | `ai/targeting.js` | Enemy target-selection rules |
 | `systems/combatReadiness.js` | Legacy CR scheduler and shared CR helpers |
 | `systems/thresholdCombatReadiness.js` | Continuous-time threshold scheduler |
@@ -201,3 +201,11 @@ See `docs/FALCON_SKILL_MIGRATION.md` for this milestone's implementation scope a
 - The threshold scheduler stores `{ time, tieCursor, readyQueue }` in `state.scheduler`.
 - State cloning for preview must use `structuredClone(state)`; JSON serialization breaks actor object references inside the ready queue.
 - Scheduler instances are isolated; their state belongs to each battle state, not a shared module-level queue.
+
+
+### Enemy data and encounters (Step 7)
+
+- `data/enemies/` defines enemy archetype identity, stats, skill-set keys and AI policy keys.
+- `data/enemyAI/` defines ordered rule conditions, actions and fallbacks; `ai/enemyAI.js` is the generic evaluator.
+- `data/encounters/` defines ordered enemy archetype compositions. `characters/enemies.js` validates/resolves these into runtime actors.
+- `createBattle({ encounter })`, `playHeadless({ encounter })` and simulator `--encounter` select registered encounter definitions.

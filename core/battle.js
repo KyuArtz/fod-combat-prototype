@@ -1,6 +1,6 @@
 const readline = require("node:readline");
 const { createEnemyAI } = require("../ai/enemyAI");
-const { createTrainingEnemies } = require("../characters/enemies");
+const { createEncounterEnemies } = require("../characters/enemies");
 const { createFalconParty } = require("../characters/falcon");
 const { createSkills } = require("../characters/skills");
 const { makeActor } = require("../characters/actorFactory");
@@ -22,6 +22,11 @@ const { createBattleMenu } = require("../ui/battleMenu");
 const { createDeploymentSelector } = require("../ui/deploymentSelection");
 const { showParty, showStatus } = require("../ui/statusDisplay");
 const thresholdCombatReadiness = require("../systems/thresholdCombatReadiness");
+const enemyPolicies = {
+  trainingDrone: require("../data/enemyAI/trainingDrone"),
+  rogueAutomaton: require("../data/enemyAI/rogueAutomaton"),
+  basicOnly: require("../data/enemyAI/basicOnly"),
+};
 
 // Returns the roster in the given id order; the ids must be exactly the roster's.
 function orderRoster(roster, ids) {
@@ -51,6 +56,7 @@ function createBattle({
   // Optional party order by actor id (a permutation of the Falcon roster). When
   // given, the interactive formation prompts are skipped.
   partyOrder,
+  encounter = "trainingGround",
 } = {}) {
   if (openingInitiative !== "player-first" && openingInitiative !== "speed") {
     throw new TypeError(
@@ -183,7 +189,7 @@ function createBattle({
   summonDestroyed = skillSet.summonDestroyed;
   passiveHooks = skillSet;
   const battleMenu = createBattleMenu(context);
-  const enemyAI = createEnemyAI({ ...context, skills: enemySkills, ready: cooldowns.ready });
+  const enemyAI = createEnemyAI({ ...context, skills: enemySkills, policies: enemyPolicies, ready: cooldowns.ready });
   const turnRunner = createTurnRunner({
     state,
     events,
@@ -229,7 +235,7 @@ function createBattle({
     const actorsBeforeBattleStart = new Set(state.actors);
     skillSet.onBattleStart(allyRoster);
     const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
-    const enemyRoster = createTrainingEnemies();
+    const enemyRoster = createEncounterEnemies(encounter);
     formation.setupEnemyParty(state, enemyRoster);
     emitCombatEvent(events, "BattleStarted", { seed: state.rng.seed });
     for (const unit of initialSummons) {

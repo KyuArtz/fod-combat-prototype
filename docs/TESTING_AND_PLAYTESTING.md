@@ -6,11 +6,11 @@
 node --test
 ```
 
-Test helpers live in `tools/lib/` (not in `test/`, because Node would run them as tests). The current suite also includes owner-aligned Falcon mechanics, Falcon data validation and shared basic-attack tests.
+Test helpers live in `tools/lib/` (not in `test/`, because Node would run them as tests). The current suite also includes owner-aligned Falcon mechanics, Falcon data validation, shared basic-attack tests, enemy archetype/policy validation and data-defined encounter tests.
 
-## Current verified test inventory (178)
+## Current verified test inventory (187)
 
-Latest full run: `node --test` -> **178 passed, 0 failed**.
+Latest full run: `node --test` -> **187 passed, 0 failed**.
 
 | Suite | Coverage |
 |---|---|
@@ -27,7 +27,8 @@ Latest full run: `node --test` -> **178 passed, 0 failed**.
 | `basicAttack.test.js` (4) | Shared player/enemy basic attack, evasion, retaliation and invalid inputs |
 | `turnViewAndDecisions.test.js` | Legal action validation, skill targeting, view IDs and terminal menu |
 | `controllers.test.js` | Headless battles, controller fuzzing, decision replay and controller injection |
-| `simulator.test.js` (4) | CLI validation, seeded batch metrics, deterministic reports and CSV output |
+| `enemyDataAndEncounter.test.js` (3) | Enemy archetype stats, AI policy definitions, encounter references and alternate encounter execution |
+| `simulator.test.js` (5) | CLI validation, seeded batch metrics, deterministic reports, CSV output and encounter selection |
 
 Golden fixtures in `test/fixtures/golden/` were intentionally regenerated after the owner-reference skill changes. Their new outputs were reviewed alongside focused mechanics tests; they now protect the owner-aligned behavior rather than the superseded prototype skill values.
 
@@ -60,7 +61,7 @@ Golden fixtures in `test/fixtures/golden/` were intentionally regenerated after 
 
 ## Playing without a terminal
 
-`tools/lib/headless.js` exports `playHeadless({ seed, controllers, partyOrder, maxActive, scheduler, openingInitiative, events })`, a full battle with no prompts. `core/controllers.js` provides `createBasicAttackController`, `createRandomController({ seed, allowSwitch })` and `createScriptedController(decisions)`. Use them for scheduler experiments, fuzzing and replays.
+`tools/lib/headless.js` exports `playHeadless({ seed, controllers, partyOrder, maxActive, scheduler, openingInitiative, encounter, events })`, a full battle with no prompts. `core/controllers.js` provides `createBasicAttackController`, `createRandomController({ seed, allowSwitch })` and `createScriptedController(decisions)`. Use them for scheduler experiments, fuzzing and replays.
 
 ## Replaying a battle
 
@@ -134,3 +135,8 @@ See [`STEP3_FULL_BATTLE_REGRESSION.md`](./STEP3_FULL_BATTLE_REGRESSION.md) for t
 ## Step 6 enemy skill migration checks
 
 `test/enemySkillData.test.js` validates the Training Drone and Rogue Automaton data definitions and executes Pulse Shot, Overload, Scan and Heavy Strike through complete headless battles. It checks accepted `SkillUsed` events, no rejected decisions and the expected combat log message for each skill.
+
+
+## Step 7 enemy data and encounter checks
+
+`test/enemyDataAndEncounter.test.js` validates all five enemy archetypes and their AI policy references, validates registered encounter compositions, and completes an alternate Drone Calibration encounter. The simulator accepts `--encounter trainingGround` (default) or `--encounter droneCalibration`; the current battle formation still requires five enemy entries. See `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.

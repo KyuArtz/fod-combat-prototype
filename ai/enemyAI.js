@@ -1,8 +1,29 @@
 const { enemyTarget } = require("./targeting");
 const { findByViewId, viewIdOf } = require("../core/turnView");
 
+function validatePolicy(policy) {
+  if (!policy || typeof policy.id !== "string" || !Array.isArray(policy.rules) || !policy.fallback) {
+    throw new TypeError("Enemy AI policy needs an id, rules array and fallback action.");
+  }
+  for (const [index, rule] of policy.rules.entries()) {
+    if (!Array.isArray(rule.when) || !rule.action || !["skill", "basic"].includes(rule.action.type)) {
+      throw new TypeError(`Invalid rule ${index} in enemy AI policy "${policy.id}".`);
+    }
+    for (const condition of rule.when) {
+      if (!condition || !["skillReady", "hpRatioAtMost", "targetMissingStatus", "chance"].includes(condition.type)) {
+        throw new TypeError(`Unknown condition in enemy AI policy "${policy.id}".`);
+      }
+      if (condition.type === "chance" && !(Number.isFinite(condition.value) && condition.value >= 0 && condition.value <= 1)) {
+        throw new TypeError(`Invalid chance in enemy AI policy "${policy.id}".`);
+      }
+    }
+  }
+  return true;
+}
+
 function createEnemyAI(context) {
-  const { basicAttack, state, random = Math.random, skills = {}, ready } = context;
+  const { basicAttack, state, random = Math.random, skills = {}, policies = {}, ready } = context;
+  for (const policy of Object.values(policies)) validatePolicy(policy);
   const actorSkills = (actor) => skills[actor.skillSet] || [];
   const findSkill = (actor, key) => actorSkills(actor).find((skill) => skill.key === key);
   const enemySkillReady = (actor, key) => {
@@ -25,39 +46,38 @@ function createEnemyAI(context) {
     return skill.run(actor, { target });
   }
 
-  // AI policy remains intentionally separate from skill rules: this preserves
-  // the prototype's original skill priorities and random-roll order.
+  function conditionPasses(condition, actor, target) {
+    switch (condition.type) {
+      case "skillReady": return enemySkillReady(actor, condition.key);
+      case "hpRatioAtMost": return actor.hp / actor.stats.HP <= condition.value;
+      case "targetMissingStatus": return Boolean(target && !target.statuses[condition.key]);
+      // Keep chance evaluation in rule order: earlier failed predicates consume no RNG.
+      case "chance": return random() < condition.value;
+      default: return false;
+    }
+  }
+
+  function actionDecision(action, targetId) {
+    if (action.type === "skill") {
+      return { type: "enemySkill", skillKey: action.key, ...(action.target === "current" ? { targetId } : {}) };
+    }
+    return { type: "basic", ...(action.target === "current" ? { targetId } : {}) };
+  }
+
+  // Policy rules are data; this evaluator only implements the reusable condition/action vocabulary.
   function decide(actor) {
     const target = enemyTarget(state, actor, context.alive);
     if (!target) return { type: "pass" };
     const targetId = viewIdOf(state, target);
+    const policy = policies[actor.aiPolicy || "basicOnly"] || policies.basicOnly;
+    if (!policy) throw new Error(`No enemy AI policy registered for "${actor.aiPolicy}".`);
 
-    if (
-      actor.skillSet === "trainingDrone" &&
-      enemySkillReady(actor, "pulseShot") &&
-      random() < 0.25
-    ) {
-      return { type: "enemySkill", skillKey: "pulseShot", targetId };
-    }
-
-    if (actor.skillSet === "rogueAutomaton") {
-      const hpRatio = actor.hp / actor.stats.HP;
-      if (hpRatio <= 0.5 && enemySkillReady(actor, "overload")) {
-        return { type: "enemySkill", skillKey: "overload" };
-      }
-      if (
-        !target.statuses.defDown &&
-        enemySkillReady(actor, "scan") &&
-        random() < 0.35
-      ) {
-        return { type: "enemySkill", skillKey: "scan", targetId };
-      }
-      if (enemySkillReady(actor, "heavyStrike") && random() < 0.4) {
-        return { type: "enemySkill", skillKey: "heavyStrike", targetId };
+    for (const rule of policy.rules) {
+      if (rule.when.every((condition) => conditionPasses(condition, actor, target))) {
+        return actionDecision(rule.action, targetId);
       }
     }
-
-    return { type: "basic", targetId };
+    return actionDecision(policy.fallback, targetId);
   }
 
   async function enemyTurn(actor) {
@@ -79,4 +99,4 @@ function createEnemyAI(context) {
   };
 }
 
-module.exports = { createEnemyAI };
+module.exports = { createEnemyAI, validatePolicy };

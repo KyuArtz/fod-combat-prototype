@@ -117,8 +117,10 @@ Run `node --test`. Focused owner-alignment coverage lives in `test/ownerFalconMe
 
 - Enemy skill data is in `data/enemySkills/trainingDrone.js` and `data/enemySkills/rogueAutomaton.js`; both are built by `characters/skills.js` using the same `core/skillInterpreter.js` as Falcon.
 - The shared interpreter now includes `physicalHit` for declarative physical attacks.
-- Enemy actors carry `skillSet` (`trainingDrone` / `rogueAutomaton`); `createSkills()` returns a separate `enemySkills` registry.
-- `ai/enemyAI.js` retains policy/target selection and random skill chance checks, but reads skill metadata/readiness from the registry and delegates effects to the interpreter. Preserve the existing RNG decision order unless intentionally changing golden behavior.
+- Enemy actors are instantiated from `data/enemies/` definitions and carry `aiPolicy` plus an optional `skillSet` (`trainingDrone` / `rogueAutomaton`); `createSkills()` returns a separate `enemySkills` registry.
+- `ai/enemyAI.js` evaluates ordered declarative policy rules from `data/enemyAI/`; policy data controls skill priorities/chances and the evaluator selects a target. Skill metadata/readiness comes from the enemy skill registry and effects run through the shared interpreter. Preserve rule order and conditional RNG evaluation unless intentionally changing golden behavior. Encounter compositions are registered in `data/encounters/` and selected with `createBattle({ encounter })` or simulator `--encounter`.
 - Current enemy definitions: Pulse Shot (1.35 physical, no crit, CD 3); Overload (+25% ATK, 2 turns, CD 5); Scan (DEF −15%, 2 turns, CD 4); Heavy Strike (1.5 physical, CD 3). All cost 0 MP.
-- Focused full-battle validation: `test/enemySkillData.test.js`. Full suite: 183/183. Details: `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`.
+- Focused full-battle validation: `test/enemySkillData.test.js`. Full suite: 187/187. Details: `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`.
 - Not migrated: enemy encounter configuration and any skills for Siege Turret, Recon Drone or Toxic Stalker; none were present in the existing prototype behavior.
+
+- Step 7: enemy archetypes/stats live in `data/enemies/`; ordered AI policy rules live in `data/enemyAI/`; encounter compositions live in `data/encounters/`. `createBattle({ encounter })` and simulator `--encounter` choose a registered roster. Current formation setup requires five enemy entries.
