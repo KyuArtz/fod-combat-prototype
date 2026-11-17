@@ -24,8 +24,11 @@ function fixedRoster(scheduler, turns = 800) {
   const state = createBattleState({ seed: 1 });
   const allies = createFalconParty();
   state.actors = [...allies, ...createTrainingEnemies()];
-  const speed = Object.fromEntries(state.actors.map((actor) => [actor.name, actor.stats.SPD]));
   const stat = (actor, name) => effectiveStat(state, actor, name);
+  // Effective SPD (includes passives such as Elishia's Biotech Overdrive).
+  const speed = Object.fromEntries(
+    state.actors.map((actor) => [actor.name, stat(actor, "SPD")]),
+  );
   const order = [];
   for (let index = 0; index < turns; index++) {
     const actor = scheduler.nextActor(state, stat);
@@ -41,24 +44,38 @@ function fixedRoster(scheduler, turns = 800) {
     if (due < previous - 1e-9) inversions++;
     previous = Math.max(previous, due);
   }
-  const totalSpeed = Object.values(speed).reduce((sum, value) => sum + value, 0);
+  const totalSpeed = Object.values(speed).reduce(
+    (sum, value) => sum + value,
+    0,
+  );
   let worst = 0;
   for (const name of Object.keys(speed)) {
-    worst = Math.max(worst, Math.abs((taken[name] || 0) - (turns * speed[name]) / totalSpeed));
+    worst = Math.max(
+      worst,
+      Math.abs((taken[name] || 0) - (turns * speed[name]) / totalSpeed),
+    );
   }
   const allyNames = new Set(allies.map((actor) => actor.name));
   const allyTurns = order.filter((name) => allyNames.has(name)).length;
   return {
     "time-order errors": inversions,
-    "back-to-back": order.filter((name, i) => i && name === order[i - 1]).length,
+    "back-to-back": order.filter((name, i) => i && name === order[i - 1])
+      .length,
     "worst count error": Number(worst.toFixed(1)),
     "ally turn share %": Number(((100 * allyTurns) / turns).toFixed(1)),
-    "first 5": order.slice(0, 5).map((name) => name.split(" ")[0]).join(" > "),
+    "first 5": order
+      .slice(0, 5)
+      .map((name) => name.split(" ")[0])
+      .join(" > "),
   };
 }
 
 async function playBattle({ scheduler, seed, openingInitiative }) {
-  const { picks, result, rounds } = await playHeadless({ scheduler, seed, openingInitiative });
+  const { picks, result, rounds } = await playHeadless({
+    scheduler,
+    seed,
+    openingInitiative,
+  });
   return { picks, result, rounds };
 }
 
@@ -69,7 +86,11 @@ async function seededRow(schedulerName, openingInitiative, battles) {
   let rounds = 0;
   let allyFirst = 0;
   for (let seed = 1; seed <= battles; seed++) {
-    const run = await playBattle({ scheduler: SCHEDULERS[schedulerName], seed, openingInitiative });
+    const run = await playBattle({
+      scheduler: SCHEDULERS[schedulerName],
+      seed,
+      openingInitiative,
+    });
     turns += run.picks.length;
     rounds += run.rounds;
     if (run.result === "VICTORY") victories++;
@@ -95,10 +116,17 @@ async function main() {
 
   console.log("\nPart 1 - real 5v5 roster, scheduler only (800 turns)");
   console.table(
-    Object.fromEntries(Object.entries(SCHEDULERS).map(([name, scheduler]) => [name, fixedRoster(scheduler)])),
+    Object.fromEntries(
+      Object.entries(SCHEDULERS).map(([name, scheduler]) => [
+        name,
+        fixedRoster(scheduler),
+      ]),
+    ),
   );
 
-  console.log(`Part 2 - ${battles} seeded 5v5 battles per row, scripted player (basic attack on the first enemy every turn)`);
+  console.log(
+    `Part 2 - ${battles} seeded 5v5 battles per row, scripted player (basic attack on the first enemy every turn)`,
+  );
   const rows = [];
   for (const [name, opening] of [
     ["legacy", "speed"],

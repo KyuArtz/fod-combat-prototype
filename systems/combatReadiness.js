@@ -31,7 +31,9 @@ function nextActor(state, effectiveStat) {
     if (ready.length) return ready[0];
 
     if (!deployed.some((actor) => effectiveStat(actor, "SPD") > 0)) {
-      throw new Error("Cannot schedule a turn: all deployed units have zero SPD.");
+      throw new Error(
+        "Cannot schedule a turn: all deployed units have zero SPD.",
+      );
     }
     advanceCR(state, effectiveStat);
   }

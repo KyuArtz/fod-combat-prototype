@@ -1,93 +1,65 @@
 # Project Status & Snapshot
 
 **Project:** F.O.D. (Fragments of Decay) Combat Prototype  
-**Documentation baseline:** 2026-11-07  
-**Branch workflow:** `main` (stable) / `development` (experiments)  
-**Primary runtime:** Node.js CLI  
-**Current scheduler choice:** Threshold scheduler  
-**Latest reported playtest formation:** 5 active Falcon agents vs. 5 active enemies
+**Snapshot:** 2026-11-16  
+**Runtime:** Node.js CommonJS CLI  
+**Preferred scheduler:** threshold / continuous-time  
+**Development encounter:** 5 Falcon agents vs. 5 training enemies
 
 ## Executive summary
 
-The prototype is a modular, terminal-driven turn-based combat sandbox. It currently includes:
+F.O.D. is a modular, terminal-driven turn-based combat prototype. The engine has a controller-driven turn loop, seeded/replayable randomness, an event bus, two schedulers, shared basic-attack resolution, and data-driven Falcon skills.
+
+The five Falcon skill sets have now been aligned to the owner's character reference. The project bundles only the selected character stats, skill definitions and stat descriptions in `references/characterTerraData.js`; the full original reference file and format are intentionally excluded. The readable design reference is `docs/OWNER_SKILL_REFERENCE.md`.
+
+## Current engine capabilities
 
 - Five playable Falcon agents and five training enemies.
-- Formation selection, active party/reserve representation, manual party switching, and automatic reserve replacement.
-- Physical and mastery damage calculation, critical hits, evasion, shields, status effects, cooldowns, MP recovery, and summon support.
-- Enemy AI with basic attacks and several enemy-specific actions.
-- Two readiness schedulers: legacy fixed-step CR and threshold/continuous-time readiness.
-- An environment-variable switch for scheduler A/B testing.
-- Seeded, replayable randomness (`FOD_SEED`, `Seed: N` printed at battle start) and an event bus that carries battle log lines (`Log` events).
-- A player-first opening initiative for PvE (`FOD_OPENING=player-first|speed`), so the player acts first even though the fastest 5v5 unit is an enemy.
-- Controller-driven turns: the terminal menu, enemy AI, summons, scripted replays and random/headless players share one view-and-decision interface, with decision validation and exact replays from recorded decisions.
-- Automated tests for threshold scheduler correctness, tie handling, cloned-state preview, and related battle integration.
+- Active/reserve formation, switching and automatic replacement.
+- Physical/mastery damage, critical hits, evasion, shields, adaptive resistance, status effects, cooldowns and MP recovery.
+- Threshold and legacy readiness schedulers; threshold is preferred.
+- Player-first PvE opening initiative (`FOD_OPENING=player-first|speed`).
+- Seeded battle randomness (`FOD_SEED`) and replay from recorded decisions.
+- Controller-driven turns: terminal player menu, enemy AI, summon automation, scripted and random controllers.
+- One shared basic-attack execution path in `core/actionResolver.js`.
+- Five owner-aligned Falcon skill definitions in `data/skills/`, run by `core/skillInterpreter.js`.
+- Falcon passive hooks for turn start/end, damage taken, targeting, battle start and defeat events.
+- Typed, structured combat events alongside the human-readable `Log` stream; validated event contracts cover turns, rounds, actions, skills, damage, healing, shields, statuses, summons, formation changes, incapacitation and battle completion.
 
-## Current configuration (latest user-reported development state)
+## Current configuration
 
 | Side | Roster | Active | Reserve |
 |---|---:|---:|---:|
 | Falcon | 5 | 5 | 0 |
-| Enemies | 5 | 5 | 0 |
+| Training enemies | 5 | 5 | 0 |
 
-Reserve/formation functionality is **not removed**. It is simply unused when all five Falcon roster members are deployed. It becomes relevant again if the roster grows beyond the active limit or the active limit is lowered.
+Reserve mechanics remain implemented; they are simply unused in the standard 5v5 setup.
 
-## Snapshot reconciliation (resolved 2026-11-07)
+## Owner-reference alignment
 
-An earlier snapshot had Falcon `maxActive: 4`. The current source sets `maxActive: 5` for both `party` and `enemyParty`, matching the 5v5 development setup. Source and documentation now agree.
+All 20 Falcon active skills now use the owner's names, costs, cooldowns and described mechanics where the source provides enough information. The earlier prototype-only substitutions were replaced.
 
-## Scheduler decision
+The following details remain deliberately deferred because the source does not provide the required mechanics:
 
-**Keep threshold as the preferred implementation.** The legacy scheduler remains available for comparison and regression experiments.
+1. Meo-v9 Final Protocol expiry EMP damage scaling.
+2. Nanotech Singularity enemy DoT amount/scaling.
+3. Catalyst Wing HP/targetability/destruction trigger for Evalete's emergency shield.
+4. A general skill-hit accuracy model; Zackry's +10 Accuracy currently applies to the existing basic-attack accuracy check.
 
-Reported comparison (Claude's test report; not independently reproduced here):
+The engine's base Falcon stats remain the prototype values in `characters/falcon.js`; this milestone aligns skills, not the full stat sheet.
 
-| Measure | Legacy | Threshold | Claude patch |
-|---|---:|---:|---:|
-| Incorrect time-order selections, real roster / 440 turns | 351 | 0 | 0 |
-| Zenki turns / 440 | 132 | 110 | 110 |
-| Random-roster back-to-back turns per 100 | 1.14 | 0.05 | 0.05 |
-| Worst random turn-count error vs SPD share | 15.4 | 0.52 | 0.52 |
-| Formation-order independent | No | Yes | No |
-| Equal-SPD tie rotation | No | Yes | No |
+## Verification
 
-The project owner selected the threshold scheduler and incorporated improvements inspired by the comparison rather than replacing the project scheduler with Claude's patch.
+The test suite includes scheduler, determinism, controller, golden replay, basic-attack, Elishia mechanics, Falcon data validation, owner-aligned skill mechanics and full-battle regression coverage. Run `node --test` from the project root. Latest verification: **178 passed, 0 failed** (includes simulator CLI tests). The exact suite breakdown is in `docs/TESTING_AND_PLAYTESTING.md`.
 
-## Legacy vs threshold on the 5v5 roster (measured 2026-11-07)
+Golden transcripts were intentionally refreshed because the owner-aligned skill mechanics change battle output and outcomes. They are regression fixtures, not immutable evidence that the old prototype values were correct.
 
-Reproduce with `node tools/compareSchedulers.js`.
+## Known limitations / next work
 
-| Measure (real 10-unit roster, scheduler only, 800 turns) | Legacy | Threshold |
-|---|---:|---:|
-| Time-order errors | 706 | 0 |
-| Worst turn-count error vs SPD share | 27.6 (Zenki) | 0.6 |
-| Ally share of turns (SPD share 54.6%) | 51.8% | 54.6% |
-| Zenki / Recon Drone / Elishia turns | 138 / 137 / 69 | 111 / 116 / 96 |
-
-| Measure (120 seeded battles, scripted player) | Legacy | Threshold, speed order | Threshold, player-first |
-|---|---:|---:|---:|
-| Player acts first | 100% (array-order accident) | 0% (Recon Drone opens) | 100% |
-| Average rounds | 10.36 | 8.96 | 8.56 |
-| Average turns | 97.8 | 93.2 | 92.3 |
-| Ally share of turns | 61.1% | 64.1% | 65.0% |
-
-The scripted player always picks option 1, so only differences between columns are meaningful, not absolute win rates.
-
-## Verification performed against uploaded ZIP
-
-Command: `node --test`
-
-Result: **84 tests passed, 0 failed** (2026-11-07): scheduler 18, RNG 8, event bus 7, battle determinism 7, opening initiative 12, golden transcripts 5, turn view and decisions 14, controllers 13.
-
-The determinism tests play a full scripted 5v5 battle to completion, but the suite still does not prove every battle, AI, skill, damage, or formation scenario is correct.
-
-5v5 scheduler check (threshold, real 10-unit roster, 800 scheduler turns): 0 time-order inversions, 0 back-to-back turns, worst turn-count error 0.64 versus SPD share; allies take 54.6% of turns, equal to their SPD share (435 of 797 total SPD). The fastest unit in the game is an enemy (Recon Drone, SPD 115), ahead of Zenki (110).
-
-## Known limitations / caveats
-
-- No package manifest is present in the inspected ZIP; commands use Node's built-in runtime/test runner.
-- Combat is currently terminal/CLI driven.
-- Battles are reproducible from the printed seed plus the party order and the accepted player decisions (`ActionChosen` events). A recorded battle replays exactly through `createScriptedController`; a hand-typed replay still needs the same menu choices.
-- Player and enemy `basic` attacks resolve through different code, and summon behaviour is a single automatic decision, until skills become data-driven (step 3).
-- Skill balance and SPD economy need additional playtesting.
-- Full 5v5 end-to-end regression tests are not yet represented by the scheduler test suite.
-- Leveling, stage progression, reward systems, and persistent agent progression are future work—not implemented features.
+- Combat remains CLI-driven; no GUI exists.
+- Enemy skills remain implemented in `ai/enemyAI.js` and are not data-driven.
+- The three underspecified owner mechanics above need owner clarification.
+- Step 3 full-battle regression coverage is complete for the current Falcon engine scope. See `docs/STEP3_FULL_BATTLE_REGRESSION.md`.
+- Step 4 typed combat events is complete. See `docs/STEP4_TYPED_COMBAT_EVENTS.md` for event names, payload contracts, ordering and known limits.
+- Step 5 headless simulator CLI is complete. It runs the same engine across deterministic seed ranges and emits table, JSON or CSV reports; see `docs/STEP5_HEADLESS_SIMULATOR.md` for metrics and caveats.
+- Leveling, stage progression, rewards and persistent saves are not implemented.

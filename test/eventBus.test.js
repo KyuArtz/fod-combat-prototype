@@ -82,3 +82,23 @@ test("a throwing handler propagates so a broken view fails loudly", () => {
   });
   assert.throws(() => bus.emit("A"), /view crashed/);
 });
+
+test("combat event contracts require documented fields and clone-safe payloads", () => {
+  const { EVENT_FIELDS, emitCombatEvent } = require("../core/combatEvents");
+  const bus = createEventBus({ record: true });
+  assert.ok(EVENT_FIELDS.TurnStarted.includes("staggered"));
+  assert.throws(() => emitCombatEvent(bus, "TurnStarted", { actorId: "zenki" }), /missing required field/);
+  assert.throws(() => emitCombatEvent(bus, "NotACombatEvent", {}), /Unknown combat event/);
+  assert.throws(() => emitCombatEvent(bus, "TurnStarted", {
+    actorId: "zenki", side: "ally", round: 1, staggered: false, callback() {},
+  }), /structured-clone-safe/);
+  emitCombatEvent(bus, "TurnStarted", { actorId: "zenki", side: "ally", round: 1, staggered: false });
+  assert.equal(bus.history[0].type, "TurnStarted");
+  assert.ok(Object.isFrozen(bus.history[0]));
+
+  const decision = { type: "skill", skillKey: "railshot" };
+  bus.on("ActionChosen", (event) => { event.decision.skillKey = "tampered"; });
+  emitCombatEvent(bus, "ActionChosen", { actorId: "zenki", kind: "player", round: 1, decision });
+  assert.equal(decision.skillKey, "railshot", "event observers receive an isolated copy");
+  assert.ok(Object.isFrozen(bus.history.at(-1).decision), "nested event payloads are immutable during dispatch");
+});

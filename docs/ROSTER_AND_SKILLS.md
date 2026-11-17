@@ -17,52 +17,60 @@ Falcon agents receive a +15 mastery bonus for their assigned mastery in the curr
 
 ## Falcon playable roster (source snapshot)
 
+Base stats from `characters/falcon.js`. Elishia's Biotech Overdrive temporarily raises effective SPD to 104 and Evasion to 20 for her first three turns; see her entry below.
+
 | Agent | Mastery | HP | MP | ATK | MPow | DEF | RES | SPD | Crit | Evasion |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Elishia | Nanotech | 1100 | 130 | 95 | 150 | 75 | 82 | 15 | 10 |
-| Evalete | Energy | 1450 | 110 | 85 | 120 | 110 | 95 | 10 | 5 |
-| Zackry | Electromagnetic | 1250 | 120 | 100 | 135 | 90 | 100 | 10 | 5 |
-| Jazen | Kinetic | 1350 | 100 | 125 | 95 | 100 | 75 | 10 | 5 |
-| Zenki | Anomaly | 1000 | 150 | 80 | 145 | 70 | 110 | 10 | 5 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Elishia | Nanotech | 1100 | 130 | 95 | 150 | 75 | 82 | 95 | 15 | 10 |
+| Evalete | Energy | 1450 | 110 | 85 | 120 | 110 | 95 | 75 | 10 | 5 |
+| Zackry | Electromagnetic | 1250 | 120 | 100 | 135 | 90 | 100 | 85 | 10 | 5 |
+| Jazen | Kinetic | 1350 | 100 | 125 | 95 | 100 | 75 | 70 | 10 | 5 |
+| Zenki | Anomaly | 1000 | 150 | 80 | 145 | 70 | 110 | 110 | 10 | 5 |
 
 ## Training enemy roster (source snapshot)
 
 | Enemy | HP | MP | ATK | MPow | DEF | RES | SPD | Crit | Evasion | Mastery |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Training Drone | 700 | 0 | 65 | 50 | 45 | 45 | 70 | 0 | Kinetic |
-| Rogue Automaton | 850 | 0 | 75 | 60 | 55 | 50 | 60 | 0 | Kinetic |
-| Siege Turret | 900 | 0 | 90 | 45 | 70 | 40 | 0 | 0 | Kinetic |
-| Recon Drone | 620 | 0 | 58 | 70 | 35 | 65 | 115 | 12 | Kinetic |
-| Toxic Stalker | 760 | 0 | 72 | 85 | 45 | 60 | 82 | 0 | Toxic |
+| Training Drone | 700 | 0 | 65 | 50 | 45 | 45 | 70 | 5 | 0 | Kinetic |
+| Rogue Automaton | 850 | 0 | 75 | 60 | 55 | 50 | 60 | 5 | 0 | Kinetic |
+| Siege Turret | 900 | 0 | 90 | 45 | 70 | 40 | 35 | 5 | 0 | Kinetic |
+| Recon Drone | 620 | 0 | 58 | 70 | 35 | 65 | 115 | 5 | 12 | Kinetic |
+| Toxic Stalker | 760 | 0 | 72 | 85 | 45 | 60 | 82 | 5 | 0 | Toxic |
 
-Enemy default critical rate is 5%; Recon Drone has 12 Evasion. (The table's Crit value is omitted/0 where not explicitly overridden; factory defaults should be checked when tuning.)
+(The SPD column was missing from an earlier version of these tables; the values above are read from the source.)
 
-## Skill implementation notes
+## Owner-aligned Falcon skill reference
 
-Skill functions are in `characters/skills.js`. Each skill entry is declarative: `key`, `cost`, `targeting` (`enemy`, `ally`, `none`, or `mode` for Nano Swarm's three sub-choices) and a `run(actor, { target, mode })` that executes an already-validated choice. Skills never prompt; controllers (terminal menu, GUI, AI, scripts) choose targets and modes. The current source includes:
+The canonical skill source is the original character reference supplied by the owner; the project bundles only selected stats, skills and stat descriptions in `references/characterTerraData.js`. See `docs/OWNER_SKILL_REFERENCE.md` for the full extracted text and implementation caveats. The data modules in `data/skills/` mirror that source where the engine has enough information to implement the behavior.
 
-### Elishia
-- **Nano Swarm** — 20 MP, cooldown 2; can repair an ally (15% max HP), disrupt an enemy (Nanotech damage at 0.6 power + SPD −10% for 2 turns), or create a decoy (+15 Evasion for 2 turns).
-- **Adaptive Barrier** — 25 MP, cooldown 3; shield equal to 25% target max HP for 2 turns.
-- **Meo-9** — 35 MP, cooldown 4; deploys a 350 HP summon for 3 summon turns; automatic cover fire at 0.5 physical power.
-- **Nanotech Singularity** — 65 MP, cooldown 6; 3 turns of allied ATK +15%, allied SPD +10% (implemented via Singularity state), 5% max-HP healing at ally turn start, and enemy SPD −10%.
+| Agent | Passive | Skill 1 | Skill 2 | Skill 3 | Ultimate |
+|---|---|---|---|---|---|
+| Elishia | Biotech Overdrive | Nano Swarm (20 MP / 2) | Adaptive Barrier (25 / 3) | Meo-v9 (35 / 4) | Nanotech Singularity (60 / 6) |
+| Evalete | Catalyst Protocol | Sentinel Pulse (20 / 2) | Triage Infusion (25 / 3) | Guardian Field (40 / 4) | Catalyst Overdrive (60 / 6) |
+| Zackry | Overwatch Protocol | Tactical Mark (20 / 2) | Command Uplink (30 / 3) | EMP Burst (35 / 4) | Full Spectrum Assault (60 / 6) |
+| Jazen | Recoil Dampeners | Impact Grenade (20 / 2) | Breach Charge (30 / 3) | Reinforced Plating (25 / 3) | Cataclysmic Payload (60 / 6) |
+| Zenki | Unobserved | Railshot (20 / 2) | Cipher Tag (25 / 3) | Ghost Protocol (35 / 4) | Zero Hour Execution (60 / 6) |
 
-### Evalete
-- **Sentinel Pulse** — 20 MP, cooldown 2; Energy damage at 0.75 power and DEF −15% for 2 turns.
-- **Aegis Protocol** — 25 MP, cooldown 3; shield equal to 30% target max HP for 2 turns.
-- **Guardian Field** — 40 MP, cooldown 4; active allies gain shield equal to 15% max HP and DEF +15% for 2 turns.
-- **Catalyst Overdrive** — 65 MP, cooldown 6; active allies gain DEF +25%, retaliation 25%, and shield equal to 20% max HP for 3 turns.
+### Implemented passive mechanics
 
-### Zackry
-- **Tactical Mark** — 20 MP, cooldown 2; target receives +15% incoming damage for 3 turns.
-- **Command Uplink** — 30 MP, cooldown 3; active allies gain ATK +15% for 3 turns.
-- Other skills should be read from the source file before being documented as final; skill catalog is still prototype data.
+- **Elishia — Biotech Overdrive:** at battle start, +10% SPD and +10 Evasion for 3 of Elishia's turns; after each Nanotech skill, her next skill costs 8 less MP (minimum 0).
+- **Evalete — Catalyst Protocol:** Catalyst Wing support lasts 12 turns (currently tracked in Evalete actor turns); every second Evalete turn all active allies recover 8% Max HP and gain a 10% Max HP shield for 2 turns. The destruction-triggered 15% shield is pending because the owner reference does not define Wing HP/targetability.
+- **Zackry — Overwatch Protocol:** +10 Accuracy for the next basic attack of the relevant ally; Tactical Mark reduces target Evasion by 10. Marked enemy defeat restores 5% Max MP to active allies.
+- **Jazen — Recoil Dampeners:** after a hit exceeding 10% Max HP, ATK +10% for 2 turns, stacking to +20%; immune to Stagger/action delay.
+- **Zenki — Unobserved:** +12 Evasion while no enemy skill has targeted him during the current round; being hit suppresses the passive until his next turn. Basic attacks against him also suffer the passive's 10-point Accuracy penalty.
 
-## Enemy AI actions (current source)
+### Implementation notes and explicit gaps
 
-- Training Drone: 25% chance to use Pulse Shot when ready (cooldown 3; 1.35 physical power).
-- Rogue Automaton: at ≤50% HP may Overload (ATK +25%, 2 turns; cooldown 5); may Scan (target DEF −15%, 2 turns; cooldown 4; 35% chance); may Heavy Strike (1.5 physical power; cooldown 3; 40% chance).
-- Other enemies generally use basic attacks in current AI.
-- Enemy target selection: Training Drone targets the first living non-summon ally; other enemies target the ally with the lowest HP ratio.
+- All five active skill sets are declarative and use `core/skillInterpreter.js`; `characters/skills.js` assembles the registry.
+- Shared interpreter effects include healing, healing-over-time, cleansing, shields, stat changes, area mastery damage, damage-taken/dealt modifiers, marks, stagger, conditional attacks and summons.
+- **Meo-v9 Final Protocol:** expiry EMP structure is described but damage scaling is absent; no multiplier is guessed.
+- **Nanotech Singularity DoT:** the owner reference does not give damage amount/scaling; the rest of Singularity is implemented.
+- **Catalyst Wing destruction shield:** 15% Max HP for 4 turns is known, but no Wing HP/targetability/destruction trigger is specified.
+- **Accuracy:** the current prototype has an accuracy check on basic attacks; the +10 bonus is consumed there. No global skill-hit accuracy system has been invented.
+- Base stats in `characters/falcon.js` are still prototype values. This milestone aligns skills and passives only; a separate owner-approved stat sync is required before replacing them.
 
-**Important:** This file is a source-backed quick reference, not a full design bible. Re-check skill code whenever mechanics change.
+## Skill execution architecture
+
+A skill entry contains `key`, `name`, `cost`, `cooldown`, `targeting`, optional `tags`, `effects` and a result `message`. The controller selects the action/target; `core/skillInterpreter.js` checks readiness, pays MP, sets cooldowns, applies effects and triggers passive hooks. Skills never prompt directly.
+
+`node --test` validates data, effect behavior, passive lifecycle and seeded battle regressions. See `docs/ARCHITECTURE.md`, `docs/COMBAT_MECHANICS.md` and `docs/TESTING_AND_PLAYTESTING.md`.

@@ -50,6 +50,9 @@ function formatStatus(key, effect) {
   if (key === "tacticalMark") {
     return `Incoming damage +${effect.amount}% (${formatDuration(effect.turns)})`;
   }
+  if (key === "adaptiveResistance") {
+    return `${effect.damageType} resistance +${effect.amount}% (${formatDuration(effect.turns)})`;
+  }
   if (!Number.isFinite(effect.amount)) {
     return `${label} (${formatDuration(effect.turns)})`;
   }
@@ -76,9 +79,7 @@ function formatShields(shields) {
 
 function showActor(actor, output) {
   const hpPercent =
-    actor.stats.HP > 0
-      ? Math.floor((actor.hp / actor.stats.HP) * 100)
-      : 0;
+    actor.stats.HP > 0 ? Math.floor((actor.hp / actor.stats.HP) * 100) : 0;
   const shieldTotal = actor.shields.reduce(
     (total, shield) => total + shield.value,
     0,
@@ -88,9 +89,7 @@ function showActor(actor, output) {
     .filter(([, turns]) => turns > 0)
     .map(([skill, turns]) => `${humanize(skill)} ${turns}t`);
 
-  output.log(
-    `  ${actor.name} — ${actor.alive ? "ACTIVE" : "DOWN"}`,
-  );
+  output.log(`  ${actor.name} — ${actor.alive ? "ACTIVE" : "DOWN"}`);
   output.log(
     `    HP ${actor.hp}/${actor.stats.HP} (${hpPercent}%) | MP ${actor.mp}/${actor.stats.MP} | CR ${actor.cr}/100`,
   );
@@ -114,7 +113,9 @@ function showActor(actor, output) {
 }
 
 function showStatus(state, output = console) {
-  output.log("\n============================== BATTLE STATUS ==============================");
+  output.log(
+    "\n============================== BATTLE STATUS ==============================",
+  );
   const groups = [
     {
       title: "ALLIES",
@@ -142,14 +143,20 @@ function showStatus(state, output = console) {
     }
     for (const actor of group.actors) showActor(actor, output);
   }
-  output.log("\n============================================================================");
+  output.log(
+    "\n============================================================================",
+  );
 }
 
 function showParty(party, output = console, title = "PARTY") {
-  output.log(`\n=== ${title} ==============================================================================`);
+  output.log(
+    `\n=== ${title} ==============================================================================`,
+  );
   output.log("\nACTIVE:");
   party.active.forEach((actor, index) => {
-    output.log(`${index + 1}. ${actor.name} - ${actor.hp}/${actor.stats.HP} HP`);
+    output.log(
+      `${index + 1}. ${actor.name} - ${actor.hp}/${actor.stats.HP} HP`,
+    );
   });
   output.log("\nRESERVE:");
   if (!party.reserve.length) output.log("None");

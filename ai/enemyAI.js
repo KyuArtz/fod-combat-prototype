@@ -6,12 +6,11 @@ function createEnemyAI(context) {
     addStatus,
     applyDamage,
     calculatePhysical,
-    effectiveStat,
+    basicAttack,
     say,
     state,
     random = Math.random,
   } = context;
-  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const enemySkillReady = (actor, skill) =>
     actor.alive && (actor.cooldowns[skill] || 0) <= 0;
   const setCooldown = (actor, skill, turns) => {
@@ -22,7 +21,7 @@ function createEnemyAI(context) {
     if (!target || !enemySkillReady(actor, "pulseShot")) return false;
     setCooldown(actor, "pulseShot", 3);
     const outcome = calculatePhysical(actor, target, 1.35, false);
-    applyDamage(target, outcome.damage);
+    applyDamage(target, outcome.damage, "Physical");
     say(
       `${actor.name} fires PULSE SHOT at ${target.name} for ${outcome.damage} damage!`,
     );
@@ -33,7 +32,7 @@ function createEnemyAI(context) {
     if (!target || !enemySkillReady(actor, "heavyStrike")) return false;
     setCooldown(actor, "heavyStrike", 3);
     const outcome = calculatePhysical(actor, target, 1.5);
-    applyDamage(target, outcome.damage);
+    applyDamage(target, outcome.damage, "Physical");
     say(
       `${actor.name} unleashes HEAVY STRIKE on ${target.name} for ${outcome.damage} damage!`,
     );
@@ -91,34 +90,6 @@ function createEnemyAI(context) {
     }
   }
 
-  // The enemy basic attack: evasion check, damage, and retaliation.
-  function basicAttack(actor, target) {
-    const dodge = clamp(effectiveStat(target, "Evasion"), 0, 75);
-    if (random() * 100 < dodge) {
-      say(`${actor.name} attacks ${target.name}, but ${target.name} evades!`);
-      return true;
-    }
-
-    const retaliation = target.statuses.retaliation;
-    const outcome = calculatePhysical(actor, target);
-    applyDamage(target, outcome.damage);
-    say(
-      `${actor.name} attacks ${target.name} for ${outcome.damage} Physical damage${outcome.crit ? " (CRIT)" : ""}.`,
-    );
-
-    if (retaliation && target.alive && actor.alive) {
-      const counterDamage = Math.max(
-        1,
-        Math.floor((outcome.damage * retaliation.amount) / 100),
-      );
-      applyDamage(actor, counterDamage);
-      say(
-        `${target.name} retaliates against ${actor.name} for ${counterDamage} damage!`,
-      );
-    }
-    return true;
-  }
-
   // Decide-only: returns a decision and rolls the same skill-use chances, in the
   // same order, as the original single-function enemy turn. Nothing is executed.
   function decide(actor) {
@@ -159,7 +130,10 @@ function createEnemyAI(context) {
   async function enemyTurn(actor) {
     const decision = decide(actor);
     if (decision.type === "pass") return;
-    const target = decision.targetId === undefined ? undefined : findByViewId(state, decision.targetId);
+    const target =
+      decision.targetId === undefined
+        ? undefined
+        : findByViewId(state, decision.targetId);
     if (decision.type === "basic") basicAttack(actor, target);
     else useSkill(actor, decision.skillKey, target);
   }

@@ -1,6 +1,93 @@
+## 2026-11-16 — Step 3: full-battle regression coverage
+
+- Added `test/fullBattleRegression.test.js` with 27 battle-level tests.
+- Exercised all 20 owner-aligned Falcon active skills through real turn selection, decision validation and battle resolution.
+- Added encounter coverage for all five Falcon actors, Jazen Taunt against built-in enemy AI, Breach Charge Stagger, manual reserve switching and deterministic replay, automatic reserve deployment, victory/defeat checks, and shield/cooldown timing.
+- Updated project status, roadmap, AI handoff and testing documentation.
+- **Verification:** `node --test` -> **171 passed, 0 failed**.
+- **Scope:** no enemy skill migration or undocumented owner mechanic invention in this step. Manual balance playtesting remains outstanding.
+- **Next:** Step 4, typed combat lifecycle events alongside text logs.
+
 # Changelog
 
+## 2026-11-16 — Step 5: headless simulator CLI
+
+- Added `tools/simulate.js` to run seeded batches of full battles without terminal prompts, with `threshold`/`legacy` scheduler selection, `player-first`/`speed` opening selection, and `random`/`basic` Falcon controller policies.
+- Added aggregate and per-battle balance metrics: outcomes/win rate, rounds, actor turns, skills/basic attacks, HP damage received by side, shield absorption, healing, MP spent and rejected decisions. JSON includes per-actor received-damage/support details; CSV provides one row per battle.
+- Extended `tools/lib/headless.js` with selectable deterministic player policies and a recordable event bus by default. Player-policy randomness uses its own seeded RNG and does not perturb battle RNG.
+- Added `test/simulator.test.js` for CLI validation, report shape, deterministic batches and CSV output.
+- Documented CLI options and interpretation caveats in `docs/STEP5_HEADLESS_SIMULATOR.md`; updated README, roadmap, project status and AI handoff.
+- **Sample run:** 100 random-policy battles, threshold scheduler, seeds 20261116–20261215: 100 victories, 0 defeats; 4.64 average rounds and 73.7 average actor turns. This is a reproducible sample, not a balance conclusion.
+- **Verification:** `node --test` -> **178 passed, 0 failed**.
+- **Known limitation:** the current `DamageApplied` event lacks source actor identity, so the simulator reports target-side/target-actor damage received rather than source-attributed damage dealt.
+- **Next:** review several simulator baselines, then proceed with data-driven enemy skills after confirming encounter and event contracts.
+
+## 2026-11-16 — Step 4: typed combat events and compact reference bundle
+
+- Added `core/combatEvents.js` as the typed event vocabulary and validation boundary, with required-field checks and structured-clone-safe payloads.
+- Added typed battle, round and turn lifecycle events; skill/basic action, damage, healing, shield, status, incapacitation, summon, reserve-deployment and battle-completion events alongside the existing `Log` stream.
+- Routed existing formation, initiative, accepted-action, rejected-decision and log events through the same event contract.
+- Added battle-level event regression coverage and contract validation tests; event emission does not change RNG progression or terminal output.
+- Added `docs/STEP4_TYPED_COMBAT_EVENTS.md` with the event catalogue, ordering rules, limitations and integration guidance.
+- Replaced the full original JSON in the project `references/` folder with `characterTerraData.js`, containing only selected character stats, skill definitions and stat descriptions. The original file and original format are not included in updated full ZIPs.
+- **Verification:** `node --test` -> **174 passed, 0 failed**.
+- **Next:** Step 5, headless simulator CLI for balance runs.
+
+## 2026-11-16 — Owner-reference Falcon skill engine alignment
+
+- Used the owner-provided `characterTerraData.json` as the authoritative implementation source and added `docs/OWNER_SKILL_REFERENCE.md` as the readable source-derived skill specification. The project bundle was subsequently reduced to the selected JS extract.
+- Replaced prototype Falcon skill names, costs, cooldowns and descriptions with the owner's initial skill reference for all five Falcon agents.
+- Implemented supported passives and mechanics: Elishia's 3-turn battle-start SPD/Evasion buff, flat 8 MP discount and Nanotech effects; Evalete's 12-turn Catalyst Wing pulse; Zackry's Tactical Mark, Command Uplink, EMP Burst and Overwatch behavior; Jazen's Recoil Dampeners, Stagger, Taunt and damage effects; Zenki's Unobserved, Railshot, Cipher Tag, Ghost Protocol and Zero Hour.
+- Added shared interpreter handlers and passive lifecycle callbacks, including HOT, cleanse, conditional stats, damage-taken/dealt modifiers, stagger skip and mark defeat rewards. Status and shield durations now tick after the affected actor completes their turn, preserving the full specified number of turns.
+- Replaced Meo-v9's prototype revive behavior with the owner's Emergency Field: heal the lowest-HP-ratio living ally below 25% Max HP for 10% Max HP.
+- Explicitly deferred mechanics whose required numbers/triggers are absent from the owner source: Meo-v9 Final Protocol EMP scaling, Singularity DoT scaling and Catalyst Wing destruction trigger. Zackry's +10 Accuracy is wired to basic attacks only; general skill-hit accuracy remains future work.
+- Added `test/ownerFalconMechanics.test.js` and updated Falcon data, validation and Elishia tests. Golden fixtures were intentionally regenerated after focused mechanics checks.
+- **Verification:** `node --test` -> **144/144 passing**. Five terminal transcripts and six Elishia-focused golden scenarios were intentionally regenerated and pass.
+- **Next agreed step:** full-battle regression coverage (victory/defeat, all Falcon kits/passives, AI targeting, status duration and reserve transitions).
+
 This changelog records notable project decisions and implementation milestones. It is not a substitute for Git history.
+
+## 2026-11-16 — Shared player/enemy basic-attack execution
+
+- Moved the complete basic-attack execution path into `core/actionResolver.js`: evasion, physical damage, combat log output, and retaliation now live together.
+- Simplified `core/turnRunner.js`: every validated `basic` decision calls the same resolver; it no longer branches between player and enemy implementations.
+- Removed the duplicate enemy basic-attack implementation from `ai/enemyAI.js`. Enemy AI still chooses when to attack and which target to select; its `basicAttack` and direct `enemyTurn` interfaces delegate to the shared resolver for compatibility.
+- Preserved existing combat behavior: enemy attacks check ally Evasion (0–75%) and can trigger ally Retaliation; player attacks retain their previous no-dodge/no-retaliation behavior. The enemy evasion RNG draw remains in place even at 0% Evasion so seeded battle sequences do not drift.
+- Added `test/basicAttack.test.js` with focused tests for evasion, retaliation, player-side compatibility and invalid inputs.
+- **Verification:** `node --test` -> **147/147 passing**. All five original terminal golden transcripts and six Elishia golden scenarios remain unchanged and pass.
+
+## 2026-11-16 — Step 3 (Falcon roster): complete data-driven skill migration
+
+- Added `data/skills/evalete.js`, `zackry.js`, `jazen.js` and `zenki.js`; each character's four skills now use declarative effect data.
+- Replaced the remaining imperative skill functions in `characters/skills.js` with a small registry assembler. All five Falcon skill sets now use `core/skillInterpreter.js`.
+- Extended the interpreter with shared hitMastery and area mastery damage, self/allied/enemy status effects, self/allied shields, pre-effect announcements, and survivor-only status application. Validation covers the new effect types and targeting constraints.
+- Preserved the existing MP costs, cooldowns, damage multipliers, statuses, shield values and action targeting. The five terminal golden transcripts and six Elishia scenario goldens were not regenerated; they still pass unchanged.
+- Added `test/falconSkillData.test.js` to validate each migrated definition, pin all 16 migrated skills' costs/cooldowns and exercise each through the shared interpreter.
+- **Tests:** `node --test` -> **143/143 passing** (original 140 plus 3 new migration tests).
+- **Remaining step-3 scope:** enemy skills are still implemented in `ai/enemyAI.js`; this change migrates the five Falcon playable agents only.
+
+## 2026-11-09 — Step 3 (Elishia): data-driven skills, then the roster design ideas
+
+**Branch:** `development` (not committed at time of writing)
+
+**Phase A: migration with identical behavior.**
+- Before touching skills, recorded 6 Elishia-dense golden scenarios from the old imperative code (`tools/lib/elishiaScenarios.js`, `test/goldenElishia.test.js`): Elishia rotates through every skill and Nano Swarm mode in 5v5 and 3-active-plus-reserve battles.
+- Added `core/skillInterpreter.js` (effects, passive hooks, summon behavior, load-time validation) and `data/skills/elishia.js`. `characters/skills.js` builds Elishia's registry from data; her imperative functions were removed. `summonTurn` replaced `meoTurn`.
+- Result: all 11 golden recordings (5 terminal transcripts + 6 Elishia-dense) matched byte for byte on the first run. 21 new tests (`test/skillData.test.js`) pin MP/cooldown values, validation errors and interpreter behavior.
+
+**Phase B: the roster JSON's Elishia ideas, MP and cooldowns unchanged (20/2, 25/3, 35/4, 65/6).**
+- Passive **Biotech Overdrive**: +10% SPD (effective 104) and +10 Evasion, stored on the actor (`passive.statMods`, read by `effectiveStat`), surviving incapacitation. Skills are tagged Nanotech so each triggers the next-skill MP discount.
+- **Adaptive Barrier**: damage now carries a type (`Physical` or a mastery type) through `applyDamage`; an adaptive shield that absorbs damage gives the target 15% resistance to that type for the barrier's remaining turns (announced once per type change).
+- **EB's Drone: Meo-9** (renamed from "Meo-9" to the roster title): scan (+10% damage from Elishia to enemies while it lives; no stacking), stabilize (once per deployment, instead of attacking, revives a downed ally still on the field at 15% Max HP), EMP on destruction (Electromagnetic, 100% of its MPow to all enemies, SPD −15% for 1 turn). **Nanotech Singularity** raises cover fire to 75% and the scan bonus by another +10%, and announces the amplification after its own message.
+- Added `battle.dealDamage` (test and tool hook), `systems/shields.js` adaptive support, `ui/statusDisplay.js` label for adaptive resistance.
+- 29 new tests (`test/elishiaMechanics.test.js`) including full-battle integration. Three deliberate sabotages (scan disabled, passive not attached, a cost changed in the data) are all caught.
+- Goldens regenerated (intentional change); the recordings contain no NaN/undefined/error text. In the Elishia-dense scenarios victories are unchanged and rounds move by at most one.
+- Updated tests that assumed the old numbers: opening-initiative tests and `tools/compareSchedulers.js` now use effective SPD (Elishia's is 104).
+- **Scheduler numbers re-measured** (see `docs/PROJECT_STATUS.md`): threshold still 0 time-order errors; legacy 673.
+- **Tests:** `node --test` -> **140/140 passing**.
+- **Known limitation:** enemies never target summons (`ai/targeting.js`), so Meo-9's EMP is dormant in normal play (tested through `battle.dealDamage`).
+- **Docs:** fixed the misaligned stat tables in `docs/ROSTER_AND_SKILLS.md` (SPD column was missing); added a roster-JSON sync status section. `characterTerraData.json` was **not** modified (Elishia's JSON text is still accurate; the other four agents' JSON blocks stay outdated until finalized).
+- **Next:** decide how enemies may target summons; balance review of the prototype-filled numbers; migrate the next agent.
 
 ## 2026-11-07 — Step 2: controller interface, decisions and replays
 

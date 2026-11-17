@@ -9,6 +9,13 @@
 // propagates the error to the emitter, so a broken view fails loudly instead of
 // silently desyncing from the engine.
 
+function deepFreeze(value, seen = new Set()) {
+  if (!value || typeof value !== "object" || seen.has(value)) return value;
+  seen.add(value);
+  for (const child of Object.values(value)) deepFreeze(child, seen);
+  return Object.freeze(value);
+}
+
 function createEventBus({ record = false } = {}) {
   const handlersByType = new Map();
   const anyHandlers = new Set();
@@ -42,7 +49,7 @@ function createEventBus({ record = false } = {}) {
       throw new TypeError("Event type must be a non-empty string.");
     }
     // type and seq always win over anything in the payload.
-    const event = { ...payload, type, seq: ++seq };
+    const event = deepFreeze({ ...payload, type, seq: ++seq });
     if (record) history.push(event);
     // Copy before iterating so handlers may unsubscribe while an event is dispatched.
     for (const handler of [...(handlersByType.get(type) || [])]) handler(event);
@@ -53,4 +60,4 @@ function createEventBus({ record = false } = {}) {
   return { on, onAny, emit, history };
 }
 
-module.exports = { createEventBus };
+module.exports = { createEventBus, deepFreeze };

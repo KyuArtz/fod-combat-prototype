@@ -24,13 +24,19 @@ function checkTarget(action, decision, targets) {
 }
 
 function validateDecision(view, decision) {
-  if (!decision || typeof decision !== "object" || typeof decision.type !== "string") {
+  if (
+    !decision ||
+    typeof decision !== "object" ||
+    typeof decision.type !== "string"
+  ) {
     return fail("malformed-decision");
   }
 
   switch (decision.type) {
     case "basic": {
-      const action = view.actions.find((candidate) => candidate.type === "basic");
+      const action = view.actions.find(
+        (candidate) => candidate.type === "basic",
+      );
       if (!action) return fail("action-not-available");
       return checkTarget(action, decision, action.targets) || ok();
     }
@@ -38,12 +44,16 @@ function validateDecision(view, decision) {
     case "skill":
     case "enemySkill": {
       const action = view.actions.find(
-        (candidate) => candidate.type === decision.type && candidate.key === decision.skillKey,
+        (candidate) =>
+          candidate.type === decision.type &&
+          candidate.key === decision.skillKey,
       );
       if (!action) return fail("unknown-skill");
       if (!action.usable) return fail("skill-unavailable");
       if (action.targeting === "mode") {
-        const mode = (action.modes || []).find((candidate) => candidate.id === decision.mode);
+        const mode = (action.modes || []).find(
+          (candidate) => candidate.id === decision.mode,
+        );
         if (!mode) return fail("invalid-mode");
         if (mode.targeting === "none") return ok();
         return checkTarget(action, decision, mode.targets) || ok();
@@ -53,9 +63,13 @@ function validateDecision(view, decision) {
     }
 
     case "switch": {
-      const action = view.actions.find((candidate) => candidate.type === "switch");
+      const action = view.actions.find(
+        (candidate) => candidate.type === "switch",
+      );
       if (!action) return fail("action-not-available");
-      const reserve = action.reserves.find((member) => member.id === decision.reserveId);
+      const reserve = action.reserves.find(
+        (member) => member.id === decision.reserveId,
+      );
       if (!reserve || !reserve.alive) return fail("invalid-reserve");
       if (!action.active.some((member) => member.id === decision.activeId)) {
         return fail("invalid-slot");

@@ -2,7 +2,9 @@ const { createBattle } = require("./core/battle");
 const legacyReadiness = require("./systems/combatReadiness");
 const thresholdReadiness = require("./systems/thresholdCombatReadiness");
 
-function getReadinessScheduler(name = process.env.FOD_SCHEDULER || "threshold") {
+function getReadinessScheduler(
+  name = process.env.FOD_SCHEDULER || "threshold",
+) {
   if (name === "legacy") return legacyReadiness;
   if (name === "threshold") return thresholdReadiness;
   throw new Error(
@@ -10,9 +12,13 @@ function getReadinessScheduler(name = process.env.FOD_SCHEDULER || "threshold") 
   );
 }
 
-function getOpeningInitiative(name = process.env.FOD_OPENING || "player-first") {
+function getOpeningInitiative(
+  name = process.env.FOD_OPENING || "player-first",
+) {
   if (name === "player-first" || name === "speed") return name;
-  throw new Error(`Unknown FOD_OPENING "${name}". Use "player-first" or "speed".`);
+  throw new Error(
+    `Unknown FOD_OPENING "${name}". Use "player-first" or "speed".`,
+  );
 }
 
 async function main() {

@@ -1,4 +1,12 @@
 const { makeActor } = require("./actorFactory");
+const skillData = {
+  elishia: require("../data/skills/elishia"),
+  evalete: require("../data/skills/evalete"),
+  zackry: require("../data/skills/zackry"),
+  jazen: require("../data/skills/jazen"),
+  zenki: require("../data/skills/zenki"),
+};
+const elishiaSkills = skillData.elishia;
 
 const TYPES = [
   "Energy",
@@ -17,6 +25,7 @@ function falconMember(id, name, mastery, stats) {
     name,
     side: "ally",
     mastery,
+    passive: structuredClone(skillData[id].passive),
     stats: {
       CritRate: 10,
       Evasion: 5,
@@ -36,6 +45,8 @@ function createFalconParty() {
       name: "Elishia",
       side: "ally",
       mastery: "Nanotech",
+      // Biotech Overdrive: its stat modifiers are read by effectiveStat.
+      passive: structuredClone(elishiaSkills.passive),
       stats: {
         HP: 1100,
         MP: 130,

@@ -15,7 +15,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] Scheduler injection and `FOD_SCHEDULER` A/B selection.
 - [x] Scheduler tests for time ordering, ties, cloned previews, state isolation.
 - [x] Reconcile source snapshot with latest 5v5 configuration.
-- [ ] Full 5v5 battle integration/regression tests (partial: determinism tests play a full scripted 5v5 battle; victory/defeat variants, skills, AI, and reserve transitions are not yet asserted individually).
+- [x] Full-battle integration/regression tests for all Falcon skills, Taunt/Stagger AI behavior, victory/defeat, reserve replacement/switching and deterministic replay (see `docs/STEP3_FULL_BATTLE_REGRESSION.md`).
 
 ## Phase B — Battle balance
 
@@ -26,7 +26,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [ ] Review damage/defense/resistance scaling.
 - [ ] Evaluate enemy target selection and action variety.
 - [x] Add deterministic RNG/seed option for reproducible simulations (`FOD_SEED`, `state.rng`).
-- [ ] Add combat analytics summary (actions, damage, healing, resource use).
+- [x] Add headless simulator CLI and combat analytics summary (actions, HP damage received, healing, shields, MP use); source-attributed damage remains a known event-schema limitation.
 
 ## Phase C — Agent management
 
@@ -50,18 +50,29 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [ ] GUI battle view.
 - [ ] Turn-order preview using cloned battle state.
 - [x] Event bus carrying `Log` events (step 1).
+- [x] Typed combat lifecycle/action events with validated, clone-safe payloads (step 4).
 - [x] Replay from seed + party order + recorded decisions (`createDecisionRecorder`, `createScriptedController`).
 - [ ] Combat log export to a file and a command-line replay tool.
 - [ ] Save/load battle snapshots.
-- [ ] Data-driven skill and encounter configuration.
+- [ ] Data-driven enemy skills and encounter configuration (Falcon agent skills are complete).
 
-## Phase F — Engine/view separation (planned order)
+## Phase F — Agreed combat-engine sequence
 
-- [x] Step 1: seeded RNG and event bus.
-- [x] Step 2: controller interface; the terminal menu and enemy AI are controllers, with headless, random and scripted controllers, decision validation and exact replays (ADR-011, ADR-012).
-- [ ] Step 3: data-driven skills with an effect interpreter, migrated one skill at a time with old-vs-new golden tests (same seed, compare HP/shields/statuses).
-- [ ] Step 4: typed events (`TurnStarted`, `DamageDealt`, ...) alongside text logs.
-- [ ] Step 5: headless simulator CLI for balance runs (building blocks exist: `tools/lib/headless.js`, random and basic-attack controllers).
+- [x] Step 1: migrate Falcon skills to data-driven definitions and a shared interpreter.
+- [x] Step 2: unify player/enemy basic-attack execution in `core/actionResolver.js`.
+- [x] Owner-reference alignment: implement all sufficiently specified Falcon skills/passives from the owner-provided character reference (selected extract: `references/characterTerraData.js`); document source gaps rather than inventing values.
+- [x] **Step 3: full-battle regression coverage.** Added 27 battle-level tests; full suite at that milestone was 171/171 passing.
+- [x] **Step 4: typed combat events** alongside text logs; see `docs/STEP4_TYPED_COMBAT_EVENTS.md`.
+- [x] **Step 5: headless simulator CLI** for repeatable balance runs; see `docs/STEP5_HEADLESS_SIMULATOR.md`.
+- [ ] After simulator baseline and regression coverage: migrate enemy skills to the shared data/interpreter architecture.
+
+### Owner-reference gaps to resolve
+
+- [ ] Meo-v9 Final Protocol EMP damage scaling.
+- [ ] Nanotech Singularity enemy DoT amount/scaling.
+- [ ] Catalyst Wing HP/targetability/destruction trigger.
+- [ ] Decide whether to add a general skill-hit accuracy model beyond basic attacks.
+- [ ] Separately decide when to sync base Falcon stats from the owner-provided character reference into `characters/falcon.js`.
 
 ## Release/merge gate
 

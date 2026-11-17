@@ -59,9 +59,15 @@ After the actor acts:
 
 ## Damage
 
-The damage module supports physical and mastery damage, power multipliers, defense/resistance, mastery bonus/resistance, criticals, and target tactical-mark amplification. The exact formula is defined in `systems/damage.js`; treat that source as canonical if this document and implementation differ.
+The damage module supports physical and mastery damage, power multipliers, defense/resistance, mastery bonus/resistance, criticals, target tactical-mark amplification, adaptive resistance, and an outside bonus multiplier (Meo-9's scan). The exact formula is defined in `systems/damage.js`; treat that source as canonical if this document and implementation differ.
 
 Damage application consumes shields before HP. Downed actors are marked and may trigger formation replacement.
+
+**Damage types.** Every hit carries a type: `Physical` (basic attacks, physical skills, enemy attacks, retaliation) or a mastery type (Energy, Kinetic, Electromagnetic, Toxic, Nuclear, Nanotech, Cryogenic, Anomaly). Typeless damage is possible but cannot trigger adaptation.
+
+**Adaptive Barrier.** A shield created with `adaptive` remembers the last damage type it absorbed. When it absorbs damage of a type, the shielded unit gets the status `adaptiveResistance { damageType, amount: 15, turns: the shield's remaining turns }`, announced once per type change. Later damage of that type is multiplied by 0.85 (after DEF or mastery resistance). The newest absorbed type replaces the old one. The status ends with the barrier's duration even if the shield was used up earlier.
+
+**Meo-9 scan.** While a summon with a `scan` rule is alive, the damage its owner deals to enemies is multiplied by 1.10 (1.20 during Nanotech Singularity); several summons do not stack, and only the owner benefits.
 
 ## Opening initiative
 
@@ -73,11 +79,11 @@ All combat randomness (critical hits, enemy evasion checks, enemy skill-use chan
 
 ## Evasion
 
-Enemy basic attacks check target effective Evasion, clamped between 0 and 75, then roll against it. Evasion is currently implemented in enemy basic-attack behavior; do not assume every skill or damage path checks evasion.
+The shared basic-attack resolver checks effective Evasion for enemy attacks against allies. Player basic attacks normally do not roll against enemy Evasion, but Zackry's +10 Accuracy token is consumed by the recipient's next basic attack and reduces the target's Evasion chance when an enemy has Evasion. Zenki's Unobserved adds +12 Evasion while no enemy skill has targeted him during the current round; when an enemy basic-attacks him, the attack also receives the passive's 10-point Accuracy penalty. General mastery-skill hit accuracy is not implemented.
 
 ## Status effects
 
-Statuses are stored by key on each actor. A status can modify a stat by percentage (Evasion uses additive points). Durations decrement at turn start and expire at zero. The effective-stat function also applies the global Singularity SPD bonus to allies while active.
+Statuses are stored by key on each actor. Percentage stat modifiers multiply; Evasion uses additive points. Status and shield durations decrement after the affected actor completes their turn; an effect applied during that actor’s current turn does not immediately consume a duration turn. Statuses can also carry damage-taken/dealt modifiers, healing-over-time, accuracy/evasion penalties, and passive metadata. Singularity's SPD bonus is a normal timed ally status; its 5% Max HP recovery is applied at each ally turn start while the field is active.
 
 ## Cooldowns and MP
 
@@ -95,4 +101,6 @@ Skills check MP and cooldown readiness before paying. Skill payment consumes MP 
 
 ## Summon
 
-Meo-9 is an allied temporary actor. It is scheduled like other deployed actors, attacks automatically on its turn, and expires after its configured number of summon turns. It is excluded from ordinary party formation and victory/defeat survival checks.
+Meo-v9 is an allied temporary actor defined in `data/skills/elishia.js`. It is scheduled like other deployed actors and expires after three summon turns. While alive it increases Elishia's damage to enemies by 10% (20% during Singularity), and cover fire deals 50% of its ATK (75% during Singularity). At its turn it first checks for a living ally below 25% Max HP; if found, Emergency Field heals the lowest-HP-ratio eligible ally for 10% Max HP instead of attacking. It does not revive incapacitated allies.
+
+The owner reference describes a Final Protocol EMP on deployment expiry but does not provide damage scaling. The expiry EMP is intentionally not implemented until the owner supplies that value. Catalyst Wing destruction behavior for Evalete is similarly deferred because the reference does not specify the Wing's HP/targetability.
