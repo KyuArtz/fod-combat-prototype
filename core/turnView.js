@@ -18,14 +18,10 @@ function viewIdOf(state, actor) {
 
 function findByViewId(state, viewId) {
   if (typeof viewId !== "string") return null;
-  const deployed = state.actors.find(
-    (actor) => viewIdOf(state, actor) === viewId,
-  );
+  const deployed = state.actors.find((actor) => viewIdOf(state, actor) === viewId);
   if (deployed) return deployed;
   return (
-    [...state.party.reserve, ...state.party.active].find(
-      (actor) => actor.id === viewId,
-    ) || null
+    [...state.party.reserve, ...state.party.active].find((actor) => actor.id === viewId) || null
   );
 }
 
@@ -41,13 +37,7 @@ function summarize(state, actor) {
 }
 
 function partyMember(actor) {
-  return {
-    id: actor.id,
-    name: actor.name,
-    hp: actor.hp,
-    maxHp: actor.stats.HP,
-    alive: actor.alive,
-  };
+  return { id: actor.id, name: actor.name, hp: actor.hp, maxHp: actor.stats.HP, alive: actor.alive };
 }
 
 // Which kind of controller plays this actor. Mirrors the original turn-engine
@@ -59,14 +49,7 @@ function controllerKindOf(actor) {
   return null;
 }
 
-function buildTurnView({
-  state,
-  actor,
-  skills,
-  describeEnemySkills,
-  ready,
-  alive,
-}) {
+function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive }) {
   const allies = alive(state, "ally").map((unit) => summarize(state, unit));
   const enemies = alive(state, "enemy").map((unit) => summarize(state, unit));
   const kind = controllerKindOf(actor);
@@ -104,10 +87,7 @@ function buildTurnView({
         key: skill.key,
         name: skill.name,
         category:
-          skill.category ||
-          (index === actorSkills.length - 1
-            ? "Ultimate"
-            : `Skill ${index + 1}`),
+          skill.category || (index === actorSkills.length - 1 ? "Ultimate" : `Skill ${index + 1}`),
         cost: skill.cost,
         cooldown: actor.cooldowns[skill.key] || 0,
         usable: ready(actor, skill.key, skill.cost),
@@ -132,8 +112,7 @@ function buildTurnView({
     });
   } else if (kind === "enemy") {
     const foeIds = allies.filter((unit) => !unit.summon).map((unit) => unit.id);
-    if (foeIds.length)
-      view.actions.push({ type: "basic", targeting: "ally", targets: foeIds });
+    if (foeIds.length) view.actions.push({ type: "basic", targeting: "ally", targets: foeIds });
     for (const skill of describeEnemySkills(actor)) {
       view.actions.push({
         type: "enemySkill",
@@ -152,10 +131,4 @@ function buildTurnView({
   return view;
 }
 
-module.exports = {
-  buildTurnView,
-  controllerKindOf,
-  findByViewId,
-  summarize,
-  viewIdOf,
-};
+module.exports = { buildTurnView, controllerKindOf, findByViewId, summarize, viewIdOf };

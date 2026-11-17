@@ -4,9 +4,7 @@ function removeInactiveSummons(state) {
   const activeActors = state.actors.filter(
     (actor) =>
       !actor.summon ||
-      (actor.alive &&
-        Number.isFinite(actor.summonTurns) &&
-        actor.summonTurns > 0),
+      (actor.alive && Number.isFinite(actor.summonTurns) && actor.summonTurns > 0),
   );
   const removedCount = state.actors.length - activeActors.length;
   state.actors = activeActors;
@@ -37,19 +35,12 @@ function createTurnEngine(context) {
 
   function turnStart(actor) {
     actor._isTakingTurn = true;
-    const staggered = Boolean(
-      actor.statuses.staggered || actor.statuses.actionDelay,
-    );
+    const staggered = Boolean(actor.statuses.staggered || actor.statuses.actionDelay);
     if (staggered) {
       delete actor.statuses.staggered;
       delete actor.statuses.actionDelay;
     }
-    emitCombatEvent(events, "TurnStarted", {
-      actorId: actor.id,
-      side: actor.side,
-      round: state.round,
-      staggered,
-    });
+    emitCombatEvent(events, "TurnStarted", { actorId: actor.id, side: actor.side, round: state.round, staggered });
     onTurnStart(actor);
     actor.mp = Math.min(
       actor.stats.MP,
@@ -86,9 +77,7 @@ function createTurnEngine(context) {
 
   async function runRounds() {
     const actedThisRound = new Set();
-    output.log(
-      `\n========== ROUND ${state.round} ==================================================================\n`,
-    );
+    output.log(`\n========== ROUND ${state.round} ==================================================================\n`);
     emitCombatEvent(events, "RoundStarted", { round: state.round });
     onRoundStart();
     while (true) {
@@ -117,11 +106,7 @@ function createTurnEngine(context) {
       tickShields(actor);
       actor._isTakingTurn = false;
       onTurnEnd(actor);
-      emitCombatEvent(events, "TurnEnded", {
-        actorId: actor.id,
-        side: actor.side,
-        round: state.round,
-      });
+      emitCombatEvent(events, "TurnEnded", { actorId: actor.id, side: actor.side, round: state.round });
       combatReadiness.resetCR(actor);
       actedThisRound.add(actor);
       removeInactiveSummons(state);

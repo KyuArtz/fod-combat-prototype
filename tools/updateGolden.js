@@ -11,10 +11,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const zlib = require("node:zlib");
 const { playTranscript, SCENARIOS } = require("./lib/transcript");
-const {
-  ELISHIA_SCENARIOS,
-  playElishiaScenario,
-} = require("./lib/elishiaScenarios");
+const { ELISHIA_SCENARIOS, playElishiaScenario } = require("./lib/elishiaScenarios");
 
 async function main() {
   const directory = path.join(__dirname, "..", "test", "fixtures", "golden");
@@ -22,24 +19,14 @@ async function main() {
   for (const scenario of SCENARIOS) {
     const { transcript, result } = await playTranscript(scenario);
     const text = `${transcript.join("\n")}\n`;
-    fs.writeFileSync(
-      path.join(directory, `${scenario.name}.txt.gz`),
-      zlib.gzipSync(text, { level: 9 }),
-    );
-    console.log(
-      `${scenario.name.padEnd(16)} ${result} (${transcript.length} lines)`,
-    );
+    fs.writeFileSync(path.join(directory, `${scenario.name}.txt.gz`), zlib.gzipSync(text, { level: 9 }));
+    console.log(`${scenario.name.padEnd(16)} ${result} (${transcript.length} lines)`);
   }
   for (const scenario of ELISHIA_SCENARIOS) {
     const played = await playElishiaScenario(scenario);
     const text = `${JSON.stringify(played, null, 1)}\n`;
-    fs.writeFileSync(
-      path.join(directory, `${scenario.name}.json.gz`),
-      zlib.gzipSync(text, { level: 9 }),
-    );
-    console.log(
-      `${scenario.name.padEnd(16)} ${played.result} (${played.log.length} log lines, ${played.rounds} rounds)`,
-    );
+    fs.writeFileSync(path.join(directory, `${scenario.name}.json.gz`), zlib.gzipSync(text, { level: 9 }));
+    console.log(`${scenario.name.padEnd(16)} ${played.result} (${played.log.length} log lines, ${played.rounds} rounds)`);
   }
 }
 

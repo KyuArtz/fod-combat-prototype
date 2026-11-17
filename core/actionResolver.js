@@ -17,16 +17,8 @@ function createActionResolver({
     if (attacker.side === target.side) return 1;
     let best = 0;
     for (const unit of state.actors) {
-      if (
-        !unit.alive ||
-        !unit.summon ||
-        unit.ownerId !== attacker.id ||
-        !unit.scan
-      )
-        continue;
-      const bonus =
-        unit.scan.damageBonus +
-        (state.singularityTurns > 0 ? unit.scan.singularityBonus || 0 : 0);
+      if (!unit.alive || !unit.summon || unit.ownerId !== attacker.id || !unit.scan) continue;
+      const bonus = unit.scan.damageBonus + (state.singularityTurns > 0 ? unit.scan.singularityBonus || 0 : 0);
       best = Math.max(best, bonus);
     }
     return 1 + best / 100;
@@ -68,7 +60,13 @@ function createActionResolver({
   }
 
   function hitMastery(attacker, target, type, power = 1, canCrit = true) {
-    const outcome = calculateMastery(attacker, target, type, power, canCrit);
+    const outcome = calculateMastery(
+      attacker,
+      target,
+      type,
+      power,
+      canCrit,
+    );
     applyDamage(target, outcome.damage, type);
     say(
       `  ${target.name} takes ${outcome.damage} ${type} damage${outcome.crit ? " (CRIT)" : ""}.`,
@@ -84,10 +82,7 @@ function createActionResolver({
     if (!actor || !target) return false;
 
     if (target.side === "ally" || actor.nextAttackAccuracy > 0) {
-      let dodge =
-        target.side === "ally"
-          ? effectiveStat(target, "Evasion")
-          : target.stats.Evasion || 0;
+      let dodge = target.side === "ally" ? effectiveStat(target, "Evasion") : (target.stats.Evasion || 0);
       dodge -= actor.nextAttackAccuracy || 0;
       if (target.side === "ally" && target.passive?.id === "unobserved") {
         // The basic-attack Accuracy penalty is a separate passive clause from

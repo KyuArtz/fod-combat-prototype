@@ -15,7 +15,7 @@ const { createTurnRunner } = require("./turnRunner");
 const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
 const { addShield, tickShields } = require("../systems/shields");
-const { applyDamage, heal } = require("../systems/damageApplication");
+const { applyDamage, heal, } = require("../systems/damageApplication");
 const { addStatus, effectiveStat: getEffectiveStat, tickStatuses, } = require("../systems/statusEffects");
 const { createBattleLog } = require("../ui/battleLog");
 const { createBattleMenu } = require("../ui/battleMenu");
@@ -27,11 +27,7 @@ const thresholdCombatReadiness = require("../systems/thresholdCombatReadiness");
 function orderRoster(roster, ids) {
   const byId = new Map(roster.map((actor) => [actor.id, actor]));
   const unique = new Set(ids);
-  if (
-    unique.size !== ids.length ||
-    ids.length !== roster.length ||
-    !ids.every((id) => byId.has(id))
-  ) {
+  if (unique.size !== ids.length || ids.length !== roster.length || !ids.every((id) => byId.has(id))) {
     throw new Error(
       `partyOrder must list each roster member exactly once (${roster.map((actor) => actor.id).join(", ")}).`,
     );
@@ -63,18 +59,10 @@ function createBattle({
   }
   for (const key of Object.keys(controllers)) {
     if (key !== "player" && key !== "enemy" && key !== "summon") {
-      throw new TypeError(
-        `Unknown controller "${key}". Use "player", "enemy" or "summon".`,
-      );
+      throw new TypeError(`Unknown controller "${key}". Use "player", "enemy" or "summon".`);
     }
   }
-  if (
-    partyOrder !== undefined &&
-    !(
-      Array.isArray(partyOrder) &&
-      partyOrder.every((id) => typeof id === "string")
-    )
-  ) {
+  if (partyOrder !== undefined && !(Array.isArray(partyOrder) && partyOrder.every((id) => typeof id === "string"))) {
     throw new TypeError("partyOrder must be an array of actor id strings.");
   }
   const state = createBattleState({ seed });
@@ -84,8 +72,7 @@ function createBattle({
   let prompts = null;
   const ask = (question) =>
     new Promise((resolve) => {
-      if (!prompts)
-        prompts = readline.createInterface({ input, output: promptOutput });
+      if (!prompts) prompts = readline.createInterface({ input, output: promptOutput });
       prompts.question(question, resolve);
     });
   const { say } = createBattleLog(state, output, events);
@@ -97,38 +84,21 @@ function createBattle({
   const applyTargetDamage = (target, amount, damageType) => {
     const beforeHp = target.hp;
     let absorbedAmount = 0;
-    const shieldBefore = target.shields.reduce(
-      (sum, shield) => sum + shield.value,
-      0,
-    );
+    const shieldBefore = target.shields.reduce((sum, shield) => sum + shield.value, 0);
     const hpLoss = applyDamage(
       target,
       amount,
       say,
       (downedActor, defeatStatuses, damageMeta) => {
         absorbedAmount = damageMeta?.absorbedAmount || 0;
-        emitCombatEvent(events, "ActorDied", {
-          actorId: downedActor.id,
-          side: downedActor.side,
-          round: state.round,
-        });
-        if (passiveHooks.onUnitDefeated)
-          passiveHooks.onUnitDefeated(downedActor, defeatStatuses);
-        const replacement = formation.deployFirstReserve(
-          state,
-          downedActor.side,
-          downedActor,
-        );
+        emitCombatEvent(events, "ActorDied", { actorId: downedActor.id, side: downedActor.side, round: state.round });
+        if (passiveHooks.onUnitDefeated) passiveHooks.onUnitDefeated(downedActor, defeatStatuses);
+        const replacement = formation.deployFirstReserve(state, downedActor.side, downedActor);
         if (replacement) {
-          say(
-            `${replacement.incoming.name} deploys to ${downedActor.side} formation slot ${replacement.slot + 1}!`,
-          );
+          say(`${replacement.incoming.name} deploys to ${downedActor.side} formation slot ${replacement.slot + 1}!`);
           emitCombatEvent(events, "ReserveDeployed", {
-            incomingId: replacement.incoming.id,
-            defeatedId: downedActor.id,
-            side: downedActor.side,
-            slot: replacement.slot,
-            round: state.round,
+            incomingId: replacement.incoming.id, defeatedId: downedActor.id,
+            side: downedActor.side, slot: replacement.slot, round: state.round,
           });
         }
         if (downedActor.summon) summonDestroyed(downedActor);
@@ -136,73 +106,43 @@ function createBattle({
       damageType,
     );
     if (target.alive) {
-      const afterShield = target.shields.reduce(
-        (sum, shield) => sum + shield.value,
-        0,
-      );
+      const afterShield = target.shields.reduce((sum, shield) => sum + shield.value, 0);
       // A living target retains its shields, so their value delta is exact.
-      absorbedAmount = Math.max(
-        0,
-        Math.min(amount, shieldBefore - afterShield),
-      );
+      absorbedAmount = Math.max(0, Math.min(amount, shieldBefore - afterShield));
     }
     const actualHpLoss = Math.max(0, beforeHp - target.hp);
     emitCombatEvent(events, "DamageApplied", {
-      targetId: target.id,
-      requestedAmount: amount,
-      hpLoss: actualHpLoss,
-      absorbedAmount,
-      damageType: damageType || "Unspecified",
+      targetId: target.id, requestedAmount: amount, hpLoss: actualHpLoss,
+      absorbedAmount, damageType: damageType || "Unspecified",
     });
-    if (passiveHooks.onDamageTaken)
-      passiveHooks.onDamageTaken(target, amount, damageType, hpLoss);
+    if (passiveHooks.onDamageTaken) passiveHooks.onDamageTaken(target, amount, damageType, hpLoss);
     return hpLoss;
   };
   const trackedHeal = (target, amount) => {
     const healed = heal(target, amount);
-    emitCombatEvent(events, "Healed", {
-      targetId: target.id,
-      requestedAmount: amount,
-      healed,
-    });
+    emitCombatEvent(events, "Healed", { targetId: target.id, requestedAmount: amount, healed });
     return healed;
   };
   const trackedAddShield = (target, amount, turns, adaptive) => {
     addShield(target, amount, turns, adaptive);
-    emitCombatEvent(events, "ShieldGained", {
-      targetId: target.id,
-      amount,
-      turns: turns ?? 2,
-    });
+    emitCombatEvent(events, "ShieldGained", { targetId: target.id, amount, turns: turns ?? 2 });
   };
   const trackedAddStatus = (target, statusId, data) => {
     const applied = addStatus(target, statusId, data);
-    if (applied)
-      emitCombatEvent(events, "StatusApplied", {
-        targetId: target.id,
-        statusId,
-        turns: Number.isFinite(data.turns) ? data.turns : null,
-      });
+    if (applied) emitCombatEvent(events, "StatusApplied", { targetId: target.id, statusId, turns: Number.isFinite(data.turns) ? data.turns : null });
     return applied;
   };
   const trackedTickStatuses = (actor) => {
     const before = new Set(Object.keys(actor.statuses));
     tickStatuses(actor);
-    const expired = [...before].filter(
-      (id) => !Object.hasOwn(actor.statuses, id),
-    );
-    if (expired.length)
-      emitCombatEvent(events, "StatusExpired", {
-        actorId: actor.id,
-        statusIds: expired,
-      });
+    const expired = [...before].filter((id) => !Object.hasOwn(actor.statuses, id));
+    if (expired.length) emitCombatEvent(events, "StatusExpired", { actorId: actor.id, statusIds: expired });
   };
   const trackedTickShields = (actor) => {
     const before = actor.shields.length;
     tickShields(actor);
     const count = Math.max(0, before - actor.shields.length);
-    if (count)
-      emitCombatEvent(events, "ShieldExpired", { actorId: actor.id, count });
+    if (count) emitCombatEvent(events, "ShieldExpired", { actorId: actor.id, count });
   };
   const actionResolver = createActionResolver({
     state,
@@ -239,11 +179,11 @@ function createBattle({
     adjustCR: readinessScheduler.adjustCR,
   };
   const skillSet = createSkills(context);
-  const { skills, summonTurn } = skillSet;
+  const { skills, enemySkills, summonTurn } = skillSet;
   summonDestroyed = skillSet.summonDestroyed;
   passiveHooks = skillSet;
   const battleMenu = createBattleMenu(context);
-  const enemyAI = createEnemyAI(context);
+  const enemyAI = createEnemyAI({ ...context, skills: enemySkills, ready: cooldowns.ready });
   const turnRunner = createTurnRunner({
     state,
     events,
@@ -283,37 +223,23 @@ function createBattle({
     const allyRoster = createFalconParty();
     const selectedParty = partyOrder
       ? orderRoster(allyRoster, partyOrder)
-      : await deploymentSelector.selectFormation(
-          allyRoster,
-          state.party.maxActive,
-        );
-    emitCombatEvent(events, "FormationSelected", {
-      ids: selectedParty.map((actor) => actor.id),
-    });
+      : await deploymentSelector.selectFormation(allyRoster, state.party.maxActive);
+    emitCombatEvent(events, "FormationSelected", { ids: selectedParty.map((actor) => actor.id) });
     formation.setupParty(state, selectedParty);
     const actorsBeforeBattleStart = new Set(state.actors);
     skillSet.onBattleStart(allyRoster);
-    const initialSummons = state.actors.filter(
-      (unit) => !actorsBeforeBattleStart.has(unit) && unit.summon,
-    );
+    const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
     const enemyRoster = createTrainingEnemies();
     formation.setupEnemyParty(state, enemyRoster);
     emitCombatEvent(events, "BattleStarted", { seed: state.rng.seed });
     for (const unit of initialSummons) {
-      emitCombatEvent(events, "ActorSummoned", {
-        actorId: unit.id,
-        ownerId: unit.ownerId || "unknown",
-        side: unit.side,
-        round: state.round,
-      });
+      emitCombatEvent(events, "ActorSummoned", { actorId: unit.id, ownerId: unit.ownerId || "unknown", side: unit.side, round: state.round });
     }
     showParty(state.enemyParty, output, "ENEMY FORMATION");
     battleMenu.showParty();
 
     if (openingInitiative === "player-first") {
-      const opening = applyOpeningInitiative(state, effectiveStat, {
-        firstSide: "ally",
-      });
+      const opening = applyOpeningInitiative(state, effectiveStat, { firstSide: "ally" });
       if (opening.applied) {
         say("The Falcon team seizes the initiative!");
         emitCombatEvent(events, "OpeningInitiative", opening);
@@ -321,10 +247,7 @@ function createBattle({
     }
 
     await turnEngine.runRounds();
-    emitCombatEvent(events, "BattleEnded", {
-      result: formation.result(state),
-      round: state.round,
-    });
+    emitCombatEvent(events, "BattleEnded", { result: formation.result(state), round: state.round });
     output.log(
       `\n=== ${formation.result(state)} ===========================================================================`,
     );

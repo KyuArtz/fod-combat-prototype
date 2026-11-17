@@ -4,16 +4,14 @@ function clamp(value, min, max) {
 
 function markMultiplier(target) {
   return Object.values(target.statuses || {}).reduce(
-    (multiplier, status) =>
-      multiplier * (1 + (status.damageTakenPercent || 0) / 100),
+    (multiplier, status) => multiplier * (1 + (status.damageTakenPercent || 0) / 100),
     1,
   );
 }
 
 function damageDealtMultiplier(attacker) {
   return Object.values(attacker.statuses || {}).reduce(
-    (multiplier, status) =>
-      multiplier * (1 + (status.damageDealtPercent || 0) / 100),
+    (multiplier, status) => multiplier * (1 + (status.damageDealtPercent || 0) / 100),
     1,
   );
 }
@@ -37,15 +35,9 @@ function calculatePhysicalDamage(
   random = Math.random,
   bonusMultiplier = 1,
 ) {
-  let raw =
-    effectiveStat(attacker, "ATK") * power * damageDealtMultiplier(attacker);
+  let raw = effectiveStat(attacker, "ATK") * power * damageDealtMultiplier(attacker);
   const crit =
-    canCrit &&
-    random() * 100 <
-      effectiveStat(attacker, "CritRate") +
-        (target.statuses?.tacticalMark
-          ? attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0
-          : 0);
+    canCrit && random() * 100 < (effectiveStat(attacker, "CritRate") + (target.statuses?.tacticalMark ? (attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0) : 0));
   if (crit) raw *= 1.5;
   raw *= 100 / (100 + effectiveStat(target, "DEF"));
   raw *= resistanceMultiplier(target, "Physical");
@@ -70,15 +62,12 @@ function calculateMasteryDamage(
     damageDealtMultiplier(attacker) *
     (1 + (attacker.stats.masteryBonus?.[type] || 0) / 100);
   const crit =
-    canCrit &&
-    random() * 100 <
-      effectiveStat(attacker, "CritRate") +
-        (target.statuses?.tacticalMark
-          ? attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0
-          : 0);
+    canCrit && random() * 100 < (effectiveStat(attacker, "CritRate") + (target.statuses?.tacticalMark ? (attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0) : 0));
   if (crit) raw *= 1.5;
   raw *= 100 / (100 + effectiveStat(target, "RES"));
-  raw *= 1 - clamp(target.stats.masteryResistance?.[type] || 0, 0, 100) / 100;
+  raw *=
+    1 -
+    clamp(target.stats.masteryResistance?.[type] || 0, 0, 100) / 100;
   raw *= resistanceMultiplier(target, type);
   raw *= markMultiplier(target);
   raw *= bonusMultiplier;

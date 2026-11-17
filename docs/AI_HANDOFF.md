@@ -111,3 +111,14 @@ Run `node --test`. Focused owner-alignment coverage lives in `test/ownerFalconMe
 ## Step 5 completed — headless simulator
 
 `tools/simulate.js` runs seeded complete battles without terminal prompts. Use `--battles`, `--seed`, `--scheduler`, `--opening`, `--policy`, `--format`, and `--out`; output formats are table, JSON and CSV. It reports outcomes, rounds/turns, skill/basic action counts, HP damage received by side, shield absorption, healing, MP spent and rejected decisions. Per-actor received damage/support is included in JSON. Source-attributed damage is not yet available because `DamageApplied` does not identify the source actor. Read `docs/STEP5_HEADLESS_SIMULATOR.md` before interpreting balance results.
+
+
+## Step 6 completed — data-driven enemy skills
+
+- Enemy skill data is in `data/enemySkills/trainingDrone.js` and `data/enemySkills/rogueAutomaton.js`; both are built by `characters/skills.js` using the same `core/skillInterpreter.js` as Falcon.
+- The shared interpreter now includes `physicalHit` for declarative physical attacks.
+- Enemy actors carry `skillSet` (`trainingDrone` / `rogueAutomaton`); `createSkills()` returns a separate `enemySkills` registry.
+- `ai/enemyAI.js` retains policy/target selection and random skill chance checks, but reads skill metadata/readiness from the registry and delegates effects to the interpreter. Preserve the existing RNG decision order unless intentionally changing golden behavior.
+- Current enemy definitions: Pulse Shot (1.35 physical, no crit, CD 3); Overload (+25% ATK, 2 turns, CD 5); Scan (DEF −15%, 2 turns, CD 4); Heavy Strike (1.5 physical, CD 3). All cost 0 MP.
+- Focused full-battle validation: `test/enemySkillData.test.js`. Full suite: 183/183. Details: `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`.
+- Not migrated: enemy encounter configuration and any skills for Siege Turret, Recon Drone or Toxic Stalker; none were present in the existing prototype behavior.

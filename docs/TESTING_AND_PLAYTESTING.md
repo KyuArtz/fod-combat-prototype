@@ -129,3 +129,8 @@ See [`STEP3_FULL_BATTLE_REGRESSION.md`](./STEP3_FULL_BATTLE_REGRESSION.md) for t
 ## Step 5 simulator checks
 
 `test/simulator.test.js` validates simulator argument handling, aggregate/per-battle report metrics, deterministic repeated batches, and CSV output. Run `node tools/simulate.js --battles 100 --seed 1` for a quick balance sample; use `--format json` or `--format csv` to preserve results. Simulator metric semantics and caveats are documented in `docs/STEP5_HEADLESS_SIMULATOR.md`.
+
+
+## Step 6 enemy skill migration checks
+
+`test/enemySkillData.test.js` validates the Training Drone and Rogue Automaton data definitions and executes Pulse Shot, Overload, Scan and Heavy Strike through complete headless battles. It checks accepted `SkillUsed` events, no rejected decisions and the expected combat log message for each skill.

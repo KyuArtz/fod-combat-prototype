@@ -40,9 +40,7 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
   // skill setting several units to 100) are ordered by CR, then SPD, and only
   // then by the stable actor key. Side and name never decide the order on their own.
   function enqueueUntrackedReady(schedulerState, deployed, effectiveStat) {
-    const queued = new Set(
-      schedulerState.readyQueue.map((entry) => entry.actor),
-    );
+    const queued = new Set(schedulerState.readyQueue.map((entry) => entry.actor));
     const untracked = deployed.filter(
       (actor) => actor.cr >= MAX_CR && !queued.has(actor),
     );
@@ -76,7 +74,10 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
     const timeToReady = new Map();
     for (const actor of deployed) {
       if (actor.cr < MAX_CR && speeds.get(actor) > 0) {
-        timeToReady.set(actor, (MAX_CR - actor.cr) / speeds.get(actor));
+        timeToReady.set(
+          actor,
+          (MAX_CR - actor.cr) / speeds.get(actor),
+        );
       }
     }
     const timesToReady = [...timeToReady.values()];
@@ -107,9 +108,7 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
         (schedulerState.tieCursor + 1) % crossingTogether.length;
     }
 
-    const queued = new Set(
-      schedulerState.readyQueue.map((entry) => entry.actor),
-    );
+    const queued = new Set(schedulerState.readyQueue.map((entry) => entry.actor));
     for (const actor of crossingTogether) {
       if (!queued.has(actor)) {
         schedulerState.readyQueue.push({
@@ -148,13 +147,11 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
         const selected = schedulerState.readyQueue.shift();
         diagnose({
           type: "selection",
-          actor:
-            selected.actor.name ||
-            selected.actor.id ||
-            actorKey(selected.actor),
-          simultaneous: schedulerState.readyQueue.some(
-            (entry) => entry.readyAt === selected.readyAt,
-          ),
+          actor: selected.actor.name || selected.actor.id || actorKey(selected.actor),
+          simultaneous:
+            schedulerState.readyQueue.some(
+              (entry) => entry.readyAt === selected.readyAt,
+            ),
           readyAt: selected.readyAt,
         });
         return selected.actor;

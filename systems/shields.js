@@ -3,8 +3,7 @@
 // duration (status "adaptiveResistance", applied in systems/damage.js).
 function addShield(target, amount, turns = 2, adaptive = null) {
   target.shields.push({
-    value: amount,
-    turns,
+    value: amount, turns,
     ...(adaptive ? { adaptive: { ...adaptive } } : {}),
     ...(target._isTakingTurn ? { appliedDuringCurrentTurn: true } : {}),
   });

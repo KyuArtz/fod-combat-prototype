@@ -11,17 +11,10 @@ const { createRngState, nextFloat } = require("../../core/rng");
 
 function chaosAnswers(chaosSeed, count = 6000) {
   const rng = createRngState(chaosSeed);
-  return Array.from({ length: count }, () =>
-    String(Math.floor(nextFloat(rng) * 10)),
-  );
+  return Array.from({ length: count }, () => String(Math.floor(nextFloat(rng) * 10)));
 }
 
-async function playTranscript({
-  seed,
-  chaosSeed,
-  maxActive,
-  battleOptions = {},
-}) {
+async function playTranscript({ seed, chaosSeed, maxActive, battleOptions = {} }) {
   const answers = chaosAnswers(chaosSeed);
   const transcript = [];
   const input = new PassThrough();

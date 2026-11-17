@@ -8,7 +8,7 @@
 
 ## Executive summary
 
-F.O.D. is a modular, terminal-driven turn-based combat prototype. The engine has a controller-driven turn loop, seeded/replayable randomness, an event bus, two schedulers, shared basic-attack resolution, and data-driven Falcon skills.
+F.O.D. is a modular, terminal-driven turn-based combat prototype. The engine has a controller-driven turn loop, seeded/replayable randomness, an event bus, two schedulers, shared basic-attack resolution, and data-driven Falcon and initial enemy skills.
 
 The five Falcon skill sets have now been aligned to the owner's character reference. The project bundles only the selected character stats, skill definitions and stat descriptions in `references/characterTerraData.js`; the full original reference file and format are intentionally excluded. The readable design reference is `docs/OWNER_SKILL_REFERENCE.md`.
 
@@ -22,7 +22,7 @@ The five Falcon skill sets have now been aligned to the owner's character refere
 - Seeded battle randomness (`FOD_SEED`) and replay from recorded decisions.
 - Controller-driven turns: terminal player menu, enemy AI, summon automation, scripted and random controllers.
 - One shared basic-attack execution path in `core/actionResolver.js`.
-- Five owner-aligned Falcon skill definitions in `data/skills/`, run by `core/skillInterpreter.js`.
+- Five owner-aligned Falcon skill definitions in `data/skills/` plus Training Drone/Rogue Automaton definitions in `data/enemySkills/`, all run by `core/skillInterpreter.js`.
 - Falcon passive hooks for turn start/end, damage taken, targeting, battle start and defeat events.
 - Typed, structured combat events alongside the human-readable `Log` stream; validated event contracts cover turns, rounds, actions, skills, damage, healing, shields, statuses, summons, formation changes, incapacitation and battle completion.
 
@@ -50,7 +50,7 @@ The engine's base Falcon stats remain the prototype values in `characters/falcon
 
 ## Verification
 
-The test suite includes scheduler, determinism, controller, golden replay, basic-attack, Elishia mechanics, Falcon data validation, owner-aligned skill mechanics and full-battle regression coverage. Run `node --test` from the project root. Latest verification: **178 passed, 0 failed** (includes simulator CLI tests). The exact suite breakdown is in `docs/TESTING_AND_PLAYTESTING.md`.
+The test suite includes scheduler, determinism, controller, golden replay, basic-attack, Elishia mechanics, Falcon data validation, owner-aligned skill mechanics and full-battle regression coverage. Run `node --test` from the project root. Latest verification: **183 passed, 0 failed** (includes simulator CLI tests). The exact suite breakdown is in `docs/TESTING_AND_PLAYTESTING.md`.
 
 Golden transcripts were intentionally refreshed because the owner-aligned skill mechanics change battle output and outcomes. They are regression fixtures, not immutable evidence that the old prototype values were correct.
 
@@ -63,3 +63,7 @@ Golden transcripts were intentionally refreshed because the owner-aligned skill 
 - Step 4 typed combat events is complete. See `docs/STEP4_TYPED_COMBAT_EVENTS.md` for event names, payload contracts, ordering and known limits.
 - Step 5 headless simulator CLI is complete. It runs the same engine across deterministic seed ranges and emits table, JSON or CSV reports; see `docs/STEP5_HEADLESS_SIMULATOR.md` for metrics and caveats.
 - Leveling, stage progression, rewards and persistent saves are not implemented.
+
+## Step 6 — data-driven enemy skills
+
+Training Drone Pulse Shot and Rogue Automaton Overload, Scan and Heavy Strike are now declarative definitions in `data/enemySkills/`. Enemy AI continues to own its priorities and chance rolls; skill data is executed by the shared interpreter. The migration preserves the existing AI decision conditions and RNG roll order. See `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. Siege Turret, Recon Drone and Toxic Stalker remain basic-attack-only in the current prototype; encounter configuration and additional enemy kits remain future work.

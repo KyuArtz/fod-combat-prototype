@@ -9,20 +9,11 @@ const legacy = require("../systems/combatReadiness");
 const threshold = require("../systems/thresholdCombatReadiness");
 
 function parseArgs(argv) {
-  const options = {
-    battles: 100,
-    seed: 1,
-    scheduler: "threshold",
-    opening: "player-first",
-    policy: "random",
-    format: "table",
-    out: null,
-  };
+  const options = { battles: 100, seed: 1, scheduler: "threshold", opening: "player-first", policy: "random", format: "table", out: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--help" || arg === "-h") options.help = true;
-    else if (["--battles", "-n"].includes(arg))
-      options.battles = Number(argv[++i]);
+    else if (["--battles", "-n"].includes(arg)) options.battles = Number(argv[++i]);
     else if (arg === "--seed") options.seed = Number(argv[++i]);
     else if (arg === "--scheduler") options.scheduler = argv[++i];
     else if (arg === "--opening") options.opening = argv[++i];
@@ -31,26 +22,12 @@ function parseArgs(argv) {
     else if (arg === "--out") options.out = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
   }
-  if (
-    !Number.isInteger(options.battles) ||
-    options.battles < 1 ||
-    options.battles > 100000
-  )
-    throw new Error("--battles must be an integer from 1 to 100000.");
-  if (
-    !Number.isInteger(options.seed) ||
-    options.seed < 0 ||
-    options.seed > 0xffffffff
-  )
-    throw new Error("--seed must be an integer from 0 to 4294967295.");
-  if (!["threshold", "legacy"].includes(options.scheduler))
-    throw new Error("--scheduler must be threshold or legacy.");
-  if (!["player-first", "speed"].includes(options.opening))
-    throw new Error("--opening must be player-first or speed.");
-  if (!["basic", "random"].includes(options.policy))
-    throw new Error("--policy must be basic or random.");
-  if (!["table", "json", "csv"].includes(options.format))
-    throw new Error("--format must be table, json or csv.");
+  if (!Number.isInteger(options.battles) || options.battles < 1 || options.battles > 100000) throw new Error("--battles must be an integer from 1 to 100000.");
+  if (!Number.isInteger(options.seed) || options.seed < 0 || options.seed > 0xffffffff) throw new Error("--seed must be an integer from 0 to 4294967295.");
+  if (!["threshold", "legacy"].includes(options.scheduler)) throw new Error("--scheduler must be threshold or legacy.");
+  if (!["player-first", "speed"].includes(options.opening)) throw new Error("--opening must be player-first or speed.");
+  if (!["basic", "random"].includes(options.policy)) throw new Error("--policy must be basic or random.");
+  if (!["table", "json", "csv"].includes(options.format)) throw new Error("--format must be table, json or csv.");
   return options;
 }
 
@@ -101,11 +78,7 @@ function summarizeBattle(battle, index, seed) {
         stats.hpDamageToEnemies += hpLoss;
         stats.shieldAbsorbedByEnemies += absorbed;
       }
-      perActor[event.targetId] ||= {
-        hpDamageReceived: 0,
-        shieldAbsorbed: 0,
-        healingReceived: 0,
-      };
+      perActor[event.targetId] ||= { hpDamageReceived: 0, shieldAbsorbed: 0, healingReceived: 0 };
       perActor[event.targetId].hpDamageReceived += hpLoss;
       perActor[event.targetId].shieldAbsorbed += absorbed;
     }
@@ -114,11 +87,7 @@ function summarizeBattle(battle, index, seed) {
       const healed = Number(event.healed) || 0;
       if (side === "ally") stats.healingToAllies += healed;
       else if (side === "enemy") stats.healingToEnemies += healed;
-      perActor[event.targetId] ||= {
-        hpDamageReceived: 0,
-        shieldAbsorbed: 0,
-        healingReceived: 0,
-      };
+      perActor[event.targetId] ||= { hpDamageReceived: 0, shieldAbsorbed: 0, healingReceived: 0 };
       perActor[event.targetId].healingReceived += healed;
     }
   }
@@ -127,14 +96,7 @@ function summarizeBattle(battle, index, seed) {
 }
 
 async function simulateBattles(options = {}) {
-  const config = {
-    battles: 100,
-    seed: 1,
-    scheduler: "threshold",
-    opening: "player-first",
-    policy: "random",
-    ...options,
-  };
+  const config = { battles: 100, seed: 1, scheduler: "threshold", opening: "player-first", policy: "random", ...options };
   const scheduler = config.scheduler === "legacy" ? legacy : threshold;
   const results = [];
   for (let i = 0; i < config.battles; i++) {
@@ -184,32 +146,8 @@ function csvEscape(value) {
 }
 
 function renderCsv(report) {
-  const fields = [
-    "index",
-    "seed",
-    "result",
-    "rounds",
-    "turns",
-    "skills",
-    "basicAttacks",
-    "hpDamageToAllies",
-    "hpDamageToEnemies",
-    "shieldAbsorbedByAllies",
-    "shieldAbsorbedByEnemies",
-    "healingToAllies",
-    "healingToEnemies",
-    "mpSpentByAllies",
-    "mpSpentByEnemies",
-    "rejectedDecisions",
-  ];
-  return (
-    [
-      fields.join(","),
-      ...report.battles.map((row) =>
-        fields.map((key) => csvEscape(row[key])).join(","),
-      ),
-    ].join("\n") + "\n"
-  );
+  const fields = ["index", "seed", "result", "rounds", "turns", "skills", "basicAttacks", "hpDamageToAllies", "hpDamageToEnemies", "shieldAbsorbedByAllies", "shieldAbsorbedByEnemies", "healingToAllies", "healingToEnemies", "mpSpentByAllies", "mpSpentByEnemies", "rejectedDecisions"];
+  return [fields.join(","), ...report.battles.map((row) => fields.map((key) => csvEscape(row[key])).join(","))].join("\n") + "\n";
 }
 
 function renderTable(report) {
@@ -242,22 +180,17 @@ async function main(argv = process.argv.slice(2)) {
     return null;
   }
   const report = await simulateBattles(options);
-  const output =
-    options.format === "json"
-      ? JSON.stringify(report, null, 2) + "\n"
-      : options.format === "csv"
-        ? renderCsv(report)
-        : renderTable(report) + "\n";
+  const output = options.format === "json"
+    ? JSON.stringify(report, null, 2) + "\n"
+    : options.format === "csv"
+      ? renderCsv(report)
+      : renderTable(report) + "\n";
   if (options.out) {
     const target = path.resolve(options.out);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, output);
-    if (options.format === "table")
-      console.log(`Wrote simulation report to ${target}\n\n${output}`);
-    else
-      console.log(
-        `Wrote ${options.format.toUpperCase()} simulation report to ${target}`,
-      );
+    if (options.format === "table") console.log(`Wrote simulation report to ${target}\n\n${output}`);
+    else console.log(`Wrote ${options.format.toUpperCase()} simulation report to ${target}`);
   } else {
     process.stdout.write(output);
   }
@@ -271,11 +204,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = {
-  main,
-  parseArgs,
-  renderCsv,
-  renderTable,
-  simulateBattles,
-  summarizeBattle,
-};
+module.exports = { main, parseArgs, renderCsv, renderTable, simulateBattles, summarizeBattle };
