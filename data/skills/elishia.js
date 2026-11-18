@@ -1,5 +1,5 @@
-// Canonical Falcon skill reference: characterTerraData.json (owner-provided).
-// Unspecified Meo-v9 Final Protocol damage scaling is intentionally not invented.
+// Skill mechanics are implemented here; the compact owner-facing copy reference is references/characterTerraData.js.
+// Final Protocol and Singularity DoT use conservative, explicit balance values.
 module.exports = {
   characterId: "elishia",
   passive: {
@@ -20,6 +20,7 @@ module.exports = {
         CritRate: 0, Evasion: 0, masteryBonus: {}, masteryResistance: {},
       },
       scan: { damageBonus: 10, singularityBonus: 10 },
+      finalProtocol: { element: "Electromagnetic", power: 1.0, secondaryMultiplier: 0.5, spdDown: -15, turns: 1 },
       behavior: {
         type: "coverFire", power: 0.5, singularityPower: 0.75, canCrit: false,
         message: "{actor} cover fire hits {target} for {damage} Physical damage.",
@@ -52,7 +53,7 @@ module.exports = {
     {
       key: "meo", name: "Meo-v9", cost: 35, cooldown: 4, tags: ["Nanotech"], targeting: "none",
       effects: [{ type: "summon", template: "meo9" }],
-      message: "{actor} deploys Meo-v9 for 3 turns. It scans enemies (+10% damage taken from Elishia) and provides cover fire.",
+      message: "{actor} deploys Meo-v9 for 3 turns; Final Protocol targets the current priority enemy when it expires.",
     },
     {
       key: "ultimate", name: "Nanotech Singularity", category: "Ultimate", cost: 60, cooldown: 6, tags: ["Nanotech"], targeting: "none",
@@ -62,6 +63,7 @@ module.exports = {
           { id: "singularitySpd", stat: "SPD", amount: 10, turns: 3 },
         ],
         enemies: [{ id: "singularitySpdDown", stat: "SPD", amount: -10, turns: 3, debuff: true }],
+        dot: { id: "singularityDot", element: "Nanotech", power: 0.2, turns: 3 },
         summonMessage: "{actor}'s covering fire is amplified to {power}% of its ATK.",
       }],
       message: "NANOTECH SINGULARITY! Allies gain ATK +15%, SPD +10% and 5% Max HP healing each turn; enemies suffer SPD -10% (3 turns).",

@@ -60,7 +60,7 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
 
   function advanceCR(state, effectiveStat) {
     const schedulerState = getSchedulerState(state);
-    const deployed = state.actors.filter((actor) => actor.alive);
+    const deployed = state.actors.filter((actor) => actor.alive && !actor.passiveSummon);
     if (!deployed.length) return [];
 
     const speeds = new Map(
@@ -133,7 +133,7 @@ function createThresholdScheduler({ onDiagnostic } = {}) {
 
   function nextActor(state, effectiveStat) {
     while (true) {
-      const deployed = state.actors.filter((actor) => actor.alive);
+      const deployed = state.actors.filter((actor) => actor.alive && !actor.passiveSummon);
       if (!deployed.length) return null;
 
       const deployedSet = new Set(deployed);

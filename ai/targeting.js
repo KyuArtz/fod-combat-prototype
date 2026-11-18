@@ -1,5 +1,5 @@
 function enemyTarget(state, actor, alive) {
-  const targets = alive(state, "ally").filter((target) => !target.summon);
+  const targets = alive(state, "ally").filter((target) => !target.summon || target.targetableByEnemy);
   if (!targets.length) return null;
   const taunter = targets.find((target) => target.statuses?.taunt);
   if (taunter) return taunter;

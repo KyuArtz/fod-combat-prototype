@@ -71,12 +71,9 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] **Step 7: data-driven enemy AI and encounters.** Enemy archetypes/stats, rule-based AI policies and encounter rosters are data-defined; see `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.
 - [x] **Step 8: encounter progression, waves and reinforcements.** Added multi-wave progression, defeat-count reinforcement triggers, per-instance stat overrides, completion events and reward metadata hooks; see `docs/STEP8_ENCOUNTER_PROGRESSION.md`.
 
-### Owner-reference gaps to resolve
+### Owner-reference alignment and remaining stats decision
 
-- [ ] Meo-v9 Final Protocol EMP damage scaling.
-- [ ] Nanotech Singularity enemy DoT amount/scaling.
-- [ ] Catalyst Wing HP/targetability/destruction trigger.
-- [ ] Decide whether to add a general skill-hit accuracy model beyond basic attacks.
+- [x] Step 9: finalize missing Falcon mechanics with owner-approved balance values; see `docs/FALCON_MECHANICS_FINALIZATION.md`.
 - [ ] Separately decide when to sync base Falcon stats from the owner-provided character reference into `characters/falcon.js`.
 
 ## Release/merge gate

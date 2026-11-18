@@ -1,4 +1,4 @@
-// Canonical Falcon skill reference: characterTerraData.json (owner-provided).
+// Skill mechanics are implemented here; the compact owner-facing copy reference is references/characterTerraData.js.
 module.exports = {
   characterId: "evalete",
   passive: {
@@ -12,6 +12,10 @@ module.exports = {
     // The reference does not specify Catalyst Wing HP or a destruction trigger.
     destructionShieldPercent: 15,
     destructionShieldTurns: 4,
+    // Added implementation values: durable but not a full extra combatant.
+    wingHpPercent: 25,
+    wingDefPercent: 50,
+    wingResPercent: 50,
   },
   skills: [
     { key: "pulse", name: "Sentinel Pulse", cost: 20, cooldown: 2, tags: [], targeting: "enemy",

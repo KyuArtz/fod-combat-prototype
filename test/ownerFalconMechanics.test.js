@@ -203,10 +203,12 @@ test("Zackry Overwatch grants the relevant ally +10 Accuracy for their next basi
   assert.equal(jazen.nextAttackAccuracy, 0, "the bonus is consumed by the next attack");
 });
 
-test("Jazen Impact Grenade can Stagger enemies and the turn engine consumes Stagger as a lost action", () => {
+test("Jazen Impact Grenade applies Stagger readiness delay without erasing the next action", () => {
   const w = world(0);
+  for (const enemy of w.enemies) enemy.cr = 60;
   skill(w, "jazen", "impactGrenade").run(w.byId.jazen, {});
   assert.ok(w.enemies.every((enemy) => enemy.statuses.staggered?.turns === 1));
+  assert.ok(w.enemies.every((enemy) => enemy.cr === 40), "Stagger pushes readiness back by 20 points");
   const { createTurnEngine } = require("../core/turnEngine");
   const target = w.enemies[0];
   const engine = createTurnEngine({
@@ -215,8 +217,10 @@ test("Jazen Impact Grenade can Stagger enemies and the turn engine consumes Stag
     tickCooldowns() {}, tickStatuses() {}, tickShields() {}, heal() {},
     takeTurn() { throw new Error("Staggered actor must not take its action"); },
   });
-  assert.equal(engine.turnStart(target), true);
+  const beforeCR = target.cr;
+  assert.equal(engine.turnStart(target), false, "Stagger is a readiness delay, not a lost action");
   assert.equal(target.statuses.staggered, undefined);
+  assert.equal(target.cr, beforeCR, "the CR pushback is applied when Stagger is first applied");
 });
 
 test("Jazen Recoil Dampeners stack to ATK +20% and grant Stagger/action-delay immunity", () => {
