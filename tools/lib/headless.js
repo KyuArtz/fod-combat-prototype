@@ -20,6 +20,7 @@ async function playHeadless({
   policy = "basic",
   policySeed = 1,
   encounter = "trainingGround",
+  onEncounterComplete,
 } = {}) {
   const picks = [];
   const recording = {
@@ -48,6 +49,7 @@ async function playHeadless({
     controllers: { player: playerController, ...controllers },
     partyOrder,
     encounter,
+    ...(onEncounterComplete ? { onEncounterComplete } : {}),
   });
   if (maxActive) battle.state.party.maxActive = maxActive;
   try {

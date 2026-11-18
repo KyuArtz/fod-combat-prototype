@@ -1,6 +1,6 @@
 const readline = require("node:readline");
 const { createEnemyAI } = require("../ai/enemyAI");
-const { createEncounterEnemies } = require("../characters/enemies");
+const { createEncounterWaveEnemies, createEncounterReinforcements, validateEncounterData, encounters } = require("../characters/enemies");
 const { createFalconParty } = require("../characters/falcon");
 const { createSkills } = require("../characters/skills");
 const { makeActor } = require("../characters/actorFactory");
@@ -57,7 +57,11 @@ function createBattle({
   // given, the interactive formation prompts are skipped.
   partyOrder,
   encounter = "trainingGround",
+  onEncounterComplete = () => {},
 } = {}) {
+  if (!encounters[encounter]) throw new TypeError(`Unknown encounter "${encounter}".`);
+  validateEncounterData(encounters[encounter]);
+  if (typeof onEncounterComplete !== "function") throw new TypeError("onEncounterComplete must be a function.");
   if (openingInitiative !== "player-first" && openingInitiative !== "speed") {
     throw new TypeError(
       `Unknown openingInitiative "${openingInitiative}". Use "player-first" or "speed".`,
@@ -82,6 +86,70 @@ function createBattle({
       prompts.question(question, resolve);
     });
   const { say } = createBattleLog(state, output, events);
+  let encounterCompleted = false;
+
+  function queueTriggeredReinforcements(downedActor) {
+    const runtime = state.encounter;
+    const definition = encounters[encounter];
+    if (!runtime || downedActor.side !== "enemy" || downedActor.summon) return;
+    runtime.enemyDefeatedCount++;
+    for (const reinforcement of definition.reinforcements || []) {
+      if (runtime.triggeredReinforcements.includes(reinforcement.id)) continue;
+      if (reinforcement.trigger.type !== "enemyDefeatedCount" || runtime.enemyDefeatedCount < reinforcement.trigger.atLeast) continue;
+      const incoming = createEncounterReinforcements(encounter, reinforcement.id);
+      runtime.triggeredReinforcements.push(reinforcement.id);
+      state.enemyParty.roster.push(...incoming);
+      state.enemyParty.reserve.push(...incoming);
+      emitCombatEvent(events, "ReinforcementsQueued", {
+        encounterId: encounter,
+        reinforcementId: reinforcement.id,
+        count: incoming.length,
+        triggeredByActorId: downedActor.id,
+      });
+      say(`${incoming.length} reinforcements are dispatched to the enemy reserve!`);
+    }
+  }
+
+  function evaluateBattleResult() {
+    const result = formation.result(state);
+    if (result !== "VICTORY" || !state.encounter) return result;
+    if (encounterCompleted) return result;
+    const runtime = state.encounter;
+    const definition = encounters[encounter];
+    const waves = Array.isArray(definition.waves)
+      ? definition.waves
+      : [{ id: "main", name: definition.name || "Main Wave", enemies: definition.enemies }];
+    const currentWave = waves[runtime.waveIndex];
+    emitCombatEvent(events, "EncounterWaveCleared", {
+      encounterId: encounter, waveIndex: runtime.waveIndex + 1, waveId: currentWave.id || `wave-${runtime.waveIndex + 1}`,
+    });
+    if (runtime.waveIndex + 1 < waves.length) {
+      runtime.waveIndex++;
+      const nextWave = waves[runtime.waveIndex];
+      const roster = createEncounterWaveEnemies(encounter, runtime.waveIndex);
+      state.enemyParty.roster = roster;
+      state.enemyParty.active = roster.slice(0, state.enemyParty.maxActive);
+      state.enemyParty.reserve = roster.slice(state.enemyParty.maxActive);
+      state.actors = state.actors.filter((actor) => !(actor.side === "enemy" && actor.summon));
+      state.actors.push(...state.enemyParty.active);
+      for (const actor of state.enemyParty.active) actor.cr = 0;
+      emitCombatEvent(events, "EncounterWaveStarted", {
+        encounterId: encounter,
+        waveIndex: runtime.waveIndex + 1,
+        waveId: nextWave.id || `wave-${runtime.waveIndex + 1}`,
+        name: nextWave.name || `Wave ${runtime.waveIndex + 1}`,
+      });
+      say(`Enemy reinforcements form the next wave: ${nextWave.name || `Wave ${runtime.waveIndex + 1}`}!`);
+      return null;
+    }
+    if (!encounterCompleted) {
+      encounterCompleted = true;
+      const rewards = structuredClone(definition.rewards || {});
+      emitCombatEvent(events, "EncounterCompleted", { encounterId: encounter, result, round: state.round, rewards });
+      onEncounterComplete({ encounterId: encounter, result, round: state.round, rewards });
+    }
+    return result;
+  }
   const deploymentSelector = createDeploymentSelector({ ask, output });
   const effectiveStat = (actor, stat) => getEffectiveStat(state, actor, stat);
   // Late-bound: assigned once the skills (which define summon behaviour) exist.
@@ -98,6 +166,7 @@ function createBattle({
       (downedActor, defeatStatuses, damageMeta) => {
         absorbedAmount = damageMeta?.absorbedAmount || 0;
         emitCombatEvent(events, "ActorDied", { actorId: downedActor.id, side: downedActor.side, round: state.round });
+        queueTriggeredReinforcements(downedActor);
         if (passiveHooks.onUnitDefeated) passiveHooks.onUnitDefeated(downedActor, defeatStatuses);
         const replacement = formation.deployFirstReserve(state, downedActor.side, downedActor);
         if (replacement) {
@@ -215,7 +284,7 @@ function createBattle({
     onTurnEnd: skillSet.onTurnEnd,
     onRoundStart: skillSet.onRoundStart,
     combatReadiness: readinessScheduler,
-    getResult: () => formation.result(state),
+    getResult: evaluateBattleResult,
     takeTurn: turnRunner.runTurn,
     meoTurn: summonTurn, // legacy parameter name, used only when no takeTurn is given
     showStatus,
@@ -235,9 +304,19 @@ function createBattle({
     const actorsBeforeBattleStart = new Set(state.actors);
     skillSet.onBattleStart(allyRoster);
     const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
-    const enemyRoster = createEncounterEnemies(encounter);
+    const encounterDefinition = encounters[encounter];
+    if (!encounterDefinition) throw new Error(`Unknown encounter "${encounter}".`);
+    const enemyRoster = createEncounterWaveEnemies(encounter, 0);
     formation.setupEnemyParty(state, enemyRoster);
+    const waves = Array.isArray(encounterDefinition.waves)
+      ? encounterDefinition.waves
+      : [{ id: "main", name: encounterDefinition.name || "Main Wave", enemies: encounterDefinition.enemies }];
+    state.encounter = { id: encounter, waveIndex: 0, enemyDefeatedCount: 0, triggeredReinforcements: [] };
     emitCombatEvent(events, "BattleStarted", { seed: state.rng.seed });
+    emitCombatEvent(events, "EncounterStarted", { encounterId: encounter, waveCount: waves.length });
+    emitCombatEvent(events, "EncounterWaveStarted", {
+      encounterId: encounter, waveIndex: 1, waveId: waves[0].id || "main", name: waves[0].name || "Main Wave",
+    });
     for (const unit of initialSummons) {
       emitCombatEvent(events, "ActorSummoned", { actorId: unit.id, ownerId: unit.ownerId || "unknown", side: unit.side, round: state.round });
     }
@@ -253,12 +332,13 @@ function createBattle({
     }
 
     await turnEngine.runRounds();
-    emitCombatEvent(events, "BattleEnded", { result: formation.result(state), round: state.round });
+    const finalResult = evaluateBattleResult();
+    emitCombatEvent(events, "BattleEnded", { result: finalResult, round: state.round });
     output.log(
-      `\n=== ${formation.result(state)} ===========================================================================`,
+      `\n=== ${finalResult} ===========================================================================`,
     );
     showStatus(state, output);
-    return formation.result(state);
+    return finalResult;
   }
 
   return {

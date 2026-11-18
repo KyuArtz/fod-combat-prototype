@@ -140,3 +140,8 @@ See [`STEP3_FULL_BATTLE_REGRESSION.md`](./STEP3_FULL_BATTLE_REGRESSION.md) for t
 ## Step 7 enemy data and encounter checks
 
 `test/enemyDataAndEncounter.test.js` validates all five enemy archetypes and their AI policy references, validates registered encounter compositions, and completes an alternate Drone Calibration encounter. The simulator accepts `--encounter trainingGround` (default) or `--encounter droneCalibration`; the current battle formation still requires five enemy entries. See `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.
+
+
+## Step 8 encounter progression checks
+
+`test/encounterProgression.test.js` validates all registered encounter wave/reinforcement data, rejects unsupported triggers and undersized waves, verifies per-instance stat overrides do not mutate archetypes, and runs the two-wave `siegeBreakthrough` battle through reinforcement deployment and the completion callback. Simulator tests verify wave/reinforcement metrics. The simulator accepts `--encounter siegeBreakthrough`; see `docs/STEP8_ENCOUNTER_PROGRESSION.md`. Latest full-suite result: **191 passed, 0 failed**.

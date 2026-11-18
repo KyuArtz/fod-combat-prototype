@@ -61,3 +61,8 @@ Payloads use stable actor IDs, strings, booleans, numbers, arrays and plain deci
 - `ShieldGained` reports shield creation/refresh; shield depletion by incoming damage does not yet have a separate `ShieldBroken` event.
 - Status removals caused by cleanse are not currently emitted as `StatusExpired`; a future `StatusRemoved` reasoned event can cover non-duration removal.
 - The event stream is not yet persisted as a battle-save format. `createEventBus({ record: true })` retains in-memory history for tests and tooling.
+
+
+## Step 8 encounter lifecycle additions
+
+Step 8 extends the event contract with `EncounterStarted`, `EncounterWaveStarted`, `EncounterWaveCleared`, `ReinforcementsQueued` and `EncounterCompleted`. Their required fields are defined in `core/combatEvents.js`. `EncounterCompleted.rewards` contains encounter reward metadata only; it does not represent awarded or persisted rewards. See `docs/STEP8_ENCOUNTER_PROGRESSION.md`.

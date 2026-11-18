@@ -51,3 +51,15 @@ test("simulator can run a data-defined alternate encounter", async () => {
   assert.equal(report.config.encounter, "droneCalibration");
   assert.deepEqual(Object.keys(report.battles[0].perActorReceived).length > 0, true);
 });
+
+
+test("simulator reports wave and reinforcement metrics for multi-wave encounters", async () => {
+  const report = await simulateBattles({ battles: 1, seed: 80801, encounter: "siegeBreakthrough", policy: "basic" });
+  assert.equal(report.config.encounter, "siegeBreakthrough");
+  assert.equal(report.battles[0].wavesStarted, 2);
+  assert.equal(report.battles[0].wavesCleared, 2);
+  assert.equal(report.battles[0].reinforcementGroups, 1);
+  assert.equal(report.battles[0].reinforcementUnits, 2);
+  assert.equal(report.battles[0].encounterCompleted, true);
+  assert.equal(report.summary.completedEncounters, 1);
+});

@@ -2,7 +2,7 @@
 
 A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.D.)** combat mechanics. This repository is a development/playtest project, not yet the production combat implementation.
 
-> **Current development direction (2026-11-16):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are **seeded and replayable** (`FOD_SEED`), and readable battle logs plus structured combat events flow through the typed event bus (steps 1 and 4). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, enemy AI, and headless/scripted players share the same view-and-decision interface (step 2). All five Falcon agents' skills are **data-driven and aligned to the owner's reference**. The project bundles only selected character stats, skills, and stat descriptions in `references/characterTerraData.js`; `core/skillInterpreter.js` runs active skills and supported passives. See `docs/OWNER_SKILL_REFERENCE.md`. Full-battle regression coverage and typed combat events are complete. Step 5 headless balance simulation is complete; see the Step 5 guide for CLI usage and metric limitations. The Training Drone and Rogue Automaton enemy skills have now also moved to the shared data/interpreter architecture (Step 6); see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. All five enemy archetypes and AI policies are now data-defined, and encounter composition can be selected from `data/encounters/` (Step 7); see `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.
+> **Current development direction (2026-11-16):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are **seeded and replayable** (`FOD_SEED`), and readable battle logs plus structured combat events flow through the typed event bus (steps 1 and 4). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, enemy AI, and headless/scripted players share the same view-and-decision interface (step 2). All five Falcon agents' skills are **data-driven and aligned to the owner's reference**. The project bundles only selected character stats, skills, and stat descriptions in `references/characterTerraData.js`; `core/skillInterpreter.js` runs active skills and supported passives. See `docs/OWNER_SKILL_REFERENCE.md`. Full-battle regression coverage and typed combat events are complete. Step 5 headless balance simulation is complete; see the Step 5 guide for CLI usage and metric limitations. The Training Drone and Rogue Automaton enemy skills have now also moved to the shared data/interpreter architecture (Step 6); see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. All five enemy archetypes and AI policies are data-defined (Step 7). Step 8 adds multi-wave encounters, defeat-triggered reinforcements, per-instance stat overrides and encounter completion/reward hooks; see `docs/STEP8_ENCOUNTER_PROGRESSION.md`.
 
 ## Quick start
 
@@ -105,6 +105,7 @@ node --test
 - [Step 3 full-battle regression report](docs/STEP3_FULL_BATTLE_REGRESSION.md)
 - [Step 4 typed combat events](docs/STEP4_TYPED_COMBAT_EVENTS.md)
 - [Step 5 headless simulator](docs/STEP5_HEADLESS_SIMULATOR.md)
+- [Step 8 encounter progression](docs/STEP8_ENCOUNTER_PROGRESSION.md)
 - [Development roadmap](docs/ROADMAP.md)
 - [Architecture decisions](docs/DECISIONS.md)
 - [Changelog](docs/CHANGELOG.md)
@@ -142,4 +143,5 @@ Select a data-defined encounter in the headless simulator:
 ```bash
 node tools/simulate.js --battles 100 --seed 42 --encounter trainingGround
 node tools/simulate.js --battles 100 --seed 42 --encounter droneCalibration
+node tools/simulate.js --battles 100 --seed 42 --encounter siegeBreakthrough
 ```
