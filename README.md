@@ -2,7 +2,7 @@
 
 A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.D.)** combat mechanics. This repository is a development/playtest project, not yet the production combat implementation.
 
-> **Current development direction (2026-11-16):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are **seeded and replayable** (`FOD_SEED`), and readable battle logs plus structured combat events flow through the typed event bus (steps 1 and 4). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, enemy AI, and headless/scripted players share the same view-and-decision interface (step 2). All five Falcon agents' skills are **data-driven and aligned to the owner's reference**. The project bundles only selected character stats, skills, and stat descriptions in `references/characterTerraData.js`; `core/skillInterpreter.js` runs active skills and supported passives. See `docs/OWNER_SKILL_REFERENCE.md`. Full-battle regression coverage and typed combat events are complete. Step 5 headless balance simulation is complete; see the Step 5 guide for CLI usage and metric limitations. The Training Drone and Rogue Automaton enemy skills have now also moved to the shared data/interpreter architecture (Step 6); see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. Other enemies remain unchanged.
+> **Current development direction (2026-11-16):** threshold-based continuous readiness is the preferred scheduler; development testing uses a **5 Falcon vs. 5 enemy active formation**. Reserve systems remain implemented, but with five Falcon agents deployed, the current test setup has no reserve members. Battles are **seeded and replayable** (`FOD_SEED`), and readable battle logs plus structured combat events flow through the typed event bus (steps 1 and 4). In PvE the **player's side acts first** (opening initiative), because the fastest unit in 5v5 is an enemy (Recon Drone, SPD 115 vs Zenki 110). Every turn is **controller-driven**: the terminal menu, enemy AI, and headless/scripted players share the same view-and-decision interface (step 2). All five Falcon agents' skills are **data-driven and aligned to the owner's reference**. The project bundles only selected character stats, skills, and stat descriptions in `references/characterTerraData.js`; `core/skillInterpreter.js` runs active skills and supported passives. See `docs/OWNER_SKILL_REFERENCE.md`. Full-battle regression coverage and typed combat events are complete. Step 5 headless balance simulation is complete; see the Step 5 guide for CLI usage and metric limitations. The Training Drone and Rogue Automaton enemy skills have now also moved to the shared data/interpreter architecture (Step 6); see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. All five enemy archetypes and AI policies are now data-defined, and encounter composition can be selected from `data/encounters/` (Step 7); see `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.
 
 ## Quick start
 
@@ -135,3 +135,11 @@ index.js             Entry point and scheduler selection
 ## Source / documentation status
 
 The standard setup uses **5 active Falcon agents vs. 5 active enemies**. Falcon skills follow the owner-provided reference; the project keeps only extracted stats, skills, and stat descriptions in `references/characterTerraData.js`. Enemy skills are still handled by `ai/enemyAI.js`. Steps 1–4 are complete; see the roadmap for the next milestone. See [Project status](docs/PROJECT_STATUS.md) and [Owner skill reference](docs/OWNER_SKILL_REFERENCE.md).
+
+
+Select a data-defined encounter in the headless simulator:
+
+```bash
+node tools/simulate.js --battles 100 --seed 42 --encounter trainingGround
+node tools/simulate.js --battles 100 --seed 42 --encounter droneCalibration
+```

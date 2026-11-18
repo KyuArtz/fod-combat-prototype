@@ -1,7 +1,7 @@
 # Project Status & Snapshot
 
 **Project:** F.O.D. (Fragments of Decay) Combat Prototype  
-**Snapshot:** 2026-11-16  
+**Snapshot:** 2026-11-17  
 **Runtime:** Node.js CommonJS CLI  
 **Preferred scheduler:** threshold / continuous-time  
 **Development encounter:** 5 Falcon agents vs. 5 training enemies
@@ -50,14 +50,14 @@ The engine's base Falcon stats remain the prototype values in `characters/falcon
 
 ## Verification
 
-The test suite includes scheduler, determinism, controller, golden replay, basic-attack, Elishia mechanics, Falcon data validation, owner-aligned skill mechanics and full-battle regression coverage. Run `node --test` from the project root. Latest verification: **183 passed, 0 failed** (includes simulator CLI tests). The exact suite breakdown is in `docs/TESTING_AND_PLAYTESTING.md`.
+The test suite includes scheduler, determinism, controller, golden replay, basic-attack, Elishia mechanics, Falcon data validation, owner-aligned skill mechanics and full-battle regression coverage. Run `node --test` from the project root. Latest verification: **187 passed, 0 failed** (includes enemy data, AI policy, encounter and simulator tests). The exact suite breakdown is in `docs/TESTING_AND_PLAYTESTING.md`.
 
 Golden transcripts were intentionally refreshed because the owner-aligned skill mechanics change battle output and outcomes. They are regression fixtures, not immutable evidence that the old prototype values were correct.
 
 ## Known limitations / next work
 
 - Combat remains CLI-driven; no GUI exists.
-- Enemy skills remain implemented in `ai/enemyAI.js` and are not data-driven.
+- Enemy archetypes/stats are defined in `data/enemies/`; AI rules are in `data/enemyAI/`; encounter compositions are in `data/encounters/`.
 - The three underspecified owner mechanics above need owner clarification.
 - Step 3 full-battle regression coverage is complete for the current Falcon engine scope. See `docs/STEP3_FULL_BATTLE_REGRESSION.md`.
 - Step 4 typed combat events is complete. See `docs/STEP4_TYPED_COMBAT_EVENTS.md` for event names, payload contracts, ordering and known limits.
@@ -67,3 +67,7 @@ Golden transcripts were intentionally refreshed because the owner-aligned skill 
 ## Step 6 — data-driven enemy skills
 
 Training Drone Pulse Shot and Rogue Automaton Overload, Scan and Heavy Strike are now declarative definitions in `data/enemySkills/`. Enemy AI continues to own its priorities and chance rolls; skill data is executed by the shared interpreter. The migration preserves the existing AI decision conditions and RNG roll order. See `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`. Siege Turret, Recon Drone and Toxic Stalker remain basic-attack-only in the current prototype; encounter configuration and additional enemy kits remain future work.
+
+## Step 7 — data-driven enemy AI and encounters
+
+All five training enemy archetypes now use data-defined stats and AI policy identifiers. The Training Drone and Rogue Automaton use declarative rule sets that preserve their original decision priorities and seeded RNG call order; the other three enemies use the basic-only policy. Encounter rosters are defined in `data/encounters/`, with `trainingGround` preserving the original 5v5 enemy roster and `droneCalibration` providing an alternate composition. Battles, headless runs and the simulator accept an encounter ID. See `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`. The current formation engine still requires at least five enemy entries per encounter.

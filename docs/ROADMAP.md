@@ -55,7 +55,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [ ] Combat log export to a file and a command-line replay tool.
 - [ ] Save/load battle snapshots.
 - [x] Data-driven skills for the Training Drone and Rogue Automaton (see `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`).
-- [ ] Data-driven encounter configuration and migration of additional enemy kits.
+- [x] Data-driven encounter configuration for the current training roster (Step 7); waves and stage scaling remain future work.
 
 ## Phase F — Agreed combat-engine sequence
 
@@ -66,6 +66,7 @@ This is a planning list, not a promise that every item is scheduled. Mark items 
 - [x] **Step 4: typed combat events** alongside text logs; see `docs/STEP4_TYPED_COMBAT_EVENTS.md`.
 - [x] **Step 5: headless simulator CLI** for repeatable balance runs; see `docs/STEP5_HEADLESS_SIMULATOR.md`.
 - [x] **Step 6: data-driven enemy skills** for the Training Drone and Rogue Automaton, using the shared interpreter and preserving existing AI policy.
+- [x] **Step 7: data-driven enemy AI and encounters.** Enemy archetypes/stats, rule-based AI policies and encounter rosters are data-defined; see `docs/STEP7_DATA_DRIVEN_ENEMY_AI_AND_ENCOUNTERS.md`.
 
 ### Owner-reference gaps to resolve
 

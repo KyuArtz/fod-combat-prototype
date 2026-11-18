@@ -3,18 +3,20 @@ const assert = require("node:assert/strict");
 const { parseArgs, renderCsv, simulateBattles } = require("../tools/simulate");
 
 test("simulator CLI parses supported options and rejects invalid values", () => {
-  assert.deepEqual(parseArgs(["-n", "12", "--seed", "99", "--scheduler", "legacy", "--opening", "speed", "--policy", "basic", "--format", "json"]), {
-    battles: 12, seed: 99, scheduler: "legacy", opening: "speed", policy: "basic", format: "json", out: null,
+  assert.deepEqual(parseArgs(["-n", "12", "--seed", "99", "--scheduler", "legacy", "--opening", "speed", "--policy", "basic", "--encounter", "droneCalibration", "--format", "json"]), {
+    battles: 12, seed: 99, scheduler: "legacy", opening: "speed", policy: "basic", encounter: "droneCalibration", format: "json", out: null,
   });
   assert.throws(() => parseArgs(["--battles", "0"]), /--battles/);
   assert.throws(() => parseArgs(["--scheduler", "unknown"]), /--scheduler/);
   assert.throws(() => parseArgs(["--policy", "unknown"]), /--policy/);
+  assert.throws(() => parseArgs(["--encounter", "unknown"]), /--encounter/);
   assert.throws(() => parseArgs(["--format", "xml"]), /--format/);
 });
 
 test("headless simulator returns complete aggregate and per-battle metrics", async () => {
   const report = await simulateBattles({ battles: 2, seed: 31, policy: "random" });
   assert.equal(report.summary.battles, 2);
+  assert.equal(report.config.encounter, "trainingGround");
   assert.equal(report.battles.length, 2);
   assert.equal(report.battles[0].seed, 31);
   assert.equal(report.battles[1].seed, 32);
@@ -41,4 +43,11 @@ test("CSV output has stable columns and one row per battle", async () => {
   assert.match(lines[0], /^index,seed,result,rounds,turns,/);
   assert.match(lines[1], /^1,8,(VICTORY|DEFEAT),/);
   assert.match(lines[2], /^2,9,(VICTORY|DEFEAT),/);
+});
+
+
+test("simulator can run a data-defined alternate encounter", async () => {
+  const report = await simulateBattles({ battles: 1, seed: 77, encounter: "droneCalibration" });
+  assert.equal(report.config.encounter, "droneCalibration");
+  assert.deepEqual(Object.keys(report.battles[0].perActorReceived).length > 0, true);
 });

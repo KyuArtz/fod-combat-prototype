@@ -7,9 +7,10 @@ const { playHeadless } = require("./lib/headless");
 const { createEventBus } = require("../core/eventBus");
 const legacy = require("../systems/combatReadiness");
 const threshold = require("../systems/thresholdCombatReadiness");
+const { encounters } = require("../characters/enemies");
 
 function parseArgs(argv) {
-  const options = { battles: 100, seed: 1, scheduler: "threshold", opening: "player-first", policy: "random", format: "table", out: null };
+  const options = { battles: 100, seed: 1, scheduler: "threshold", opening: "player-first", policy: "random", encounter: "trainingGround", format: "table", out: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--help" || arg === "-h") options.help = true;
@@ -18,6 +19,7 @@ function parseArgs(argv) {
     else if (arg === "--scheduler") options.scheduler = argv[++i];
     else if (arg === "--opening") options.opening = argv[++i];
     else if (arg === "--policy") options.policy = argv[++i];
+    else if (arg === "--encounter") options.encounter = argv[++i];
     else if (arg === "--format") options.format = argv[++i];
     else if (arg === "--out") options.out = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
@@ -27,6 +29,7 @@ function parseArgs(argv) {
   if (!["threshold", "legacy"].includes(options.scheduler)) throw new Error("--scheduler must be threshold or legacy.");
   if (!["player-first", "speed"].includes(options.opening)) throw new Error("--opening must be player-first or speed.");
   if (!["basic", "random"].includes(options.policy)) throw new Error("--policy must be basic or random.");
+  if (!encounters[options.encounter]) throw new Error(`Unknown --encounter "${options.encounter}". Available: ${Object.keys(encounters).join(", ")}.`);
   if (!["table", "json", "csv"].includes(options.format)) throw new Error("--format must be table, json or csv.");
   return options;
 }
@@ -96,7 +99,7 @@ function summarizeBattle(battle, index, seed) {
 }
 
 async function simulateBattles(options = {}) {
-  const config = { battles: 100, seed: 1, scheduler: "threshold", opening: "player-first", policy: "random", ...options };
+  const config = { battles: 100, seed: 1, scheduler: "threshold", opening: "player-first", policy: "random", encounter: "trainingGround", ...options };
   const scheduler = config.scheduler === "legacy" ? legacy : threshold;
   const results = [];
   for (let i = 0; i < config.battles; i++) {
@@ -108,6 +111,7 @@ async function simulateBattles(options = {}) {
       openingInitiative: config.opening,
       policy: config.policy,
       policySeed: (seed ^ 0x9e3779b9) >>> 0,
+      encounter: config.encounter,
       events,
     });
     results.push(summarizeBattle(battle, i + 1, seed));
@@ -156,7 +160,7 @@ function renderTable(report) {
   return [
     "F.O.D. HEADLESS SIMULATION",
     `Battles: ${s.battles} | Seed range: ${report.config.seed}–${(report.config.seed + s.battles - 1) >>> 0}`,
-    `Scheduler: ${report.config.scheduler} | Opening: ${report.config.opening} | Player policy: ${report.config.policy}`,
+    `Scheduler: ${report.config.scheduler} | Opening: ${report.config.opening} | Player policy: ${report.config.policy} | Encounter: ${report.config.encounter}`,
     "",
     `Results: ${s.wins} victories (${pct}%) | ${s.defeats} defeats | ${s.draws} other`,
     `Average rounds: ${s.averageRounds.toFixed(2)} | Average actor turns: ${s.averageTurns.toFixed(1)}`,
@@ -170,7 +174,7 @@ function renderTable(report) {
 }
 
 function usage() {
-  return `Usage: node tools/simulate.js [options]\n\nOptions:\n  -n, --battles N       Number of battles (default 100; max 100000)\n      --seed N          First battle seed (default 1)\n      --scheduler NAME  threshold or legacy (default threshold)\n      --opening NAME    player-first or speed (default player-first)\n      --policy NAME     random or basic player controller (default random)\n      --format NAME     table, json or csv (default table)\n      --out FILE        Write output to a file instead of stdout\n  -h, --help            Show this help\n\nExamples:\n  node tools/simulate.js --battles 1000 --seed 42\n  node tools/simulate.js -n 250 --policy basic --format csv --out results.csv\n  node tools/simulate.js -n 100 --scheduler legacy --format json --out legacy.json`;
+  return `Usage: node tools/simulate.js [options]\n\nOptions:\n  -n, --battles N       Number of battles (default 100; max 100000)\n      --seed N          First battle seed (default 1)\n      --scheduler NAME  threshold or legacy (default threshold)\n      --opening NAME    player-first or speed (default player-first)\n      --policy NAME     random or basic player controller (default random)\n      --encounter NAME  trainingGround or droneCalibration (default trainingGround)\n      --format NAME     table, json or csv (default table)\n      --out FILE        Write output to a file instead of stdout\n  -h, --help            Show this help\n\nExamples:\n  node tools/simulate.js --battles 1000 --seed 42\n  node tools/simulate.js -n 250 --policy basic --format csv --out results.csv\n  node tools/simulate.js -n 100 --scheduler legacy --format json --out legacy.json`;
 }
 
 async function main(argv = process.argv.slice(2)) {
