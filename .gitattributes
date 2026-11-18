@@ -1,0 +1,6 @@
+*.gz binary
+*.zip binary
+*.js text
+*.md text
+*.json text
+*.csv text

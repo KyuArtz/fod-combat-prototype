@@ -14,7 +14,7 @@ Step 3 moves confidence from isolated skill tests into complete controller-drive
 - All 20 Falcon active skills are selected and executed during actual battles. Each case verifies the action was accepted, no decision rejection occurred, the battle progressed, and it reached a terminal result.
 - A five-agent battle exercises all five Falcon actors and multiple passive-triggering skills in one encounter.
 - Jazen's Reinforced Plating Taunt is verified against the built-in enemy controller's target choice.
-- Breach Charge Stagger is verified by observing the enemy lose its next action in the battle log.
+- Breach Charge Stagger is verified by observing the enemy readiness pushback while preserving its next action.
 - Manual reserve switching in a three-active formation is replayed from the recorded player decisions; result, log, RNG state, and final active formation match.
 - Automatic reserve deployment is exercised after an active Falcon is incapacitated.
 - Victory and defeat result checks cover deployed actors and living reserves.
@@ -44,4 +44,4 @@ Latest full run: **171 tests passed, 0 failed**.
 
 ## Next agreed engine step
 
-Step 4: add typed combat lifecycle events (for example `TurnStarted`, `DamageDealt`, and related events) alongside the existing text `Log` events, preserving deterministic event order and plain-data payloads.
+At the time, the next step was Step 4: add typed combat lifecycle events (for example `TurnStarted`, `DamageDealt`, and related events) alongside the existing text `Log` events, preserving deterministic event order and plain-data payloads.
