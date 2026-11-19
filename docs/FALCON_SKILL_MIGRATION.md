@@ -2,7 +2,7 @@
 
 ## Canonical design source
 
-The project owner supplied a character reference for website guidance. A reference copy is kept at `ref/characterTerraData.json`; it is not loaded by the combat engine and does not define runtime behavior. The combat engine implementation and tests are authoritative. Update the reference JSON after engine mechanics change. The five Falcon entries are summarized in `docs/OWNER_SKILL_REFERENCE.md`.
+The project owner supplied a character reference for website guidance. A reference copy is kept at `references/characterTerraData.js`; it is not loaded by the combat engine and does not define runtime behavior. The combat engine implementation and tests are authoritative. Update the reference JSON after engine mechanics change. The five Falcon entries are summarized in `docs/OWNER_SKILL_REFERENCE.md`.
 
 This source supersedes the earlier prototype skill definitions. Use it for Falcon skill titles, descriptions, passive rules, MP costs and cooldowns. Do not silently preserve earlier prototype substitutions when they conflict with the owner reference.
 

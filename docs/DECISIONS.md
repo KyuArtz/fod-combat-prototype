@@ -103,7 +103,7 @@
 
 ## ADR-015 — Owner-provided Falcon skills supersede prototype skill values (2026-11-16)
 
-**Decision:** The combat engine implementation and automated tests are canonical for actual combat behavior. `ref/characterTerraData.json` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. When engine mechanics change, update the JSON skills and descriptions afterward so the site reference stays aligned. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
+**Decision:** The combat engine implementation and automated tests are canonical for actual combat behavior. `characterTerraData.json` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. When engine mechanics change, update the JSON skills and descriptions afterward so the site reference stays aligned. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
 
 **Implementation rule:** implement mechanics only when the source provides enough values and triggers. Do not guess Meo-v9 Final Protocol EMP scaling, Nanotech Singularity DoT scaling, or Catalyst Wing HP/destruction trigger. Zackry's +10 Accuracy currently applies to the basic-attack accuracy check; a general skill-hit accuracy model remains future work.
 

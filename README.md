@@ -7,7 +7,7 @@ A Node.js command-line sandbox for experimenting with **Fragments of Decay (F.O.
 
 ## Engine authority and website reference
 
-The combat engine is the primary implementation and testing environment. Its code and automated tests define actual combat behavior and are the source of truth. The website-facing `characterTerraData.json` is a separate guide/idea reference stored only at `ref/characterTerraData.json`; it is not imported by the engine and must not override runtime mechanics. When engine skills or mechanics change, update the reference JSON skills and descriptions afterward so the website stays aligned. Do not place a copy of this JSON at the project root.
+The combat engine is the primary implementation and testing environment. Its code and automated tests define actual combat behavior and are the source of truth. The website-facing `characterTerraData.json` is a separate guide/idea reference stored only at `references/characterTerraData.js`; it is not imported by the engine and must not override runtime mechanics. When engine skills or mechanics change, update the reference JSON skills and descriptions afterward so the website stays aligned. Do not place a copy of this JSON at the project root.
 
 ## Quick start
 

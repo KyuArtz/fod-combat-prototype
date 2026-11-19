@@ -176,7 +176,7 @@ Focused coverage lives in `test/basicAttack.test.js`.
 
 ## Owner-aligned data-driven Falcon skills
 
-The combat engine implementation and automated tests are authoritative for actual skill behavior. `ref/characterTerraData.json` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. Update its skill data and descriptions after engine mechanics change. `docs/OWNER_SKILL_REFERENCE.md` is a readable implementation reference. `data/skills/<character>.js` implements the five Falcon skill sets; `characters/skills.js` assembles the registry.
+The combat engine implementation and automated tests are authoritative for actual skill behavior. `references/characterTerraData.js` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. Update its skill data and descriptions after engine mechanics change. `docs/OWNER_SKILL_REFERENCE.md` is a readable implementation reference. `data/skills/<character>.js` implements the five Falcon skill sets; `characters/skills.js` assembles the registry.
 
 `core/skillInterpreter.js` checks readiness, pays MP, sets cooldowns, applies declarative effects and invokes passive hooks. Elishia's Biotech Overdrive uses a three-turn battle-start counter; her Nanotech-skill MP discount is a separate flat 8 MP token. Controllers only choose actions and targets. Current effect families include single/area healing, healing-over-time, cleanse, typed mastery hits, status and stat effects, shields, damage-taken/dealt modifiers, Tactical/Cipher marks, conditional attacks, Stagger, summons and Singularity.
 

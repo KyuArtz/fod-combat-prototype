@@ -68,7 +68,7 @@
 
 ## 2026-11-16 — Owner-reference Falcon skill engine alignment
 
-- Used the owner-provided `characterTerraData.json` as the authoritative implementation source and added `docs/OWNER_SKILL_REFERENCE.md` as the readable source-derived skill specification. The project bundle was subsequently reduced to the selected JS extract.
+- Used the owner-provided `characterTerraData.js` as the authoritative implementation source and added `docs/OWNER_SKILL_REFERENCE.md` as the readable source-derived skill specification. The project bundle was subsequently reduced to the selected JS extract.
 - Replaced prototype Falcon skill names, costs, cooldowns and descriptions with the owner's initial skill reference for all five Falcon agents.
 - Implemented supported passives and mechanics: Elishia's 3-turn battle-start SPD/Evasion buff, flat 8 MP discount and Nanotech effects; Evalete's 12-turn Catalyst Wing pulse; Zackry's Tactical Mark, Command Uplink, EMP Burst and Overwatch behavior; Jazen's Recoil Dampeners, Stagger, Taunt and damage effects; Zenki's Unobserved, Railshot, Cipher Tag, Ghost Protocol and Zero Hour.
 - Added shared interpreter handlers and passive lifecycle callbacks, including HOT, cleanse, conditional stats, damage-taken/dealt modifiers, stagger skip and mark defeat rewards. Status and shield durations now tick after the affected actor completes their turn, preserving the full specified number of turns.
@@ -214,5 +214,5 @@ For every future milestone, add:
 
 ## Step 9 packaging clarification
 
-- Removed the full `characterTerraData.json` from the package root and placed the website-facing reference copy at `ref/characterTerraData.json`.
+- Removed the full `characterTerraData.json` from the package root and placed the website-facing reference copy at `references/characterTerraData.js`.
 - Clarified that the combat engine and automated tests are authoritative; the JSON is a separate guide/idea reference updated after engine mechanics change.

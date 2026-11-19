@@ -66,7 +66,7 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 
 ## Owner-aligned Falcon skills (2026-11-16)
 
-- **Source of truth:** the combat engine implementation and automated tests define actual combat behavior. `ref/characterTerraData.json` is a separate website-facing guide/idea reference and is not loaded by the engine. After changing engine mechanics, update the JSON skills and descriptions. Read `docs/FALCON_MECHANICS_FINALIZATION.md` before changing any Falcon skill.
+- **Source of truth:** the combat engine implementation and automated tests define actual combat behavior. `references/characterTerraData.js` is a separate website-facing guide/idea reference and is not loaded by the engine. After changing engine mechanics, update the JSON skills and descriptions. Read `docs/FALCON_MECHANICS_FINALIZATION.md` before changing any Falcon skill.
 - All 20 active skills and five passive definitions are represented in `data/skills/` and assembled by `characters/skills.js` through `core/skillInterpreter.js`.
 - The interpreter now supports area healing, HOT, cleanse, typed damage, shields, stat modifiers, marks, conditional effects, Stagger, Taunt, accuracy tokens and lifecycle passive callbacks.
 - Do not restore old prototype values when they conflict with the owner source. The old Meo-v9 revive/EMP-on-destruction prototype behavior is removed; Emergency Field heals a living low-HP ally.

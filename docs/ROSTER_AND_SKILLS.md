@@ -41,7 +41,7 @@ Base stats from `characters/falcon.js`. Elishia's Biotech Overdrive temporarily 
 
 ## Owner-aligned Falcon skill reference
 
-The combat engine implementation and tests are authoritative for actual skill behavior. `ref/characterTerraData.json` is a separate website-facing guide/idea reference; update its skills and descriptions after engine changes. See `docs/OWNER_SKILL_REFERENCE.md` for the full extracted text and implementation caveats. The data modules in `data/skills/` mirror that source where the engine has enough information to implement the behavior.
+The combat engine implementation and tests are authoritative for actual skill behavior. `references/characterTerraData.js` is a separate website-facing guide/idea reference; update its skills and descriptions after engine changes. See `docs/OWNER_SKILL_REFERENCE.md` for the full extracted text and implementation caveats. The data modules in `data/skills/` mirror that source where the engine has enough information to implement the behavior.
 
 | Agent | Passive | Skill 1 | Skill 2 | Skill 3 | Ultimate |
 |---|---|---|---|---|---|
