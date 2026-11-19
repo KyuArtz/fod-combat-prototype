@@ -8,9 +8,9 @@ node --test
 
 Test helpers live in `tools/lib/` (not in `test/`, because Node would run them as tests). The current suite also includes owner-aligned Falcon mechanics, Falcon data validation, shared basic-attack tests, enemy archetype/policy validation and data-defined encounter tests.
 
-## Current verified test inventory (187)
+## Current verified test inventory (202)
 
-Latest full run: `node --test` -> **187 passed, 0 failed**.
+Latest full run: `node --test` -> **202 passed, 0 failed**.
 
 | Suite | Coverage |
 |---|---|
@@ -22,6 +22,7 @@ Latest full run: `node --test` -> **187 passed, 0 failed**.
 | `skillData.test.js` (6) | Owner-data validation, costs/cooldowns, shared interpreter and flat MP discount |
 | `falconSkillData.test.js` (3) | All five Falcon data modules, passive attachment and owner costs/cooldowns |
 | `ownerFalconMechanics.test.js` (17) | All five Falcon kits/passives; Catalyst pulse; marks; stagger; taunt; Railshot; Cipher; Ghost and Zero Hour |
+| `falconFinalizedMechanics.test.js` (11) | Meo-v9 Final Protocol, Singularity DoT, Catalyst Wing lifecycle, Zackry skill Accuracy, Stagger readiness delay, Recoil threshold and owner JSON/runtime reference synchronization |
 | `fullBattleRegression.test.js` (29) | All 20 active skills in real battles; passive interactions; Taunt/Stagger AI behavior; switching/replay; automatic reserve deployment; victory/defeat; shield/cooldown timing |
 | `elishiaMechanics.test.js` (24) | Timed Biotech Overdrive, Adaptive Barrier, Meo-v9 scan/cover fire/Emergency Field, Singularity and battle behavior |
 | `basicAttack.test.js` (4) | Shared player/enemy basic attack, evasion, retaliation and invalid inputs |
@@ -34,7 +35,7 @@ Golden fixtures in `test/fixtures/golden/` were intentionally regenerated after 
 
 ## Targeted owner-mechanics coverage
 
-`test/ownerFalconMechanics.test.js` verifies the values and behaviors fully specified by the owner-provided character reference (selected project extract: `references/characterTerraData.js`). It does not claim coverage of deferred mechanics whose values/triggers are missing from the owner source (Meo-v9 Final Protocol EMP scaling, Singularity DoT scaling, Catalyst Wing destruction trigger, and general skill-hit Accuracy).
+`test/ownerFalconMechanics.test.js` verifies owner-specified Falcon behavior. `test/falconFinalizedMechanics.test.js` verifies the owner-approved implementation additions where the source omitted tuning values: Meo-v9 EMP scaling, Singularity DoT scaling, Catalyst Wing durability/destruction, next-attack skill Accuracy, and Stagger readiness delay. See `docs/FALCON_MECHANICS_FINALIZATION.md` for the exact values.
 
 ## Playtest matrix
 
@@ -144,4 +145,4 @@ See [`STEP3_FULL_BATTLE_REGRESSION.md`](./STEP3_FULL_BATTLE_REGRESSION.md) for t
 
 ## Step 8 encounter progression checks
 
-`test/encounterProgression.test.js` validates all registered encounter wave/reinforcement data, rejects unsupported triggers and undersized waves, verifies per-instance stat overrides do not mutate archetypes, and runs the two-wave `siegeBreakthrough` battle through reinforcement deployment and the completion callback. Simulator tests verify wave/reinforcement metrics. The simulator accepts `--encounter siegeBreakthrough`; see `docs/STEP8_ENCOUNTER_PROGRESSION.md`. Latest full-suite result: **191 passed, 0 failed**.
+`test/encounterProgression.test.js` validates all registered encounter wave/reinforcement data, rejects unsupported triggers and undersized waves, verifies per-instance stat overrides do not mutate archetypes, and runs the two-wave `siegeBreakthrough` battle through reinforcement deployment and the completion callback. Simulator tests verify wave/reinforcement metrics. The simulator accepts `--encounter siegeBreakthrough`; see `docs/STEP8_ENCOUNTER_PROGRESSION.md`. Latest full-suite result: **202 passed, 0 failed**.

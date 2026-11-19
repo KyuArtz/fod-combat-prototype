@@ -1,4 +1,4 @@
-// Canonical Falcon skill reference: characterTerraData.json (owner-provided).
+// Skill mechanics are implemented here; the compact owner-facing copy reference is references/characterTerraData.js.
 module.exports = {
   characterId: "zenki",
   passive: { id: "unobserved", name: "Unobserved", evasionWhileUnobserved: 12, attackerAccuracyPenalty: 10 },

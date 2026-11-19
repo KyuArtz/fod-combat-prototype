@@ -80,12 +80,13 @@ function createSkillInterpreter(context) {
     masteryHit(effect, run) {
       const outcome = hitMastery(run.actor, run.target, effect.element, effect.power, effect.canCrit ?? true);
       run.results.damage = outcome.damage;
+      run.results.missed = Boolean(outcome.miss);
     },
     masteryDamageAllEnemies(effect, run) {
       for (const enemy of alive(state, "enemy")) {
         const outcome = hitMastery(run.actor, enemy, effect.element, effect.power, effect.canCrit ?? true);
         if (effect.status && enemy.alive && random() * 100 < effect.statusChance) {
-          addStatus(enemy, effect.status.id, { turns: effect.status.turns, debuff: true });
+          addStatus(enemy, effect.status.id, { ...effect.status, debuff: true });
         }
         if (enemy === run.target) run.results.damage = outcome.damage;
       }
@@ -115,6 +116,7 @@ function createSkillInterpreter(context) {
       }
     },
     conditionalStatus(effect, run) {
+      if (run.results.missed) return;
       const unit = effect.to === "self" ? run.actor : run.target;
       const amount = unit.statuses[effect.conditionStatus] ? effect.conditionalAmount : effect.amount;
       addStatus(unit, effect.id, { stat: effect.stat, amount, turns: effect.turns, debuff: effect.debuff });
@@ -133,7 +135,7 @@ function createSkillInterpreter(context) {
     },
     railshot(effect, run) {
       const power = effect.normalPower * (run.actor.railshotUntargeted ? 1 + effect.unobservedBonus / 100 : 1);
-      const outcome = hitMastery(run.actor, run.target, effect.element, power, true);
+      const outcome = hitMastery(run.actor, run.target, effect.element, power, true, { ignoreAccuracy: true });
       run.results.damage = outcome.damage;
       run.results.bonusText = run.actor.railshotUntargeted ? " (unobserved bonus)" : "";
     },
@@ -142,8 +144,9 @@ function createSkillInterpreter(context) {
         ? effect.executePower : effect.normalPower;
       const outcome = hitMastery(run.actor, run.target, effect.element, power, true);
       run.results.damage = outcome.damage;
+      run.results.missed = Boolean(outcome.miss);
       run.results.bonusText = power === effect.executePower ? " (execution bonus)" : "";
-      if (run.target.alive && run.target.statuses[effect.cipherStatus]) {
+      if (!outcome.miss && run.target.alive && run.target.statuses[effect.cipherStatus]) {
         addStatus(run.target, "zeroHourSpdDown", { stat: "SPD", amount: effect.cipherSpdDown, turns: effect.cipherTurns, debuff: true });
       }
     },
@@ -154,6 +157,8 @@ function createSkillInterpreter(context) {
         summon: true, summonTurns: template.turns, stats: structuredClone(template.stats),
         behavior: structuredClone(template.behavior), ownerId: run.actor.id,
         scan: template.scan && structuredClone(template.scan),
+        finalProtocol: template.finalProtocol && structuredClone(template.finalProtocol),
+        finalProtocolTargetId: run.target?.id || state.actors.find((unit) => unit.side === "enemy" && unit.alive && unit.id === state.lastAllyTargetedEnemyId)?.id || state.actors.find((unit) => unit.side === "enemy" && unit.alive && unit.targetedByAllyId)?.id || null,
         onDestroyed: template.onDestroyed && structuredClone(template.onDestroyed),
       });
       state.actors.push(summon);
@@ -169,6 +174,12 @@ function createSkillInterpreter(context) {
       }
       for (const foe of alive(state, "enemy")) {
         for (const status of effect.enemies) addStatus(foe, status.id, { stat: status.stat, amount: status.amount, turns: status.turns, debuff: true });
+        if (effect.dot) {
+          const dot = typeof calculateMastery === "function"
+            ? calculateMastery(run.actor, foe, effect.dot.element, effect.dot.power, false)
+            : { damage: Math.max(1, Math.floor((run.actor.stats.MPow || 0) * effect.dot.power)) };
+          addStatus(foe, effect.dot.id, { dotDamage: dot.damage, damageType: effect.dot.element, turns: effect.dot.turns, debuff: true });
+        }
       }
       for (const summon of alive(state, "ally").filter((unit) => unit.summon && unit.behavior?.singularityPower)) {
         if (effect.summonMessage) run.after.push(formatMessage(effect.summonMessage, { actor: summon.name, power: Math.round(summon.behavior.singularityPower * 100) }));
@@ -205,8 +216,6 @@ function createSkillInterpreter(context) {
       else if (target?.targetedByAllyId) {
         const recipient = state.actors.find((unit) => unit.id === target.targetedByAllyId && unit.alive);
         if (recipient) recipients.push(recipient);
-      } else if (!target && ["uplink", "ultimate"].includes(skill.key)) {
-        recipients.push(...alive(state, "ally").filter((unit) => !unit.summon));
       }
       for (const recipient of recipients) recipient.nextAttackAccuracy = data.passive.nextAttackAccuracy || 10;
     }
@@ -230,6 +239,18 @@ function createSkillInterpreter(context) {
       if (actor.passive?.id === "catalystProtocol") {
         actor.catalystWingTurns = actor.passive.wingTurns;
         actor.catalystWingTurnCount = 0;
+        const wingHp = pct(actor.stats.HP, actor.passive.wingHpPercent);
+        const wing = makeActor({
+          id: `catalyst-wing-${actor.id}`, name: "Catalyst Wing", side: "ally", mastery: "Energy",
+          summon: true, passiveSummon: true, targetableByEnemy: true,
+          summonTurns: actor.passive.wingTurns, ownerId: actor.id,
+          stats: { HP: wingHp, MP: 0, ATK: 0, MPow: 0,
+            DEF: pct(actor.stats.DEF, actor.passive.wingDefPercent),
+            RES: pct(actor.stats.RES, actor.passive.wingResPercent), SPD: 1,
+            CritRate: 0, Evasion: 0, masteryBonus: {}, masteryResistance: {} },
+        });
+        state.actors.push(wing);
+        actor.catalystWingId = wing.id;
       }
       if (actor.passive?.id === "biotechOverdrive") {
         actor.biotechOverdriveTurns = actor.passive.battleStartBuffTurns || 3;
@@ -238,6 +259,11 @@ function createSkillInterpreter(context) {
   }
 
   function onTurnStart(actor) {
+    const dot = actor.statuses?.singularityDot;
+    if (actor.side === "enemy" && dot && dot.turns > 0 && actor.alive) {
+      applyDamage(actor, dot.dotDamage, dot.damageType);
+      say(`${actor.name} takes ${dot.dotDamage} Nanotech damage from Nanotech Singularity.`);
+    }
     if (actor.passive?.id === "unobserved") {
       actor.railshotUntargeted = !actor.targetedByEnemySinceLastTurn;
       actor.targetedByEnemySinceLastTurn = false;
@@ -261,6 +287,11 @@ function createSkillInterpreter(context) {
     if (actor.passive?.id !== "catalystProtocol" || !(actor.catalystWingTurns > 0)) return;
     actor.catalystWingTurnCount++;
     actor.catalystWingTurns--;
+    const wing = state.actors.find((unit) => unit.id === actor.catalystWingId);
+    if (wing?.alive) {
+      wing.summonTurns = actor.catalystWingTurns;
+      if (actor.catalystWingTurns <= 0) wing.alive = false;
+    }
     if (actor.catalystWingTurnCount % actor.passive.pulseEvery !== 0) return;
     for (const ally of alive(state, "ally").filter((unit) => !unit.summon)) {
       heal(ally, pct(ally.stats.HP, actor.passive.healPercent));
@@ -274,8 +305,8 @@ function createSkillInterpreter(context) {
     }
   }
 
-  function onDamageTaken(target, amount) {
-    if (target.alive && target.passive?.id === "recoilDampeners" && amount > pct(target.stats.HP, target.passive.damageThresholdPercent)) {
+  function onDamageTaken(target, amount, damageType, hpLoss = amount) {
+    if (target.alive && target.passive?.id === "recoilDampeners" && hpLoss > pct(target.stats.HP, target.passive.damageThresholdPercent)) {
       const passive = target.passive;
       const previous = target.statuses.jazenRecoil?.stacks || 0;
       const stacks = Math.min(passive.maxStacks, previous + 1);
@@ -336,10 +367,36 @@ function createSkillInterpreter(context) {
     if (summon.summonTurns <= 0) {
       summon.alive = false;
       say(formatMessage(behavior.expireMessage || "{actor}'s deployment expires.", { actor: summon.name }));
+      if (summon.finalProtocol) executeFinalProtocol(summon);
+    }
+  }
+
+  function executeFinalProtocol(summon) {
+    const protocol = summon.finalProtocol;
+    if (!protocol || summon.finalProtocolUsed) return;
+    summon.finalProtocolUsed = true;
+    const enemies = alive(state, "enemy");
+    if (!enemies.length) return;
+    const primary = enemies.find((enemy) => enemy.id === summon.finalProtocolTargetId) || enemies[0];
+    for (const enemy of enemies) {
+      const power = enemy === primary ? protocol.power : protocol.power * protocol.secondaryMultiplier;
+      const outcome = hitMastery(summon, enemy, protocol.element, power, false);
+      if (enemy.alive) addStatus(enemy, "meoFinalProtocolSpdDown", { stat: "SPD", amount: protocol.spdDown, turns: protocol.turns, debuff: true });
+      say(`${enemy.name} is struck by Meo-v9's Final Protocol for ${outcome.damage} ${protocol.element} damage${enemy === primary ? " (primary)" : " (secondary)"}.`);
     }
   }
 
   function summonDestroyed(summon) {
+    if (summon.passiveSummon && summon.ownerId) {
+      const owner = state.actors.find((unit) => unit.id === summon.ownerId && unit.alive);
+      if (owner?.passive?.id === "catalystProtocol" && owner.catalystWingTurns > 0) {
+        owner.catalystWingTurns = 0;
+        const amount = pct(owner.stats.HP, owner.passive.destructionShieldPercent);
+        addShield(owner, amount, owner.passive.destructionShieldTurns);
+        say(`Catalyst Wing is destroyed. ${owner.name} gains an emergency shield (${amount}) for ${owner.passive.destructionShieldTurns} turns.`);
+      }
+      return;
+    }
     const burst = summon.onDestroyed;
     if (!burst) return;
     say(formatMessage(burst.message, { actor: summon.name }));
@@ -411,6 +468,7 @@ function validateSkillData(data) {
       if (type === "summon" && !summons[effect.template]) fail(where, `unknown summon template "${effect.template}"`);
       if (type === "singularity") {
         if (!Number.isInteger(effect.turns) || effect.turns < 1 || !Array.isArray(effect.allies) || !Array.isArray(effect.enemies)) fail(where, "singularity effect needs turns > 0 and allies/enemies status lists");
+        if (effect.dot && (!effect.dot.id || typeof effect.dot.element !== "string" || !(isNum(effect.dot.power) && effect.dot.power > 0) || !Number.isInteger(effect.dot.turns) || effect.dot.turns < 1)) fail(where, "singularity dot needs id, element, positive power and turns");
         for (const status of [...effect.allies, ...effect.enemies]) {
           if (!status.id || !Number.isInteger(status.turns) || status.turns < 1 || (status.hotPercent === undefined && (typeof status.stat !== "string" || !isNum(status.amount)))) fail(where, "singularity effect contains an invalid status");
         }
@@ -465,6 +523,7 @@ function validateSkillData(data) {
   for (const [name, summon] of Object.entries(summons)) {
     if (!summon.id || !summon.name || !summon.stats || !Number.isInteger(summon.turns) || summon.turns < 1) fail(`summon ${name}`, "needs id, name, stats and turns >= 1");
     if (summon.behavior && summon.behavior.type !== "coverFire") fail(`summon ${name}`, `unknown behavior "${summon.behavior.type}"`);
+    if (summon.finalProtocol && (typeof summon.finalProtocol.element !== "string" || !(isNum(summon.finalProtocol.power) && summon.finalProtocol.power > 0) || !(isNum(summon.finalProtocol.secondaryMultiplier) && summon.finalProtocol.secondaryMultiplier > 0 && summon.finalProtocol.secondaryMultiplier <= 1) || !Number.isInteger(summon.finalProtocol.turns) || summon.finalProtocol.turns < 1)) fail(`summon ${name}`, "finalProtocol needs element, positive power, secondaryMultiplier in (0,1] and turns");
   }
   return true;
 }

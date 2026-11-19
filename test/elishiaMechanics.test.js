@@ -374,7 +374,7 @@ test("battle: Meo-v9 destruction does not trigger an unspecified EMP burst", asy
   const battle = drivenBattle({
     enemy: (holder) => ({
       chooseAction(view) {
-        const summon = holder.battle.state.actors.find((unit) => unit.summon && unit.alive);
+        const summon = holder.battle.state.actors.find((unit) => unit.id === "meo-9" && unit.alive);
         if (summon && !destroyed) {
           destroyed = true;
           holder.battle.dealDamage(summon, 99999, "Physical");

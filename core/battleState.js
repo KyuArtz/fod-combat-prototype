@@ -8,6 +8,7 @@ function createBattleState({ seed } = {}) {
     schedulerTicks: 0,
     scheduler: null, // threshold scheduler bookkeeping, created lazily
     singularityTurns: 0,
+    lastAllyTargetedEnemyId: null,
     log: [],
     party: {
       roster: [],

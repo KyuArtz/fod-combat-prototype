@@ -53,13 +53,31 @@ function createActionResolver({
       damageBonus(attacker, target),
     );
 
-  function hitPhysical(attacker, target, power = 1, canCrit = true) {
+  function accuracyMiss(attacker, target, ignoreAccuracy = false) {
+    const bonus = attacker.nextAttackAccuracy || 0;
+    if (bonus <= 0) return false;
+    attacker.nextAttackAccuracy = 0;
+    if (ignoreAccuracy) return false;
+    const baseEvasion = target.side === "ally"
+      ? effectiveStat(target, "Evasion")
+      : (target.stats.Evasion || 0);
+    const evasion = Math.max(0, Math.min(75, baseEvasion - bonus));
+    if (evasion > 0 && random() * 100 < evasion) {
+      say(`${attacker.name}'s attack misses ${target.name} (Accuracy bonus applied).`);
+      return true;
+    }
+    return false;
+  }
+
+  function hitPhysical(attacker, target, power = 1, canCrit = true, options = {}) {
+    if (accuracyMiss(attacker, target, options.ignoreAccuracy)) return { damage: 0, crit: false, miss: true };
     const outcome = calculatePhysical(attacker, target, power, canCrit);
     applyDamage(target, outcome.damage, "Physical");
     return outcome;
   }
 
-  function hitMastery(attacker, target, type, power = 1, canCrit = true) {
+  function hitMastery(attacker, target, type, power = 1, canCrit = true, options = {}) {
+    if (accuracyMiss(attacker, target, options.ignoreAccuracy)) return { damage: 0, crit: false, miss: true };
     const outcome = calculateMastery(
       attacker,
       target,

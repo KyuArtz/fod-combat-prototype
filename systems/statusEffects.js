@@ -1,5 +1,10 @@
 function addStatus(target, key, data) {
   if ((target.passive?.immunities || []).includes(key)) return false;
+  // Stagger delays readiness rather than deleting the actor's next action.
+  // Reapplication refreshes the marker but never pushes CR back a second time.
+  if (key === "staggered" && !target.statuses.staggered && Number.isFinite(data.delayCR) && data.delayCR > 0) {
+    target.cr = (Number.isFinite(target.cr) ? target.cr : 0) - data.delayCR;
+  }
   target.statuses[key] = { ...data, ...(target._isTakingTurn ? { appliedDuringCurrentTurn: true } : {}) };
   return true;
 }

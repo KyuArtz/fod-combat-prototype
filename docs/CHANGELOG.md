@@ -1,3 +1,13 @@
+## 2026-11-17 — Falcon combat mechanics finalization (Step 9)
+
+- Implemented Meo-v9 Final Protocol on natural expiry (1.0x/0.5x Mpow Electromagnetic damage, primary target selection, one-time SPD -15% debuff).
+- Implemented Nanotech Singularity's 0.2x Mpow non-critical Nanotech DoT at enemy turn start.
+- Implemented Catalyst Wing as a targetable passive summon with 25% Evalete Max HP, 50% base DEF/RES, natural expiry, and early-destruction shield behavior.
+- Corrected Zackry Overwatch so its +10 Accuracy token applies to the next attack, including skill attacks, and untargeted team skills no longer grant an unsupported team-wide token.
+- Changed Jazen Stagger from losing a full action to a 20-readiness-point delay; reapplication does not stack the pushback. Recoil Dampeners now checks actual HP loss after shield absorption.
+- Updated the owner JSON with clearly labeled implementation decisions, synchronized the bundled Falcon reference, and added focused regression tests.
+- **Verification:** `node --test` -> **202 passed, 0 failed**. Same-seed simulator smoke samples: trainingGround 200/200 wins before/after (average rounds 4.65 -> 4.17); siegeBreakthrough 100/100 wins before/after (average rounds 10.94 -> 9.66). Random-action results are a regression smoke check, not a final balance verdict.
+
 ## 2026-11-16 — Step 6: data-driven enemy skills
 
 - Added declarative skill data for Training Drone Pulse Shot and Rogue Automaton Overload, Scan and Heavy Strike under `data/enemySkills/`.
@@ -63,7 +73,7 @@
 - Implemented supported passives and mechanics: Elishia's 3-turn battle-start SPD/Evasion buff, flat 8 MP discount and Nanotech effects; Evalete's 12-turn Catalyst Wing pulse; Zackry's Tactical Mark, Command Uplink, EMP Burst and Overwatch behavior; Jazen's Recoil Dampeners, Stagger, Taunt and damage effects; Zenki's Unobserved, Railshot, Cipher Tag, Ghost Protocol and Zero Hour.
 - Added shared interpreter handlers and passive lifecycle callbacks, including HOT, cleanse, conditional stats, damage-taken/dealt modifiers, stagger skip and mark defeat rewards. Status and shield durations now tick after the affected actor completes their turn, preserving the full specified number of turns.
 - Replaced Meo-v9's prototype revive behavior with the owner's Emergency Field: heal the lowest-HP-ratio living ally below 25% Max HP for 10% Max HP.
-- Explicitly deferred mechanics whose required numbers/triggers are absent from the owner source: Meo-v9 Final Protocol EMP scaling, Singularity DoT scaling and Catalyst Wing destruction trigger. Zackry's +10 Accuracy is wired to basic attacks only; general skill-hit accuracy remains future work.
+- At this historical Step 8 checkpoint, the remaining source gaps were deferred. Step 9 (2026-11-17) supersedes this status with owner-approved balance values and implementations; see `docs/FALCON_MECHANICS_FINALIZATION.md`.
 - Added `test/ownerFalconMechanics.test.js` and updated Falcon data, validation and Elishia tests. Golden fixtures were intentionally regenerated after focused mechanics checks.
 - **Verification:** `node --test` -> **144/144 passing**. Five terminal transcripts and six Elishia-focused golden scenarios were intentionally regenerated and pass.
 - **Next agreed step:** full-battle regression coverage (victory/defeat, all Falcon kits/passives, AI targeting, status duration and reserve transitions).
@@ -200,3 +210,9 @@ For every future milestone, add:
 - Added encounter definitions under `data/encounters/`, including the original five-enemy Training Ground and a Drone Calibration variant.
 - Added `createEncounterEnemies()` and an `encounter` option to battles, headless runs and the simulator CLI (`--encounter`).
 - Added validation and regression tests for enemy definitions, AI policies, encounter references and alternate encounter execution.
+
+
+## Step 9 packaging clarification
+
+- Removed the full `characterTerraData.json` from the package root and placed the website-facing reference copy at `ref/characterTerraData.json`.
+- Clarified that the combat engine and automated tests are authoritative; the JSON is a separate guide/idea reference updated after engine mechanics change.

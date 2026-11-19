@@ -4,7 +4,7 @@ Paste this into a future coding assistant session when continuing F.O.D. combat 
 
 ---
 
-You are helping develop the user's **F.O.D. (Fragments of Decay) combat prototype**, a Node.js/CommonJS CLI JRPG battle sandbox. Work should be incremental, source-grounded, and preserve the user's existing architecture.
+You are helping develop the user's **F.O.D. (Fragments of Decay) combat prototype**, a Node.js/CommonJS CLI JRPG battle sandbox. Work should be incremental, source-grounded, and preserve the user's existing architecture. Current verified snapshot: **Step 9, 202/202 tests passing**. See `docs/FALCON_MECHANICS_FINALIZATION.md`.
 
 ## Project workflow
 
@@ -66,11 +66,11 @@ Falcon agents: Elishia, Evalete, Zackry, Jazen, Zenki. Training enemies: Trainin
 
 ## Owner-aligned Falcon skills (2026-11-16)
 
-- **Canonical source:** the original character reference uploaded by the owner. The full original file is not bundled. `references/characterTerraData.js` contains only the extracted character stats, skills and stat descriptions; use it together with `docs/OWNER_SKILL_REFERENCE.md` before changing any Falcon skill.
+- **Source of truth:** the combat engine implementation and automated tests define actual combat behavior. `ref/characterTerraData.json` is a separate website-facing guide/idea reference and is not loaded by the engine. After changing engine mechanics, update the JSON skills and descriptions. Read `docs/FALCON_MECHANICS_FINALIZATION.md` before changing any Falcon skill.
 - All 20 active skills and five passive definitions are represented in `data/skills/` and assembled by `characters/skills.js` through `core/skillInterpreter.js`.
 - The interpreter now supports area healing, HOT, cleanse, typed damage, shields, stat modifiers, marks, conditional effects, Stagger, Taunt, accuracy tokens and lifecycle passive callbacks.
 - Do not restore old prototype values when they conflict with the owner source. The old Meo-v9 revive/EMP-on-destruction prototype behavior is removed; Emergency Field heals a living low-HP ally.
-- Do not invent missing numbers: Meo-v9 Final Protocol EMP scaling, Singularity DoT scaling, and Catalyst Wing HP/destruction trigger are explicitly pending. Zackry's Accuracy currently applies to basic attacks only because the engine has no general skill accuracy model. Status and shield durations tick after the affected actor completes their turn; newly applied self-effects do not immediately lose a duration tick.
+- Falcon Step 9 is complete. The approved implementation values are documented in `docs/FALCON_MECHANICS_FINALIZATION.md`: Meo-v9 Final Protocol (1.0x/0.5x Mpow), Singularity DoT (0.2x Mpow), Catalyst Wing (25% HP, 50% base DEF/RES), Zackry next-attack Accuracy across basic/skill hits, and Jazen Stagger (20 CR pushback). Do not silently change these tuning values; adjust them only with an explicit balance decision. Status and shield durations tick after the affected actor completes their turn; newly applied self-effects do not immediately lose a duration tick.
 - Falcon base stats remain prototype values pending a separate stat-sheet sync decision.
 
 ## Current verification snapshot
@@ -120,7 +120,7 @@ Run `node --test`. Focused owner-alignment coverage lives in `test/ownerFalconMe
 - Enemy actors are instantiated from `data/enemies/` definitions and carry `aiPolicy` plus an optional `skillSet` (`trainingDrone` / `rogueAutomaton`); `createSkills()` returns a separate `enemySkills` registry.
 - `ai/enemyAI.js` evaluates ordered declarative policy rules from `data/enemyAI/`; policy data controls skill priorities/chances and the evaluator selects a target. Skill metadata/readiness comes from the enemy skill registry and effects run through the shared interpreter. Preserve rule order and conditional RNG evaluation unless intentionally changing golden behavior. Encounter compositions are registered in `data/encounters/` and selected with `createBattle({ encounter })` or simulator `--encounter`.
 - Current enemy definitions: Pulse Shot (1.35 physical, no crit, CD 3); Overload (+25% ATK, 2 turns, CD 5); Scan (DEF −15%, 2 turns, CD 4); Heavy Strike (1.5 physical, CD 3). All cost 0 MP.
-- Focused full-battle validation: `test/enemySkillData.test.js`. Full suite: 187/187. Details: `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md`.
+- Focused full-battle validation: `test/enemySkillData.test.js`. Step 6 milestone suite: 187/187. Current Step 9 suite: 202/202. Details: `docs/STEP6_DATA_DRIVEN_ENEMY_SKILLS.md` and `docs/FALCON_MECHANICS_FINALIZATION.md`.
 - Not migrated: enemy encounter configuration and any skills for Siege Turret, Recon Drone or Toxic Stalker; none were present in the existing prototype behavior.
 
 - Step 7: enemy archetypes/stats live in `data/enemies/`; ordered AI policy rules live in `data/enemyAI/`; encounter compositions live in `data/encounters/`. `createBattle({ encounter })` and simulator `--encounter` choose a registered roster. Current formation setup requires five enemy entries.
@@ -135,4 +135,4 @@ Run `node --test`. Focused owner-alignment coverage lives in `test/ownerFalconMe
 - Typed events added: `EncounterStarted`, `EncounterWaveStarted`, `EncounterWaveCleared`, `ReinforcementsQueued`, `EncounterCompleted`. Simulator output now reports wave and reinforcement counts.
 - `siegeBreakthrough` is the multi-wave reference encounter. Training Ground and Drone Calibration remain one-wave and preserve their existing roster behavior.
 - Current limits: five enemy entries per wave; only defeat-count reinforcement triggers; reinforcement arrivals use reserve replacement; no save/resume for an in-progress encounter.
-- Verification snapshot: **191 passed, 0 failed**. See `docs/STEP8_ENCOUNTER_PROGRESSION.md`.
+- Step 8 milestone verification: **191 passed, 0 failed**; current Step 9 suite: **202 passed, 0 failed**. See `docs/FALCON_MECHANICS_FINALIZATION.md`.

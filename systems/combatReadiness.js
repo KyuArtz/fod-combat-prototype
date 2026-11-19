@@ -4,12 +4,12 @@ function adjustCR(actor, amount) {
   if (!Number.isFinite(amount)) {
     throw new TypeError("CR adjustment must be a finite number.");
   }
-  actor.cr = Math.max(0, Math.min(MAX_CR, actor.cr + amount));
+  actor.cr = Math.max(-MAX_CR, Math.min(MAX_CR, actor.cr + amount));
   return actor.cr;
 }
 
 function advanceCR(state, effectiveStat) {
-  const deployed = state.actors.filter((actor) => actor.alive);
+  const deployed = state.actors.filter((actor) => actor.alive && !actor.passiveSummon);
   if (!deployed.length) return [];
 
   for (const actor of deployed) {
@@ -22,7 +22,7 @@ function advanceCR(state, effectiveStat) {
 
 function nextActor(state, effectiveStat) {
   while (true) {
-    const deployed = state.actors.filter((actor) => actor.alive);
+    const deployed = state.actors.filter((actor) => actor.alive && !actor.passiveSummon);
     if (!deployed.length) return null;
 
     const ready = deployed

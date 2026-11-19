@@ -103,8 +103,17 @@
 
 ## ADR-015 — Owner-provided Falcon skills supersede prototype skill values (2026-11-16)
 
-**Decision:** The original character reference supplied by the project owner is canonical for Falcon skill names, descriptions, MP costs, cooldowns, stats and passive mechanics. Updated project ZIPs include only the selected stats, skills and stat descriptions in `references/characterTerraData.js`, not the full original file or format. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
+**Decision:** The combat engine implementation and automated tests are canonical for actual combat behavior. `ref/characterTerraData.json` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. When engine mechanics change, update the JSON skills and descriptions afterward so the site reference stays aligned. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
 
 **Implementation rule:** implement mechanics only when the source provides enough values and triggers. Do not guess Meo-v9 Final Protocol EMP scaling, Nanotech Singularity DoT scaling, or Catalyst Wing HP/destruction trigger. Zackry's +10 Accuracy currently applies to the basic-attack accuracy check; a general skill-hit accuracy model remains future work.
 
 **Scope:** this ADR aligns skills/passives only. Falcon base stats in `characters/falcon.js` remain prototype values pending a separate owner-approved stat synchronization.
+
+
+## ADR-016 — Finalize underspecified Falcon mechanics with explicit balance values (2026-11-17)
+
+**Status:** Accepted for prototype balancing by the project owner.
+
+**Decision:** The owner approved changing/adding values where the initial skill design omitted a numeric rule. Use the explicit tuning values in `docs/FALCON_MECHANICS_FINALIZATION.md`: Meo-v9 EMP 1.0x/0.5x Mpow; Singularity DoT 0.2x Mpow; Catalyst Wing 25% Evalete Max HP and 50% base DEF/RES; Zackry +10 next-attack Accuracy for basic and skill hits; Jazen Stagger 20 CR readiness pushback. These are implementation choices, not retroactive claims about what the original JSON specified.
+
+**Architecture:** Keep effects declarative and route them through the existing shared interpreter, damage, status, targeting, summon and readiness systems. Keep base Falcon stats unchanged until a separate stat-sheet synchronization decision.

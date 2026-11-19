@@ -132,7 +132,7 @@ test("full battle: Jazen's Reinforced Plating redirects built-in enemy targeting
   assert.ok(["VICTORY", "DEFEAT"].includes(result.result));
 });
 
-test("full battle: Breach Charge Stagger causes the affected enemy to lose its next action", async () => {
+test("full battle: Breach Charge Stagger delays readiness without deleting the enemy's next action", async () => {
   const events = createEventBus();
   let breachUsed = false;
   const player = {
@@ -147,7 +147,7 @@ test("full battle: Breach Charge Stagger causes the affected enemy to lose its n
   };
   const result = await playHeadless({ seed: 9914, events, controllers: { player } });
   assert.equal(breachUsed, true);
-  assert.ok(result.state.log.some((line) => /is Staggered and loses this action/.test(line)), "battle log records the skipped enemy turn");
+  assert.ok(result.state.log.some((line) => /next action was delayed by Stagger/.test(line)), "battle log records the readiness delay");
 });
 
 test("full battle: automatic reserve deployment replaces an incapacitated active Falcon", async () => {
