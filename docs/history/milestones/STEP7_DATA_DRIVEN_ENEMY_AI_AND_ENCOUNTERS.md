@@ -1,5 +1,7 @@
 # Step 7 — Data-Driven Enemy AI and Encounter Definitions
 
+> Historical scope note: Step 8 later added multi-wave progression, per-instance stat overrides, and defeat-count reinforcements. See [Step 8](STEP8_ENCOUNTER_PROGRESSION.md) and the current [Combat Mechanics](../../reference/COMBAT_MECHANICS.md) reference for the present encounter contract.
+
 ## Goal
 
 Separate enemy archetype data, AI decision policy and encounter composition from engine code. Preserve the existing Training Ground battle behavior while making it possible to assemble other encounters from registered enemy definitions.
@@ -56,7 +58,7 @@ Run all tests with:
 node --test
 ```
 
-## Current limitations
+## Limitations at the Step 7 checkpoint
 
 - The battle formation setup currently requires at least five combatants on each side; smaller encounters are not yet supported.
 - AI condition/action vocabulary is intentionally small. More sophisticated target scoring, team coordination, phases, telegraphs and reinforcement triggers remain future extensions.

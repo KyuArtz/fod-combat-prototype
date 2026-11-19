@@ -76,7 +76,7 @@
 **Decision:** Each turn builds a plain-data view of the legal actions, asks a controller for a decision, validates it, then executes it in the engine. The terminal menu, the enemy AI, summons, scripted replays and random/headless players are all controllers. Skills are declarative (`targeting`, `modes`, `run`) and never prompt.  
 **Reason:** A GUI, a headless simulator and replays need to drive the battle without parsing console text or reading stdin, and enemy AI variants should be swappable. Validation means a buggy controller can never run an illegal action.  
 **Alternatives rejected:** leaving prompts inside skills with a pluggable `ask` (a GUI would still be coupled to terminal-shaped prompts); a big-bang rewrite into data-driven skills (that is step 3, now safe to do against the golden transcripts).  
-**Trade-offs:** The terminal controller still records two menu-only messages in `state.log` (kept so the original output is preserved exactly). Player and enemy `basic` attacks use different code. Summon behaviour is one `summonAuto` decision until skills become data.
+**Trade-offs / current status:** The terminal controller retains two menu-only messages in `state.log` for output compatibility. Player and enemy basic attacks were later unified in `core/actionResolver.js` (Step 2). Summons still use one automatic `summonAuto` decision. Skills and enemy behavior have since migrated to shared data-driven registries (Steps 3 and 6–7).
 
 ## ADR-012 — Golden transcripts guard refactors of the turn flow
 
@@ -87,15 +87,15 @@
 
 ## ADR-013 — Skills are data run by an interpreter, migrated one agent at a time
 
-**Status:** Accepted (2026-11-09); Elishia migrated  
-**Decision:** A skill is plain data (cost, cooldown, tags, targeting, ordered effects, result message). `core/skillInterpreter.js` runs it and validates the data when loaded. Passives are data (`statMods`, `onSkillUsed` hooks). Summons are templates with data-defined behavior. The other agents stay imperative until their turn.  
+**Status:** Accepted; implementation scope completed and expanded in Steps 3 and 6  
+**Decision:** A skill is plain data (cost, cooldown, tags, targeting, ordered effects, result message). `core/skillInterpreter.js` runs it and validates the data when loaded. Passives are data (`statMods`, `onSkillUsed` hooks). Summons are templates with data-defined behavior. All five Falcon skill sets and the currently implemented Training Drone/Rogue Automaton enemy skills now use this shared runtime.  
 **Reason:** Finalizing and balancing a skill becomes one edit in one place, MP/cooldown/text can be generated or synced to the roster JSON later, and the same effect handlers serve every character.  
 **Method:** Convert with identical behavior first (golden recordings must not change), then change behavior deliberately in a separate step with new tests and regenerated recordings.  
-**Trade-offs:** Message text duplicates some numbers (for example "SPD -10% (2 turns)") and is not generated from the effect data yet. Effects not needed by Elishia (for example damage over time) will be added when another agent needs them.
+**Trade-offs:** Message text still duplicates some numeric values and is not generated from effect data. The interpreter has since been expanded for the Falcon roster and the initial enemy skill sets.
 
 ## ADR-014 — Elishia's roster-text gaps are filled with explicit prototype values
 
-**Status:** Accepted for balancing review (2026-11-09)  
+**Status:** Superseded by ADR-015 and ADR-016  
 **Decision:** The roster text is the design intent; MP costs and cooldowns stay at the prototype's values. Where the text leaves a number open the prototype picks one and marks it in the data: stabilize returns an ally at 15% Max HP (once per deployment, automatic), the EMP is Electromagnetic at 100% of Meo-9's MPow to all enemies with SPD −15% for 1 turn, adaptive resistance lasts for the barrier's remaining turns even if the shield is used up, scan boosts all of Elishia's damage and does not stack, and all four skills carry the Nanotech tag.  
 **Open issue:** Enemies cannot target summons, so Meo-9's EMP is dormant in normal play. Enabling it requires an enemy-targeting decision.
 
@@ -103,9 +103,11 @@
 
 ## ADR-015 — Owner-provided Falcon skills supersede prototype skill values (2026-11-16)
 
-**Decision:** The combat engine implementation and automated tests are canonical for actual combat behavior. `characterTerraData.json` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. When engine mechanics change, update the JSON skills and descriptions afterward so the site reference stays aligned. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
+**Status:** Accepted; implementation constraints on omitted values were later updated by ADR-016.
 
-**Implementation rule:** implement mechanics only when the source provides enough values and triggers. Do not guess Meo-v9 Final Protocol EMP scaling, Nanotech Singularity DoT scaling, or Catalyst Wing HP/destruction trigger. Zackry's +10 Accuracy currently applies to the basic-attack accuracy check; a general skill-hit accuracy model remains future work.
+**Decision:** The combat engine implementation and automated tests are canonical for actual combat behavior. `characterTerraData.json` is a separate website-facing guide/idea reference, not an engine dependency or source of truth. When engine mechanics change, update the relevant implementation/reference notes and provide the owner with the corresponding content to apply to the separate website-facing data. The earlier prototype values recorded in ADR-014 are historical and are no longer authoritative where they conflict with this source.
+
+**Historical implementation rule:** at the time of this decision, source-omitted values were deferred and Zackry Accuracy was limited to basic attacks. ADR-016 later records the owner-approved additions and current skill-hit Accuracy behavior.
 
 **Scope:** this ADR aligns skills/passives only. Falcon base stats in `characters/falcon.js` remain prototype values pending a separate owner-approved stat synchronization.
 
@@ -114,6 +116,6 @@
 
 **Status:** Accepted for prototype balancing by the project owner.
 
-**Decision:** The owner approved changing/adding values where the initial skill design omitted a numeric rule. Use the explicit tuning values in `docs/FALCON_MECHANICS_FINALIZATION.md`: Meo-v9 EMP 1.0x/0.5x Mpow; Singularity DoT 0.2x Mpow; Catalyst Wing 25% Evalete Max HP and 50% base DEF/RES; Zackry +10 next-attack Accuracy for basic and skill hits; Jazen Stagger 20 CR readiness pushback. These are implementation choices, not retroactive claims about what the original JSON specified.
+**Decision:** The owner approved changing/adding values where the initial skill design omitted a numeric rule. Use the explicit tuning values in `../reference/FALCON_MECHANICS_FINALIZATION.md`: Meo-v9 EMP 1.0x/0.5x Mpow; Singularity DoT 0.2x Mpow; Catalyst Wing 25% Evalete Max HP and 50% base DEF/RES; Zackry +10 next-attack Accuracy for basic and skill hits; Jazen Stagger 20 CR readiness pushback. These are implementation choices, not retroactive claims about what the original JSON specified.
 
 **Architecture:** Keep effects declarative and route them through the existing shared interpreter, damage, status, targeting, summon and readiness systems. Keep base Falcon stats unchanged until a separate stat-sheet synchronization decision.

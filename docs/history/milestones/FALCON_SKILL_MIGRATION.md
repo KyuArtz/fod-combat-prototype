@@ -1,8 +1,10 @@
-# Falcon Skill Engine Alignment — 2026-11-16
+# Historical Milestone — Falcon Skill Engine Alignment (2026-11-16)
+
+> This is a historical migration report. Step 9 later finalized the mechanics that were initially deferred here. For current behavior, use the [Falcon Implementation Guide](../../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [Falcon Mechanics Finalization](../../reference/FALCON_MECHANICS_FINALIZATION.md).
 
 ## Canonical design source
 
-The project owner supplied a character reference for website guidance. A reference copy is kept at `references/characterTerraData.js`; it is not loaded by the combat engine and does not define runtime behavior. The combat engine implementation and tests are authoritative. Update the reference JSON after engine mechanics change. The five Falcon entries are summarized in `docs/OWNER_SKILL_REFERENCE.md`.
+The project owner supplied a character reference for website guidance. The compact in-project extract is `references/characterTerraData.js`; it contains selected skill objects and stat information, is not a full roster, and is not loaded by the combat engine. The owner maintains the separate website-facing character data. The combat engine implementation and tests define runtime behavior.
 
 This source supersedes the earlier prototype skill definitions. Use it for Falcon skill titles, descriptions, passive rules, MP costs and cooldowns. Do not silently preserve earlier prototype substitutions when they conflict with the owner reference.
 
@@ -51,8 +53,8 @@ Run:
 node --test
 ```
 
-The Falcon finalization intentionally changes combat behavior and logs. Golden transcript fixtures are regenerated after focused tests and full-suite verification. See `docs/FALCON_MECHANICS_FINALIZATION.md` for the final implementation contract.
+The Falcon finalization intentionally changes combat behavior and logs. Golden transcript fixtures are regenerated after focused tests and full-suite verification. See [Falcon Mechanics Finalization](../../reference/FALCON_MECHANICS_FINALIZATION.md) for the final implementation contract.
 
-## Next agreed development step
+## Historical follow-up
 
-The next work item is **Step 3: expand full-battle regression coverage** for victory/defeat, all five Falcon skill kits in real battles, passive interactions, enemy AI targeting, status duration, and reserve transitions. Do not start enemy skill migration until those engine regressions are established.
+The next step at the time was full-battle regression coverage. That work was completed in the subsequent Step 3 milestone; see [the Step 3 report](STEP3_FULL_BATTLE_REGRESSION.md). Step 9 supersedes this report’s earlier deferred-mechanics list.

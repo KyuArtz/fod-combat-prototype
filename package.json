@@ -1,0 +1,17 @@
+{
+  "name": "fod-combat-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node.js combat prototype and deterministic battle simulator for Fragments of Decay",
+  "main": "index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test",
+    "simulate": "node tools/simulate.js",
+    "compare:schedulers": "node tools/compareSchedulers.js"
+  }
+}

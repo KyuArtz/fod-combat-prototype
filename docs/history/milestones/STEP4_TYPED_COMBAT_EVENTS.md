@@ -18,7 +18,7 @@ Payloads use stable actor IDs, strings, booleans, numbers, arrays and plain deci
 | `OpeningInitiative` | `applied`, `side`, `deltaTime`, `opener` | Opening initiative calculation (emitted when the battle applies it) |
 | `BattleStarted` | `seed` | Battle setup is complete and battle execution is beginning |
 | `RoundStarted` / `RoundEnded` | `round` | Round lifecycle boundaries |
-| `TurnStarted` | `actorId`, `side`, `round`, `staggered` | Actor turn begins; `staggered` indicates whether the action is skipped |
+| `TurnStarted` | `actorId`, `side`, `round`, `staggered` | Actor turn begins; `staggered` indicates that a Stagger marker was present/consumed (Stagger delays readiness but does not skip the action) |
 | `ActionChosen` | `actorId`, `kind`, `round`, `decision` | Controller's validated decision |
 | `DecisionRejected` | `actorId`, `kind`, `reason`, `decision` | Controller decision failed validation or execution |
 | `SkillUsed` | `actorId`, `skillKey`, `round`, `mpBefore`, `mpAfter` | Skill successfully executed |
@@ -65,4 +65,4 @@ Payloads use stable actor IDs, strings, booleans, numbers, arrays and plain deci
 
 ## Step 8 encounter lifecycle additions
 
-Step 8 extends the event contract with `EncounterStarted`, `EncounterWaveStarted`, `EncounterWaveCleared`, `ReinforcementsQueued` and `EncounterCompleted`. Their required fields are defined in `core/combatEvents.js`. `EncounterCompleted.rewards` contains encounter reward metadata only; it does not represent awarded or persisted rewards. See `docs/STEP8_ENCOUNTER_PROGRESSION.md`.
+Step 8 extends the event contract with `EncounterStarted`, `EncounterWaveStarted`, `EncounterWaveCleared`, `ReinforcementsQueued` and `EncounterCompleted`. Their required fields are defined in `core/combatEvents.js`. `EncounterCompleted.rewards` contains encounter reward metadata only; it does not represent awarded or persisted rewards. See [Step 8 encounter progression](STEP8_ENCOUNTER_PROGRESSION.md).
