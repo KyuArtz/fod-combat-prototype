@@ -1,7 +1,10 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { createSkillInterpreter, validateSkillData, formatMessage } = require("../core/skillInterpreter");
-const elishia = require("../data/skills/elishia");
+const elishia = require("../characters/skillData/elishia");
+const jazen = require("../characters/skillData/jazen");
+const zackry = require("../characters/skillData/zackry");
+const zenki = require("../characters/skillData/zenki");
 
 const clone = (value) => structuredClone(value);
 
@@ -30,9 +33,63 @@ test("validation rejects malformed skill structure, modes, effects, targeting an
   invalid((d) => { d.skills[1].message = "{target} gains {healed} HP."; }, /uses \{healed\}/);
   invalid((d) => { d.skills[2].effects[0].template = "ghost"; }, /unknown summon template/);
   invalid((d) => { d.summons.meo9.turns = 0; }, /turns >= 1/);
-  invalid((d) => { d.summons.meo9.behavior.type = "teleport"; }, /unknown behavior/);
+  invalid((d) => { d.summons.meo9.lifecycle.activation[0].handler = ""; }, /handler name/);
   invalid((d) => { d.passive.statMods = [{ stat: "SPD", percent: 10, points: 2 }]; }, /exactly one numeric percent or points/);
+  invalid((d) => { d.passive.statMods = [{ stat: "SPD", points: 2, when: { flag: "active", equals: "yes" } }]; }, /boolean flag conditions/);
+  invalid((d) => { d.passive.incomingAttackMods = [{ type: "evasion", points: "10" }]; }, /incoming attack modifiers need/);
   invalid((d) => { d.passive.onSkillUsed[0].effects[0].type = "heal"; }, /unsupported passive effect/);
+  invalid((d) => { d.passive.events = { damageTaken: [{ handler: "" }] }; }, /entries need a handler name/);
+  invalid((d) => { d.passive.initialFlags = { active: "yes" }; }, /initialFlags values must be booleans/);
+  invalid((d) => { d.passive.targeting = { trackTargeter: "no" }; }, /trackTargeter must be a boolean/);
+  invalid((d) => { d.passive.statMods = [{ stat: "SPD", points: 2, when: { flag: "active", equals: true, andFlags: {} } }]; }, /boolean flag conditions/);
+});
+
+test("mastery-hit accuracy and conditional power modifier contracts are validated", () => {
+  assert.doesNotThrow(() => validateSkillData(zenki));
+  const invalidZenki = (mutate, pattern) => {
+    const data = clone(zenki);
+    mutate(data.skills.find((skill) => skill.key === "railshot").effects[0]);
+    assert.throws(() => validateSkillData(data), pattern);
+  };
+  invalidZenki((effect) => { effect.accuracy = "automatic"; }, /accuracy must be/);
+  invalidZenki((effect) => { effect.powerModifiers[0].when.equals = "yes"; }, /boolean flag condition/);
+  invalidZenki((effect) => { effect.powerModifiers[0].percent = -100; }, /percent > -100/);
+});
+
+test("mastery-hit modifiers validate strict target HP conditions and fixed power overrides", () => {
+  const invalidZeroHour = (mutate, pattern) => {
+    const data = clone(zenki);
+    mutate(data.skills.find((skill) => skill.key === "ultimate").effects[0].powerModifiers[0]);
+    assert.throws(() => validateSkillData(data), pattern);
+  };
+  invalidZeroHour((modifier) => { modifier.when.targetHpPercentBelow = 101; }, /target HP condition/);
+  invalidZeroHour((modifier) => { modifier.setPower = 0; }, /setPower > 0/);
+  invalidZeroHour((modifier) => { modifier.percent = 10; }, /exactly one/);
+  const invalidFollowUp = clone(zenki);
+  invalidFollowUp.skills.find((skill) => skill.key === "ultimate").effects[1].requireAlive = "yes";
+  assert.throws(() => validateSkillData(invalidFollowUp), /requireAlive must be a boolean/);
+});
+
+test("battle timer, area DoT and summon conditional-power contracts are validated", () => {
+  const invalidElishia = (mutate, pattern) => {
+    const data = clone(elishia);
+    mutate(data);
+    assert.throws(() => validateSkillData(data), pattern);
+  };
+  invalidElishia((data) => { data.skills.find((skill) => skill.key === "ultimate").effects[0].turnStart[0].percentMaxHP = 0; }, /turnStart reactions/);
+  invalidElishia((data) => { data.skills.find((skill) => skill.key === "ultimate").effects[0].turns = 0; }, /turns > 0/);
+  invalidElishia((data) => { data.skills.find((skill) => skill.key === "ultimate").effects[4].side = "all"; }, /side must be ally or enemy/);
+  invalidElishia((data) => { data.skills.find((skill) => skill.key === "ultimate").effects[4].turnStart.damageTypeField = ""; }, /turnStart needs/);
+  invalidElishia((data) => { data.summons.meo9.scan.conditionalBonuses[0].damageBonus = "10"; }, /scan conditionalBonuses/);
+  invalidElishia((data) => { data.summons.meo9.lifecycle.activation[1].conditionalPower[0].power = 0; }, /conditionalPower entries/);
+  assert.doesNotThrow(() => validateSkillData(elishia));
+});
+
+test("Falcon passive behavior parameters validate as declarative data", () => {
+  assert.doesNotThrow(() => validateSkillData(jazen));
+  assert.doesNotThrow(() => validateSkillData(zackry));
+  assert.equal(jazen.passive.statusId, "jazenRecoil");
+  assert.equal(zackry.passive.targeting.trackTargeter, false);
 });
 
 test("formatMessage fills placeholders and rejects missing values", () => {
@@ -43,7 +100,7 @@ test("formatMessage fills placeholders and rejects missing values", () => {
 function fixture() {
   const calls = [];
   const said = [];
-  const state = { actors: [], singularityTurns: 0 };
+  const state = { actors: [], battleTimers: {} };
   const unit = (id, side) => ({
     id, name: id, side, alive: true, hp: 500, mp: 200,
     stats: { HP: 1000, MP: 200, Evasion: 0 }, cooldowns: {}, statuses: {}, shields: [],
@@ -58,7 +115,7 @@ function fixture() {
     addShield: (u, amount, turns, adaptive) => { u.shields.push({ value: amount, turns, adaptive }); calls.push(["shield", u.id, amount, turns]); },
     calculateMastery: (u, target, element, power) => ({ damage: 25, crit: false }),
     applyDamage: (target, amount, element) => { target.hp -= amount; calls.push(["damage", target.id, amount, element]); },
-    hitMastery: (u, target, element, power) => { calls.push(["hitMastery", target.id, element, power]); return { damage: 25, crit: false }; },
+    hitMastery: (u, target, element, power, canCrit, options) => { calls.push(["hitMastery", target.id, element, power, canCrit, options]); return { damage: 25, crit: false }; },
     hitPhysical: () => ({ damage: 17, crit: false }),
     heal: (target, amount) => { const actual = Math.min(amount, target.stats.HP - target.hp); target.hp += actual; calls.push(["heal", target.id, actual]); return actual; },
     makeActor: (data) => ({ ...data, alive: true, hp: data.stats.HP, mp: 0, cooldowns: {}, statuses: {}, shields: [] }),
@@ -82,6 +139,64 @@ test("all 20 Falcon skills are registered with owner-reference names, costs and 
   for (const [id, rows] of Object.entries(expected)) {
     assert.deepEqual(registry[id].map(({ key, cost, cooldown }) => [key, cost, cooldown]), rows);
   }
+});
+
+test("Railshot composes guaranteed accuracy and conditional Unobserved power on masteryHit", () => {
+  const { calls, said, actors, registry } = fixture();
+  const zenkiActor = actors.zenki;
+  zenkiActor.passiveFlags = { unobservedActive: true };
+  registry.zenki.find((entry) => entry.key === "railshot").run(zenkiActor, { target: actors.drone });
+  const hit = calls.find((call) => call[0] === "hitMastery");
+  assert.equal(hit[2], "Energy");
+  assert.ok(Math.abs(hit[3] - 1.43) < 1e-9);
+  assert.equal(hit[4], true);
+  assert.deepEqual(hit[5], { ignoreAccuracy: true });
+  assert.match(said.at(-1), /\(unobserved bonus\)/);
+});
+
+test("Zero Hour composes a strict-below-40% execute modifier and a gated Cipher Tag follow-up", () => {
+  const { calls, said, actors, registry } = fixture();
+  const zenkiActor = actors.zenki;
+  const target = actors.drone;
+  const ultimate = registry.zenki.find((entry) => entry.key === "ultimate");
+  target.stats.HP = 1000;
+  target.hp = 400;
+  target.statuses.cipherTag = { turns: 2 };
+
+  ultimate.run(zenkiActor, { target });
+  assert.equal(calls.filter((call) => call[0] === "hitMastery").at(-1)[3], 2.4, "exactly 40% HP uses normal power");
+  assert.doesNotMatch(said.at(-1), /execution bonus/);
+  assert.equal(target.statuses.zeroHourSpdDown.amount, -25);
+  assert.equal(target.statuses.zeroHourSpdDown.turns, 2);
+
+  target.hp = 399;
+  delete target.statuses.zeroHourSpdDown;
+  target.statuses.cipherTag = { turns: 2 };
+  zenkiActor.mp = zenkiActor.stats.MP;
+  zenkiActor.cooldowns.ultimate = 0;
+  ultimate.run(zenkiActor, { target });
+  assert.equal(calls.filter((call) => call[0] === "hitMastery").at(-1)[3], 3.2, "below 40% HP uses the execute power override");
+  assert.match(said.at(-1), /execution bonus/);
+  assert.equal(target.statuses.zeroHourSpdDown.amount, -25);
+});
+
+test("Zero Hour follow-up requires a surviving target, Cipher Tag, and a successful hit", () => {
+  const { actors, registry } = fixture();
+  const zenkiActor = actors.zenki;
+  const target = actors.drone;
+  const ultimate = registry.zenki.find((entry) => entry.key === "ultimate");
+  target.statuses.cipherTag = { turns: 2 };
+
+  target.alive = false;
+  ultimate.run(zenkiActor, { target });
+  assert.equal(target.statuses.zeroHourSpdDown, undefined, "a defeated target receives no follow-up status");
+
+  target.alive = true;
+  delete target.statuses.cipherTag;
+  zenkiActor.mp = zenkiActor.stats.MP;
+  zenkiActor.cooldowns.ultimate = 0;
+  ultimate.run(zenkiActor, { target });
+  assert.equal(target.statuses.zeroHourSpdDown, undefined, "the follow-up requires Cipher Tag");
 });
 
 test("every Falcon skill executes through the shared interpreter and charges its declared MP", () => {

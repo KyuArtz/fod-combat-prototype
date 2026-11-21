@@ -11,6 +11,7 @@ function makeActor(data) {
     alive: true,
     shields: [],
     statuses: {},
+    passiveTimers: {},
     cooldowns: {},
     summon: data.summon || false,
     summonTurns: data.summonTurns || 0,
@@ -21,7 +22,7 @@ function makeActor(data) {
     targetedByAllyId: null,
     targetedByEnemySinceLastTurn: false,
     enemySkillTargetedThisRound: false,
-    unobservedSuppressed: false,
+    passiveFlags: { ...(data.passive?.initialFlags || {}) },
     cr: 0,
   };
 }

@@ -1,4 +1,5 @@
 const { nextFloat } = require("./rng");
+const { isBattleTimerActive } = require("../systems/battleTimers");
 const {
   calculateMasteryDamage,
   calculatePhysicalDamage,
@@ -10,15 +11,18 @@ function createActionResolver({
   applyDamage,
   say,
   random = () => nextFloat(state.rng),
+  incomingAttackModifier = () => 0,
 }) {
-  // Meo-9's scan: while a summon owned by the attacker is alive, the owner's damage
+  // Summon scan bonuses: while an owned summon is alive, the owner's damage
   // to enemies is increased (more during Singularity). Several summons do not stack.
   function damageBonus(attacker, target) {
     if (attacker.side === target.side) return 1;
     let best = 0;
     for (const unit of state.actors) {
       if (!unit.alive || !unit.summon || unit.ownerId !== attacker.id || !unit.scan) continue;
-      const bonus = unit.scan.damageBonus + (state.singularityTurns > 0 ? unit.scan.singularityBonus || 0 : 0);
+      const conditionalBonus = (unit.scan.conditionalBonuses || []).reduce((total, modifier) =>
+        total + (isBattleTimerActive(state, modifier.battleTimer) ? modifier.damageBonus || 0 : 0), 0);
+      const bonus = unit.scan.damageBonus + conditionalBonus;
       best = Math.max(best, bonus);
     }
     return 1 + best / 100;
@@ -102,12 +106,7 @@ function createActionResolver({
     if (target.side === "ally" || actor.nextAttackAccuracy > 0) {
       let dodge = target.side === "ally" ? effectiveStat(target, "Evasion") : (target.stats.Evasion || 0);
       dodge -= actor.nextAttackAccuracy || 0;
-      if (target.side === "ally" && target.passive?.id === "unobserved") {
-        // The basic-attack Accuracy penalty is a separate passive clause from
-        // the conditional +12 Evasion bonus, so it still applies when Unobserved
-        // itself is suppressed by an earlier hit.
-        dodge += target.passive.attackerAccuracyPenalty || 0;
-      }
+      if (target.side === "ally") dodge += incomingAttackModifier(target, "evasion");
       dodge = Math.max(0, Math.min(75, dodge));
       // Preserve the historic enemy-vs-ally RNG draw. Accuracy bonuses also
       // consume their next-attack token when the target has no evasion to beat.

@@ -1,4 +1,4 @@
-// Selected in-engine Falcon skill reference. Mechanics are implemented in data/skills/*.js.
+// Selected in-engine Falcon skill reference. Mechanics are implemented in characters/skillData/*.js.
 // The website-facing characterTerraData.json is maintained separately by the project owner.
 module.exports = {
   "characters": {

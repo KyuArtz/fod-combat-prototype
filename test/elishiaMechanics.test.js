@@ -7,13 +7,13 @@ const { createSkillInterpreter } = require("../core/skillInterpreter");
 const { createBasicAttackController } = require("../core/controllers");
 const { applyDamage } = require("../systems/damageApplication");
 const { addShield, tickShields } = require("../systems/shields");
-const { addStatus, effectiveStat, tickStatuses } = require("../systems/statusEffects");
+const { addStatus, effectiveStat, incomingAttackModifier, tickStatuses } = require("../systems/statusEffects");
 const { calculatePhysicalDamage, calculateMasteryDamage } = require("../systems/damage");
 const { makeActor } = require("../characters/actorFactory");
 const { createFalconParty } = require("../characters/falcon");
 const { createTrainingEnemies } = require("../characters/enemies");
 const { DEFAULT_PARTY_ORDER } = require("../tools/lib/headless");
-const elishiaData = require("../data/skills/elishia");
+const elishiaData = require("../characters/skillData/elishia");
 
 const clone = (value) => structuredClone(value);
 const unitNamed = (units, name) => units.find((unit) => unit.name === name);
@@ -24,7 +24,8 @@ function elishiaInState() {
   const state = createBattleState({ seed: 1 });
   state.actors = [...createFalconParty(), ...createTrainingEnemies()];
   const elishia = unitNamed(state.actors, "Elishia");
-  elishia.biotechOverdriveTurns = 3;
+  elishia.passiveTimers ||= {};
+  elishia.passiveTimers.overdrive = 3;
   return { state, elishia, zenki: unitNamed(state.actors, "Zenki") };
 }
 
@@ -43,7 +44,7 @@ test("passive: +10% SPD and +10 Evasion for Elishia only, on top of other modifi
 
 test("passive: multiplies with Nanotech Singularity's +10% SPD", () => {
   const { state, elishia } = elishiaInState();
-  state.singularityTurns = 3;
+  state.battleTimers.singularity = 3;
   addStatus(elishia, "singularitySpd", { stat: "SPD", amount: 10, turns: 3 });
   assert.equal(effectiveStat(state, elishia, "SPD"), 114); // 95 * 1.1 * 1.1
 });
@@ -51,11 +52,11 @@ test("passive: multiplies with Nanotech Singularity's +10% SPD", () => {
 test("Biotech Overdrive is timed for three Elishia turns and expires after her third turn", () => {
   const { state, elishia } = elishiaInState();
   assert.equal(effectiveStat(state, elishia, "SPD"), 104);
-  elishia.biotechOverdriveTurns = 2;
+  elishia.passiveTimers.overdrive = 2;
   assert.equal(effectiveStat(state, elishia, "SPD"), 104);
-  elishia.biotechOverdriveTurns = 1;
+  elishia.passiveTimers.overdrive = 1;
   assert.equal(effectiveStat(state, elishia, "Evasion"), 20);
-  elishia.biotechOverdriveTurns = 0;
+  elishia.passiveTimers.overdrive = 0;
   assert.equal(effectiveStat(state, elishia, "SPD"), 95);
   assert.equal(effectiveStat(state, elishia, "Evasion"), 10);
 });
@@ -140,7 +141,7 @@ test("adaptive barrier: the status lasts the shield's REMAINING turns", () => {
 test("resistance reduces matching damage by 15% and ignores other types", () => {
   const [, , , , zenki] = createFalconParty();
   const foe = unitNamed(createTrainingEnemies(), "Siege Turret");
-  const stat = (actor, name) => effectiveStat({ singularityTurns: 0 }, actor, name);
+  const stat = (actor, name) => effectiveStat({ battleTimers: {} }, actor, name);
   const physical = () => calculatePhysicalDamage(foe, zenki, stat, 10, false, () => 0.99).damage;
   const kinetic = () => calculateMasteryDamage(foe, zenki, "Kinetic", stat, 10, false, () => 0.99).damage;
   const basePhysical = physical();
@@ -167,7 +168,7 @@ function scanWorld() {
   const meo = (extra = {}) =>
     makeActor({
       id: "meo-9", name: "Meo-9", side: "ally", summon: true, summonTurns: 3,
-      ownerId: "elishia", scan: { damageBonus: 10, singularityBonus: 10 },
+      ownerId: "elishia", scan: { damageBonus: 10, conditionalBonuses: [{ battleTimer: "singularity", damageBonus: 10 }] },
       stats: { HP: 350, MP: 0, ATK: 65, MPow: 80, DEF: 35, RES: 35, SPD: 100, CritRate: 0, Evasion: 0 },
       ...extra,
     });
@@ -178,6 +179,7 @@ function scanWorld() {
     applyDamage: () => {},
     say: () => {},
     random: () => 0.99,
+    incomingAttackModifier,
   });
   return { state, elishia, zenki, foe, enemies, meo, resolver };
 }
@@ -197,7 +199,7 @@ test("scan: Singularity adds another +10% (total +20%)", () => {
   const { state, elishia, foe, meo, resolver } = scanWorld();
   const base = resolver.calculatePhysical(elishia, foe, 10, false).damage;
   state.actors.push(meo());
-  state.singularityTurns = 3;
+  state.battleTimers.singularity = 3;
   assert.ok(Math.abs(ratio(resolver.calculatePhysical(elishia, foe, 10, false).damage, base) - 1.2) < 0.005);
 });
 
@@ -238,7 +240,7 @@ test("scan: a Meo-9 owned by someone else does not boost Elishia", () => {
 function fakeWorld() {
   const calls = [];
   const said = [];
-  const state = { actors: [], singularityTurns: 0 };
+  const state = { actors: [], battleTimers: {} };
   const unit = (name, side, extra = {}) => ({
     id: name.toLowerCase(), name, side, alive: true, hp: 100, cr: 55,
     stats: { HP: 1000 }, cooldowns: {}, statuses: {}, shields: [], ...extra,
@@ -267,7 +269,7 @@ function fakeWorld() {
   const interpreter = createSkillInterpreter(context);
   const meo = () => ({
     ...unit("Meo-v9", "ally", { summon: true, id: "meo-9", summonTurns: 3 }),
-    behavior: clone(elishiaData.summons.meo9.behavior),
+    lifecycle: clone(elishiaData.summons.meo9.lifecycle),
     onDestroyed: clone(elishiaData.summons.meo9.onDestroyed),
   });
   return { calls, said, state, unit, interpreter, meo };
@@ -279,7 +281,7 @@ test("cover fire is 50% of its ATK normally and 75% during Nanotech Singularity"
   const unitMeo = meo();
   state.actors.push(unitMeo);
   interpreter.summonTurn(unitMeo);
-  state.singularityTurns = 2;
+  state.battleTimers.singularity = 2;
   interpreter.summonTurn(unitMeo);
   assert.deepEqual(calls.filter((call) => call[0] === "hitPhysical").map((call) => call[2]), [0.5, 0.75]);
 });
@@ -310,7 +312,7 @@ test("Emergency Field does not revive incapacitated allies and cover fire contin
   assert.equal(calls.filter((call) => call[0] === "hitPhysical").length, 1);
 });
 
-test("Meo-v9 expires after three activations; an EMP is not invented without owner-specified scaling", () => {
+test("Meo-v9 expires after three activations and dispatches its declared Final Protocol", () => {
   const { calls, said, state, unit, interpreter, meo } = fakeWorld();
   const ally = unit("Elishia", "ally", { hp: 1000 });
   state.actors.push(ally, unit("Drone", "enemy"));
@@ -321,7 +323,8 @@ test("Meo-v9 expires after three activations; an EMP is not invented without own
   interpreter.summonTurn(summon);
   assert.equal(summon.alive, false);
   assert.ok(said.some((line) => line.includes("deployment expires")));
-  assert.equal(calls.filter((call) => call[0] === "hitMastery").length, 0);
+  assert.equal(calls.filter((call) => call[0] === "hitMastery").length, 1, "declared Final Protocol hits the living enemy once");
+  assert.ok(calls.some((call) => call[0] === "addStatus" && call[2] === "meoFinalProtocolSpdDown"));
 });
 
 test("Singularity announces amplified Meo-v9 cover fire for living summons only", () => {

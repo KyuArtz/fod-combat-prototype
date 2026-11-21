@@ -16,7 +16,7 @@ const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
 const { addShield, tickShields } = require("../systems/shields");
 const { applyDamage, heal, } = require("../systems/damageApplication");
-const { addStatus, effectiveStat: getEffectiveStat, tickStatuses, } = require("../systems/statusEffects");
+const { addStatus, effectiveStat: getEffectiveStat, incomingAttackModifier, tickStatuses, } = require("../systems/statusEffects");
 const { createBattleLog } = require("../ui/battleLog");
 const { createBattleMenu } = require("../ui/battleMenu");
 const { createDeploymentSelector } = require("../ui/deploymentSelection");
@@ -58,6 +58,9 @@ function createBattle({
   partyOrder,
   encounter = "trainingGround",
   onEncounterComplete = () => {},
+  // Optional additional effect handlers; registered once alongside the built-in systems handlers.
+  effectHandlers = {},
+  lifecycleHandlers = {},
 } = {}) {
   if (!encounters[encounter]) throw new TypeError(`Unknown encounter "${encounter}".`);
   validateEncounterData(encounters[encounter]);
@@ -225,10 +228,13 @@ function createBattle({
     applyDamage: applyTargetDamage,
     say,
     random,
+    incomingAttackModifier,
   });
 
   const context = {
     state,
+    effectHandlers,
+    lifecycleHandlers,
     ask,
     output,
     say,

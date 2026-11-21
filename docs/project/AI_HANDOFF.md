@@ -9,9 +9,9 @@ Use this document as a concise starting point for future F.O.D. development sess
 - Dependencies: no third-party runtime dependencies.
 - Default scheduler: `threshold`; `legacy` remains available for comparison.
 - Default encounter: `trainingGround`, five active Falcon agents versus five active enemies.
-- Steps 1–9 are complete.
-- Baseline audit/restructure is the current workstream. Feature development remains paused until the owner accepts the baseline.
-- Uploaded baseline: 202 tests passed before and after the skill-runtime module split.
+- Steps 1–9 and the Falcon shared-runtime/passive audit are complete.
+- The Falcon active-effect reuse review is complete: Tactical Mark, Cipher Tag, Railshot, Zero Hour, and Nanotech Singularity now compose reusable effect and lifecycle contracts.
+- Latest verified snapshot: Nanotech Singularity composition, 227 tests passed, 0 failed; deterministic replay and golden transcripts remain unchanged.
 
 ## Start every work session by
 
@@ -30,14 +30,14 @@ Do not commit, push, or merge unless explicitly asked.
 - `ai/enemyAI.js` evaluates data-defined enemy policies; `ai/targeting.js` owns enemy target selection.
 - `core/actionResolver.js` owns shared basic-attack execution.
 - `core/skillInterpreter.js` owns skill execution orchestration.
-- `core/skillLifecycle.js` owns passive, summon, and actor lifecycle hooks.
-- `core/skillEffects.js` owns declarative effect handlers.
-- `core/skillDataValidation.js` validates skill definitions.
+- `core/skillLifecycle.js` is a compatibility facade; `systems/passives/runtime.js` owns passive, summon, and actor lifecycle hooks.
+- `systems/effects/` owns declarative effect handlers and registry.
+- `core/skillDataValidation.js` validates skill definitions and passive contracts.
 - `core/skillMessages.js` formats skill messages.
 - `characters/skills.js` assembles the Falcon and enemy skill registries.
 - `characters/enemies.js` resolves data definitions into runtime enemy actors and encounter waves.
-- `systems/` owns reusable combat systems; `ui/` owns terminal presentation and input.
-- `data/` owns skill, enemy, AI policy, and encounter definitions.
+- `systems/` owns reusable combat systems, including generic battle-scoped timers in `systems/battleTimers.js`; `ui/` owns terminal presentation and input.
+- `characters/skillData/` owns Falcon skill and passive definitions; `data/` owns enemy, AI policy, and encounter definitions.
 
 See [Architecture](../reference/ARCHITECTURE.md) for the full module map and runtime flow.
 
@@ -72,3 +72,10 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map and run
 ## Documentation rules
 
 Use the [documentation index](../README.md) to navigate. Keep current state in `PROJECT_STATUS.md`, plans in `ROADMAP.md`, design decisions in `DECISIONS.md`, implementation history in `CHANGELOG.md`, and detailed historical scope in milestone reports. Avoid copying full feature descriptions into multiple documents.
+
+
+## Current architecture handoff — Falcon shared-runtime audit complete
+
+Continue from the latest Zero Hour composition snapshot. The verified archive is the Railshot Composition snapshot plus the Zero Hour generic effect composition increment. `systems/passives/runtime.js` owns lifecycle timing and event emission; `systems/passives/registry.js` dispatches declarative subscriptions; `systems/effects/` and `systems/summons/` provide their respective handler registries. `core/skillLifecycle.js` remains a compatibility facade.
+
+The audit removed the remaining Zackry and Jazen character-ID configuration from shared runtime: Zackry's targeter attribution behavior is declared through `passive.targeting.trackTargeter`, and Recoil Dampeners' status key is declared through `passive.statusId`. The active effect review has since removed the dedicated Zero Hour effect handler: its strict-below-40% target HP check and fixed 3.2 power override are declared as a `masteryHit` modifier; the -25 SPD / 2-turn Cipher Tag follow-up is a `conditionalStatus` gated by successful hit, target survival, and the required tag. Latest verification: 223 tests pass, including deterministic replay/golden transcript coverage. The remaining effect review target is Singularity. No Phantom Rebellion content is in scope. Preserve the established `docs/history/`, `docs/project/`, and `docs/reference/` tree, update docs in place, and keep user-supplied JSON/files out of the project package.

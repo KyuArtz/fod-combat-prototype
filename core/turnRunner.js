@@ -47,7 +47,7 @@ function createTurnRunner({
         if (!target) return false;
         if (actor.side === "ally" && target.side === "enemy") {
           state.lastAllyTargetedEnemyId = target.id;
-          if (actor.id !== "zackry") target.targetedByAllyId = actor.id;
+          if (actor.passive?.targeting?.trackTargeter !== false) target.targetedByAllyId = actor.id;
         }
         if (actor.side === "enemy" && target.side === "ally") target.targetedByEnemySinceLastTurn = true;
         return basicAttack(actor, target);
@@ -59,7 +59,7 @@ function createTurnRunner({
         const target = decision.targetId === undefined ? undefined : findByViewId(state, decision.targetId);
         if (actor.side === "ally" && target?.side === "enemy") {
           state.lastAllyTargetedEnemyId = target.id;
-          if (actor.id !== "zackry") target.targetedByAllyId = actor.id;
+          if (actor.passive?.targeting?.trackTargeter !== false) target.targetedByAllyId = actor.id;
         }
         return skill.run(actor, { mode: decision.mode, target }) !== false;
       }
