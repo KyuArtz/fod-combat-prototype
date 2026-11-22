@@ -2,14 +2,11 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { createBattle } = require("../core/battle");
 const { createBattleState } = require("../core/battleState");
-const { createActionResolver } = require("../core/actionResolver");
-const { createSkillInterpreter } = require("../core/skillInterpreter");
 const { createBasicAttackController } = require("../core/controllers");
 const { applyDamage } = require("../systems/damageApplication");
 const { addShield, tickShields } = require("../systems/shields");
-const { addStatus, effectiveStat, incomingAttackModifier, tickStatuses } = require("../systems/statusEffects");
+const { effectiveStat, tickStatuses } = require("../systems/statusEffects");
 const { calculatePhysicalDamage, calculateMasteryDamage } = require("../systems/damage");
-const { makeActor } = require("../characters/actorFactory");
 const { createFalconParty } = require("../characters/falcon");
 const { createTrainingEnemies } = require("../characters/enemies");
 const { DEFAULT_PARTY_ORDER } = require("../tools/lib/headless");
@@ -26,28 +23,8 @@ function elishiaInState() {
   const elishia = unitNamed(state.actors, "Elishia");
   elishia.passiveTimers ||= {};
   elishia.passiveTimers.overdrive = 3;
-  return { state, elishia, zenki: unitNamed(state.actors, "Zenki") };
+  return { state, elishia };
 }
-
-test.skip("passive: +10% SPD and +10 Evasion for Elishia only, on top of other modifiers (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { state, elishia, zenki } = elishiaInState();
-  assert.equal(effectiveStat(state, elishia, "SPD"), 104); // 95 * 1.10, floored
-  assert.equal(effectiveStat(state, elishia, "Evasion"), 20); // 10 + 10
-  assert.equal(effectiveStat(state, zenki, "SPD"), 110, "other allies are unchanged");
-
-  addStatus(elishia, "decoy", { stat: "Evasion", amount: 15, turns: 2 });
-  assert.equal(effectiveStat(state, elishia, "Evasion"), 25, "strongest positive Evasion modifier takes priority");
-
-  addStatus(elishia, "spdDown", { stat: "SPD", amount: -10, turns: 2 });
-  assert.equal(effectiveStat(state, elishia, "SPD"), 85); // strongest positive (+10%) offsets SPD -10%
-});
-
-test.skip("passive: multiplies with Nanotech Singularity's +10% SPD (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { state, elishia } = elishiaInState();
-  state.battleTimers.singularity = 3;
-  addStatus(elishia, "singularitySpd", { stat: "SPD", amount: 10, turns: 3 });
-  assert.equal(effectiveStat(state, elishia, "SPD"), 104); // same-stat +10% sources do not add
-});
 
 test("Biotech Overdrive is timed for three Elishia turns and expires after her third turn", () => {
   const { state, elishia } = elishiaInState();
@@ -156,196 +133,6 @@ test("resistance reduces matching damage by 15% and ignores other types", () => 
   assert.equal(physical(), basePhysical);
 });
 
-// ============================ Meo-9: scan ============================
-
-function scanWorld() {
-  const state = createBattleState({ seed: 1 });
-  const allies = createFalconParty();
-  const enemies = createTrainingEnemies();
-  const elishia = unitNamed(allies, "Elishia");
-  const zenki = unitNamed(allies, "Zenki");
-  const foe = unitNamed(enemies, "Siege Turret");
-  const meo = (extra = {}) =>
-    makeActor({
-      id: "meo-9", name: "Meo-9", side: "ally", summon: true, summonTurns: 3,
-      ownerId: "elishia", scan: { damageBonus: 10, conditionalBonuses: [{ battleTimer: "singularity", damageBonus: 10 }] },
-      stats: { HP: 350, MP: 0, ATK: 65, MPow: 80, DEF: 35, RES: 35, SPD: 100, CritRate: 0, Evasion: 0 },
-      ...extra,
-    });
-  state.actors = [...allies, ...enemies];
-  const resolver = createActionResolver({
-    state,
-    effectiveStat: (actor, stat) => effectiveStat(state, actor, stat),
-    applyDamage: () => {},
-    say: () => {},
-    random: () => 0.99,
-    incomingAttackModifier,
-  });
-  return { state, elishia, zenki, foe, enemies, meo, resolver };
-}
-
-const ratio = (a, b) => a / b;
-
-test("scan: while Meo-9 lives, Elishia deals +10% damage to enemies (physical and mastery)", () => {
-  const { state, elishia, foe, meo, resolver } = scanWorld();
-  const basePhysical = resolver.calculatePhysical(elishia, foe, 10, false).damage;
-  const baseMastery = resolver.calculateMastery(elishia, foe, "Nanotech", 10, false).damage;
-  state.actors.push(meo());
-  assert.ok(Math.abs(ratio(resolver.calculatePhysical(elishia, foe, 10, false).damage, basePhysical) - 1.1) < 0.005);
-  assert.ok(Math.abs(ratio(resolver.calculateMastery(elishia, foe, "Nanotech", 10, false).damage, baseMastery) - 1.1) < 0.005);
-});
-
-test("scan: Singularity adds another +10% (total +20%)", () => {
-  const { state, elishia, foe, meo, resolver } = scanWorld();
-  const base = resolver.calculatePhysical(elishia, foe, 10, false).damage;
-  state.actors.push(meo());
-  state.battleTimers.singularity = 3;
-  assert.ok(Math.abs(ratio(resolver.calculatePhysical(elishia, foe, 10, false).damage, base) - 1.2) < 0.005);
-});
-
-test("scan: only Elishia's damage to enemies is boosted, never Meo-9's own, her allies', or damage to allies", () => {
-  const { state, elishia, zenki, foe, meo, resolver } = scanWorld();
-  const unit = meo();
-  const beforeZenki = resolver.calculatePhysical(zenki, foe, 10, false).damage;
-  const beforeMeo = resolver.calculatePhysical(unit, foe, 10, false).damage;
-  const beforeFriendly = resolver.calculatePhysical(elishia, zenki, 10, false).damage;
-  state.actors.push(unit);
-  assert.equal(resolver.calculatePhysical(zenki, foe, 10, false).damage, beforeZenki);
-  assert.equal(resolver.calculatePhysical(unit, foe, 10, false).damage, beforeMeo);
-  assert.equal(resolver.calculatePhysical(elishia, zenki, 10, false).damage, beforeFriendly);
-});
-
-test("scan: a destroyed or expired Meo-9 stops scanning; two Meo-9 do not stack", () => {
-  const { state, elishia, foe, meo, resolver } = scanWorld();
-  const base = resolver.calculatePhysical(elishia, foe, 10, false).damage;
-  const first = meo();
-  state.actors.push(first);
-  const scanned = resolver.calculatePhysical(elishia, foe, 10, false).damage;
-  state.actors.push(meo());
-  assert.equal(resolver.calculatePhysical(elishia, foe, 10, false).damage, scanned, "no stacking");
-  first.alive = false;
-  state.actors[state.actors.length - 1].alive = false;
-  assert.equal(resolver.calculatePhysical(elishia, foe, 10, false).damage, base);
-});
-
-test("scan: a Meo-9 owned by someone else does not boost Elishia", () => {
-  const { state, elishia, foe, meo, resolver } = scanWorld();
-  const base = resolver.calculatePhysical(elishia, foe, 10, false).damage;
-  state.actors.push(meo({ ownerId: "someone-else" }));
-  assert.equal(resolver.calculatePhysical(elishia, foe, 10, false).damage, base);
-});
-
-// ============================ Meo-9: behaviour (fake context) ============================
-
-function fakeWorld() {
-  const calls = [];
-  const said = [];
-  const state = { actors: [], battleTimers: {} };
-  const unit = (name, side, extra = {}) => ({
-    id: name.toLowerCase(), name, side, alive: true, hp: 100, cr: 55,
-    stats: { HP: 1000 }, cooldowns: {}, statuses: {}, shields: [], ...extra,
-  });
-  const context = {
-    state,
-    alive: (s, side) => s.actors.filter((actor) => actor.alive && actor.side === side),
-    say: (message) => said.push(message),
-    hitPhysical: (attacker, target, power, canCrit) => {
-      calls.push(["hitPhysical", target.name, power, canCrit]);
-      return { damage: 17 };
-    },
-    heal: (target, amount) => {
-      const actual = Math.min(amount, target.stats.HP - target.hp);
-      target.hp += actual;
-      calls.push(["heal", target.name, actual]);
-      return actual;
-    },
-    hitMastery: (attacker, target, element, power, canCrit) => {
-      calls.push(["hitMastery", target.name, element, power, canCrit]);
-      if (target.hp <= 20) target.alive = false; // lets a test kill an enemy with the burst
-      return { damage: 30 };
-    },
-    addStatus: (target, id, data) => calls.push(["addStatus", target.name, id, data]),
-  };
-  const interpreter = createSkillInterpreter(context);
-  const meo = () => ({
-    ...unit("Meo-v9", "ally", { summon: true, id: "meo-9", summonTurns: 3 }),
-    lifecycle: clone(elishiaData.summons.meo9.lifecycle),
-    onDestroyed: clone(elishiaData.summons.meo9.onDestroyed),
-  });
-  return { calls, said, state, unit, interpreter, meo };
-}
-
-test.skip("cover fire is 50% of its ATK normally and 75% during Nanotech Singularity (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { calls, state, unit, interpreter, meo } = fakeWorld();
-  state.actors.push(unit("Drone", "enemy"));
-  const unitMeo = meo();
-  state.actors.push(unitMeo);
-  interpreter.summonTurn(unitMeo);
-  state.battleTimers.singularity = 2;
-  interpreter.summonTurn(unitMeo);
-  assert.deepEqual(calls.filter((call) => call[0] === "hitPhysical").map((call) => call[2]), [0.5, 0.75]);
-});
-
-test.skip("Emergency Field heals the lowest-HP-ratio living ally below 25% Max HP instead of attacking (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { calls, said, state, unit, interpreter, meo } = fakeWorld();
-  const first = unit("Zenki", "ally", { hp: 240, stats: { HP: 1000 } });
-  const second = unit("Jazen", "ally", { hp: 150, stats: { HP: 1000 } });
-  state.actors.push(first, second, unit("Drone", "enemy"));
-  const summon = meo();
-  state.actors.push(summon);
-  interpreter.summonTurn(summon);
-  assert.equal(first.hp, 240, "the higher percentage ally is not selected");
-  assert.equal(second.hp, 250, "the lowest percentage ally receives 10% Max HP healing");
-  assert.equal(calls.filter((call) => call[0] === "hitPhysical").length, 0, "healing replaces cover fire for this activation");
-  assert.match(said[0], /Emergency Field restores Jazen for 100 HP/);
-  assert.equal(summon.summonTurns, 2);
-});
-
-test.skip("Emergency Field does not revive incapacitated allies and cover fire continues if nobody qualifies (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { calls, state, unit, interpreter, meo } = fakeWorld();
-  const downed = unit("Zenki", "ally", { alive: false, hp: 0 });
-  state.actors.push(downed, unit("Drone", "enemy"));
-  const summon = meo();
-  state.actors.push(summon);
-  interpreter.summonTurn(summon);
-  assert.equal(downed.alive, false);
-  assert.equal(calls.filter((call) => call[0] === "hitPhysical").length, 1);
-});
-
-test.skip("Meo-v9 expires after three activations and dispatches its declared Final Protocol (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { calls, said, state, unit, interpreter, meo } = fakeWorld();
-  const ally = unit("Elishia", "ally", { hp: 1000 });
-  state.actors.push(ally, unit("Drone", "enemy"));
-  const summon = meo();
-  state.actors.push(summon);
-  interpreter.summonTurn(summon);
-  interpreter.summonTurn(summon);
-  interpreter.summonTurn(summon);
-  assert.equal(summon.alive, false);
-  assert.ok(said.some((line) => line.includes("deployment expires")));
-  assert.equal(calls.filter((call) => call[0] === "hitMastery").length, 1, "declared Final Protocol hits the living enemy once");
-  assert.ok(calls.some((call) => call[0] === "addStatus" && call[2] === "meoFinalProtocolSpdDown"));
-});
-
-test.skip("Singularity announces amplified Meo-v9 cover fire for living summons only (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const { said, state, unit, interpreter, meo } = fakeWorld();
-  const summon = meo();
-  state.actors.push(unit("Elishia", "ally"), summon, unit("Drone", "enemy"));
-  const full = {
-    state, say: (m) => said.push(m), alive: (s, side) => s.actors.filter((a) => a.alive && a.side === side),
-    ready: () => true, pay: () => true, addStatus: () => {}, heal: () => 0,
-  };
-  const skills = createSkillInterpreter(full).buildSkills(elishiaData);
-  const ultimate = skills.find((skill) => skill.key === "ultimate");
-  ultimate.run(state.actors[0], {});
-  assert.ok(said.includes("Meo-v9's covering fire is amplified to 75% of its ATK."));
-  assert.match(said[0], /^NANOTECH SINGULARITY!/);
-  said.length = 0;
-  summon.alive = false;
-  ultimate.run(state.actors[0], {});
-  assert.ok(!said.some((message) => message.includes("amplified")));
-});
-
 // ============================ Through a real battle ============================
 
 const firstBasic = (view) => ({ type: "basic", targetId: view.actions.find((action) => action.type === "basic").targets[0] });
@@ -371,26 +158,6 @@ function drivenBattle({ enemy, seed = 3, maxActive }) {
   if (maxActive) holder.battle.state.party.maxActive = maxActive;
   return holder.battle;
 }
-
-test.skip("battle: Meo-v9 destruction does not trigger an unspecified EMP burst (legacy assertion superseded by approved Falcon regression coverage)", async () => {
-  let destroyed = false;
-  const battle = drivenBattle({
-    enemy: (holder) => ({
-      chooseAction(view) {
-        const summon = holder.battle.state.actors.find((unit) => unit.id === "meo-9" && unit.alive);
-        if (summon && !destroyed) {
-          destroyed = true;
-          holder.battle.dealDamage(summon, 99999, "Physical");
-        }
-        return firstBasic(view);
-      },
-    }),
-  });
-  await battle.run();
-  battle.close();
-  assert.ok(battle.state.log.includes("Meo-v9 is incapacitated!"));
-  assert.ok(!battle.state.log.some((line) => line.includes("releases an EMP")));
-});
 
 test("battle: a real Adaptive Barrier adapts to the type that hits it (Physical from enemy attacks)", async () => {
   const { playHeadless } = require("../tools/lib/headless");

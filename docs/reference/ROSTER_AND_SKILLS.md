@@ -46,7 +46,7 @@ All five Falcon skill sets are data-defined in `characters/skillData/` and assem
 | Jazen | Recoil Dampeners | Impact Grenade | Breach Charge | Reinforced Plating | Cataclysmic Payload |
 | Zenki | Unobserved | Railshot | Cipher Tag | Ghost Protocol | Zero Hour Execution |
 
-The [Falcon implementation guide](FALCON_IMPLEMENTATION_GUIDE.md) documents exact costs, cooldowns, values, targeting, and passive timing. The [Step 9 finalization note](FALCON_MECHANICS_FINALIZATION.md) separates owner-authored behavior from owner-approved implementation values added where the source omitted tuning details.
+The [Falcon implementation guide](FALCON_IMPLEMENTATION_GUIDE.md) documents current costs, cooldowns, values, targeting, and passive timing. [ADR-017](../project/DECISIONS.md) records the owner-approved global rules. The original Step 9 implementation choices remain available as a superseded [historical milestone](../history/milestones/STEP9_SUPERSEDED_FALCON_MECHANICS.md).
 
 ## Implemented passive overview
 

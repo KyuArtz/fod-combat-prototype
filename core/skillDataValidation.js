@@ -157,10 +157,6 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
           fail(where, "status onUnitDefeated must define a valid restoreMpToLivingAllies reaction (percentMaxMP 0–100)");
         }
       }
-      if (type === "commandUplink" && (!Number.isInteger(effect.turns) || effect.turns < 1 || !isNum(effect.amount) ||
-        !isNum(effect.conditionalAmount) || !isNum(effect.hpThresholdPercent) || effect.hpThresholdPercent < 0 || effect.hpThresholdPercent > 100)) {
-        fail(where, "commandUplink needs amount, conditionalAmount, hpThresholdPercent (0–100), and turns > 0");
-      }
       if (type === "summon" && !summons[effect.template]) fail(where, `unknown summon template "${effect.template}"`);
       if (type === "nextSkillDiscount" && (!isNum(effect.amount) || effect.amount < 0)) fail(where, "nextSkillDiscount needs amount >= 0");
       for (const token of [...(resultKeys[type] || []), ...(effectRegistry.get(type)?.resultKeys || [])]) produced.add(token);
@@ -244,10 +240,6 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
   }
   for (const [name, summon] of Object.entries(summons)) {
     if (!summon.id || !summon.name || !summon.stats || !Number.isInteger(summon.turns) || summon.turns < 1) fail(`summon ${name}`, "needs id, name, stats and turns >= 1");
-    if (summon.scan?.conditionalBonuses !== undefined && (!Array.isArray(summon.scan.conditionalBonuses) ||
-      summon.scan.conditionalBonuses.some((modifier) => !modifier || typeof modifier.battleTimer !== "string" || !modifier.battleTimer || !isNum(modifier.damageBonus)))) {
-      fail(`summon ${name}`, "scan conditionalBonuses need a battleTimer key and numeric damageBonus");
-    }
     if (summon.targetableByEnemy !== undefined && typeof summon.targetableByEnemy !== "boolean") fail(`summon ${name}`, "targetableByEnemy must be a boolean");
     if (summon.ownerTurnLifecycle) {
       const lifecycle = summon.ownerTurnLifecycle;

@@ -160,7 +160,7 @@ Tactical Blightheart battles averaged 11,410 total damage dealt by Falcon (inclu
 
 These are controller-dependent prototype observations, not universal balance estimates. Use the raw JSON batch reports and sample transcripts in `reports/` for reproducibility.
 
-The consolidated iteration-2 report, per-agent contribution summary, reproducible JSON batches, and sample transcripts are in [`reports/`](../../reports/README.md). The latest suite result is 263 passed, 0 failed, and 38 superseded legacy assertions skipped.
+The consolidated iteration-2 report, per-agent contribution summary, reproducible JSON batches, and sample transcripts are in [`reports/`](../../reports/README.md). At the Iteration 2 snapshot, the suite result was 263 passed, 0 failed, and 38 superseded legacy assertions skipped; this is a historical count, not the current post-cleanup result.
 
 
 ## Iteration 3 — Coordinated Falcon, cleanse counterplay and active/reserve boss test (2026-11-22)
@@ -200,4 +200,4 @@ Reproduce the primary run with:
 node tools/simulate.js --battles 150 --seed 996000 --policy coordinated --active 3 --party-order jazen,evalete,zackry,elishia,zenki --encounter blightheartSanctum --format json --out reports/iteration3/falcon-coordinated-3active-150.json
 ```
 
-Verification after Iteration 3: `npm test` reports 273 passed, 0 failed, and 38 superseded legacy assertions skipped.
+Verification at the Iteration 3 snapshot (before the 2026-11-22 cleanup): `npm test` reported 273 passed, 0 failed, and 38 superseded legacy assertions skipped. After the cleanup, the current suite reports 260 passed, 0 failed, and 0 skipped.

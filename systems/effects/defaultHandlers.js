@@ -233,7 +233,6 @@ function createDefaultEffectHandlers(context) {
         summonTurns: template.turns, stats: structuredClone(template.stats),
         ownerTurnLifecycle, skipNextOwnerTurnEnd: Boolean(ownerTurnLifecycle?.skipFirstTurnEnd),
         lifecycle: structuredClone(template.lifecycle || {}), ownerId: run.actor.id,
-        scan: template.scan && structuredClone(template.scan),
         onDestroyed: template.onDestroyed && structuredClone(template.onDestroyed),
         ownerEvents: template.ownerEvents && structuredClone(template.ownerEvents),
       });

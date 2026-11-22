@@ -13,6 +13,7 @@ This index is the entry point for project documentation. Current-state documents
 | [AI handoff](project/AI_HANDOFF.md) | Concise source-grounded continuation context and development rules |
 | [Architecture decisions](project/DECISIONS.md) | Accepted and deferred design decisions (ADRs) |
 | [Changelog](project/CHANGELOG.md) | Chronological record of implementation milestones |
+| [Cleanup report](project/CLEANUP_REPORT.md) | Obsolete-code/test removals and intentionally preserved compatibility coverage |
 
 ## Technical references
 
@@ -22,7 +23,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Combat mechanics](reference/COMBAT_MECHANICS.md) | Current scheduler, turn, damage, status, and encounter rules |
 | [Roster and skills](reference/ROSTER_AND_SKILLS.md) | Runtime roster, mastery types, skill registry overview |
 | [Falcon implementation guide](reference/FALCON_IMPLEMENTATION_GUIDE.md) | Executable Falcon skill/passive behavior and exact values |
-| [Falcon mechanics finalization](reference/FALCON_MECHANICS_FINALIZATION.md) | Owner-approved implementation choices for previously unspecified mechanics |
+| [Falcon approved-kit history](history/milestones/STEP9_SUPERSEDED_FALCON_MECHANICS.md) | Historical Step 9 decisions, superseded where they conflict with ADR-017 |
 | [Enemy archetypes and balance](reference/ENEMY_ARCHETYPES_AND_BALANCE.md) | Six enemy passive/skill kits, the Blightheart boss, tactical Falcon policy, and seeded playtest results |
 | [Owner skill reference](reference/OWNER_SKILL_REFERENCE.md) | Authority and handling of the compact owner-reference extract |
 | [Player-facing skill copy](reference/PLAYER_FACING_SKILL_COPY.md) | Descriptive text; executable data remains authoritative |

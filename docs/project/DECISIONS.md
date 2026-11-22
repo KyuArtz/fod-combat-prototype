@@ -116,7 +116,7 @@
 
 **Status:** Historical; the current approved Falcon kit and combat rules in ADR-017 supersede the listed behavior where they differ.
 
-**Decision:** The owner approved changing/adding values where the initial skill design omitted a numeric rule. Use the explicit tuning values in `../reference/FALCON_MECHANICS_FINALIZATION.md`: Meo-v9 EMP 1.0x/0.5x Mpow; Singularity DoT 0.2x Mpow; Catalyst Wing 25% Evalete Max HP and 50% base DEF/RES; Zackry +10 next-attack Accuracy for basic and skill hits; Jazen Stagger 20 CR readiness pushback. These are implementation choices, not retroactive claims about what the original JSON specified.
+**Decision:** The owner approved changing/adding values where the initial skill design omitted a numeric rule. Use the explicit tuning values in `../history/milestones/STEP9_SUPERSEDED_FALCON_MECHANICS.md`: Meo-v9 EMP 1.0x/0.5x Mpow; Singularity DoT 0.2x Mpow; Catalyst Wing 25% Evalete Max HP and 50% base DEF/RES; Zackry +10 next-attack Accuracy for basic and skill hits; Jazen Stagger 20 CR readiness pushback. These are implementation choices, not retroactive claims about what the original JSON specified.
 
 **Architecture:** Keep effects declarative and route them through the existing shared interpreter, damage, status, targeting, summon and readiness systems. Keep base Falcon stats unchanged until a separate stat-sheet synchronization decision.
 
