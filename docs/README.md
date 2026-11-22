@@ -23,6 +23,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Roster and skills](reference/ROSTER_AND_SKILLS.md) | Runtime roster, mastery types, skill registry overview |
 | [Falcon implementation guide](reference/FALCON_IMPLEMENTATION_GUIDE.md) | Executable Falcon skill/passive behavior and exact values |
 | [Falcon mechanics finalization](reference/FALCON_MECHANICS_FINALIZATION.md) | Owner-approved implementation choices for previously unspecified mechanics |
+| [Enemy archetypes and balance](reference/ENEMY_ARCHETYPES_AND_BALANCE.md) | Six enemy passive/skill kits, the Blightheart boss, tactical Falcon policy, and seeded playtest results |
 | [Owner skill reference](reference/OWNER_SKILL_REFERENCE.md) | Authority and handling of the compact owner-reference extract |
 | [Player-facing skill copy](reference/PLAYER_FACING_SKILL_COPY.md) | Descriptive text; executable data remains authoritative |
 

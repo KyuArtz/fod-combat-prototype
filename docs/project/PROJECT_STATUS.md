@@ -1,10 +1,27 @@
 # Project Status
 
 **Project:** F.O.D. (Fragments of Decay) Combat Prototype  
-**Snapshot:** 2026-11-21  
+**Snapshot:** 2026-11-22  
 **Runtime:** Node.js CommonJS CLI  
 **Preferred scheduler:** Threshold / continuous-time  
 **Default encounter:** `trainingGround` (five active Falcon agents versus five active enemies)
+
+## Current approved combat baseline (2026-11-22)
+
+The five Falcon skill kits have been updated to the owner's approved kit v1. The global Combat Stacking v1 and Effect Timing/Trigger v1 rules are implemented in the shared runtime. Current authoritative details are in [Falcon Implementation Guide](../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [Combat Mechanics](../reference/COMBAT_MECHANICS.md). The previous Step 9 mechanics summary is historical where it conflicts with ADR-017.
+
+- Meo-9 now performs only owner-turn cover fire or Emergency Field healing; no scan, EMP destruction, Final Protocol or expiry attack.
+- Catalyst Wing is targetable and passive; it pulses on every even Evalete turn through turn 12 and has no destruction fallback shield.
+- Zackry buffs Mpow, and Overwatch only reduces Tactical Marked enemies' Evasion.
+- Jazen's Recoil Dampeners stacks Mpow; no immunity, Stagger or Taunt remains in his Falcon kit.
+- Zenki uses Energy mastery and his simplified stealth/precision/three-shot execution kit.
+- Catalyst Overdrive reflects 25% of direct incoming damage for 3 turns without recursive reflection.
+- Latest regression: 273 pass, 0 fail, 38 superseded legacy assertions skipped (311 total tests reported by Node's test runner).
+- Added the initial deterministic tactical Falcon controller and the two-stage `blightheartSanctum` boss encounter.
+- Added a coordinated controller with Toxic DoT awareness, cleanse prioritization, adaptive barrier selection, focus-fire rules, and active/reserve rotation.
+- Evalete's live Catalyst Overdrive now cleanses harmful effects from active allies before applying its healing and defensive effects; positive buffs are preserved.
+- Iteration 3 three-active boss benchmark: coordinated policy 103/150 victories (68.7%); random legal-action control 1/100 (1.0%). The five-active coordinated control won 100/100, showing that the five-active formation currently overwhelms this boss. These are controller-dependent headless observations, not universal balance estimates.
+- Standard Training Ground enemy totals vs Falcon base totals: HP +12.7%, ATK +27.4%, MPow -1.9%, DEF +9.0%, RES +3.5%, SPD -0.7%. The boss encounter uses a separate tuned profile. See [Enemy Archetypes and Balance](../reference/ENEMY_ARCHETYPES_AND_BALANCE.md).
 
 ## Current state
 
@@ -15,9 +32,11 @@ The interactive entry point is `index.js`. Headless execution and simulation use
 ## Implemented capabilities
 
 - Five playable Falcon agents with 20 active skills and passive definitions in `characters/skillData/`.
-- Training Drone and Rogue Automaton skills defined in `data/enemySkills/` and executed by the shared skill runtime.
-- Five enemy archetypes and declarative AI policies in `data/enemies/` and `data/enemyAI/`.
-- Encounter definitions in `data/encounters/`, including single-wave encounters and the multi-wave `siegeBreakthrough` example.
+- Six enemy archetypes, including the Blightheart Overseer boss; each has a passive, three regular skills, an Ultimate, and a declarative AI policy using the shared skill runtime.
+- Role-specific enemy target selection and two deterministic Falcon player controllers: the initial policy (`ai/falconTactics.js`) and coordinated reserve-aware policy (`ai/falconTacticsV2.js`).
+- Encounter definitions in `data/encounters/`, including `siegeBreakthrough` and the two-stage `blightheartSanctum` boss encounter.
+- Generic `masteryDamageAllOpponents` support for declarative AoE abilities used by either side.
+- Turn views expose copied status and shield state for policy/UI decisions without exposing mutable engine actors.
 - Per-instance enemy stat overrides and defeat-count-triggered reinforcement groups.
 - Threshold and legacy readiness schedulers; threshold is the default.
 - Player-first PvE opening initiative, configurable with `FOD_OPENING`.
@@ -30,17 +49,18 @@ The interactive entry point is `index.js`. Headless execution and simulation use
 
 ## Verification
 
-The latest Falcon architecture snapshot passed `npm test`: **227 tests passed, 0 failed**. The status lifecycle migrations moved Singularity DoT ticking, Command Uplink conditional ATK refresh, and Tactical Mark defeat rewards into declarative status metadata. Cipher Tag uses the reusable `statusGroup` operation. Railshot and Zero Hour compose through generic `masteryHit`; Zero Hour's Cipher Tag follow-up uses `conditionalStatus`. Nanotech Singularity composes generic battle-timer, status, area-DoT, and summon conditional-power/announcement operations. Regression coverage includes deterministic replay, unchanged golden transcripts, Railshot's Accuracy-token/RNG behavior, Zero Hour's exact HP threshold and miss/defeat follow-up gates, and battle-timer turn-start and reserve-entry behavior. Run `npm test` from the project root to verify the current checkout.
+The current runtime passes `npm test`: **273 passed, 0 failed, 38 superseded legacy assertions skipped**. Coverage includes approved Falcon kits, all 20 enemy skills, enemy passive stat modifiers and triggers, enemy stat-scaling bounds, source-attributed direct/reflected/DoT damage, shared stacking/timing behavior, and deterministic golden transcripts. Golden fixtures were regenerated for intentional behavior changes. Run `npm test` from the project root to verify the current checkout.
 
-The current Node baseline is 18 or newer. The project has no third-party runtime dependencies.
+The three-active formation and two-reserve rotation are now covered by headless regression tests. The current Node baseline is 18 or newer. The project has no third-party runtime dependencies.
 
 ## Known limitations
 
 - The prototype is terminal/headless; there is no graphical battle client.
 - The default formation uses five active units per side. Encounter waves currently require at least five enemy entries.
 - Only defeat-count reinforcement triggers are supported; reinforcement units enter the enemy reserve and deploy through normal replacement.
-- Enemy skill variety is limited to the currently registered Training Drone and Rogue Automaton skill sets; the other three archetypes use the basic-only AI policy.
-- Simulator damage reporting measures damage received by targets; the `DamageApplied` event does not currently include source actor identity.
+- Enemy AI is ordered-rule logic, not an adaptive or learning opponent; playtest results depend on the chosen player controller.
+- Blightheart results depend strongly on party formation and controller: Iteration 2 five-active tactical baseline was 42.0%; Iteration 3 coordinated three-active/two-reserve is 68.7% over 150 seeds, while coordinated five-active is 100% over 100 seeds. Do not compare these as an isolated controller change because both formation and controller changed. The three-active configuration is the primary balance target; these results are not manual player win probabilities.
+- `siegeBreakthrough` retains encounter-specific low-progression stat overrides and should not be confused with the scaled `trainingGround` balance benchmark.
 - Encounter reward data and `onEncounterComplete` are integration hooks only. XP, currency, inventory, reward distribution, persistent stage progression, and save/load are not implemented.
 - Runtime Falcon base stats in `characters/falcon.js` remain prototype values. A separate owner-approved stat-sheet synchronization decision is still open.
 
@@ -50,7 +70,7 @@ Executable code and automated tests define actual runtime behavior. `references/
 
 ## Development status
 
-Steps 1–9, the skill effect-registry pipeline, the passive event registry, and the first generic summon lifecycle registry are complete. `core/skillLifecycle.js` remains a compatibility facade over `systems/passives/runtime.js`; passive subscriptions are dispatched through `systems/passives/registry.js`, and summon activation/expiry subscriptions through `systems/summons/registry.js`. Summon destruction owner reactions now use summon-declared event subscriptions, the legacy summon behavior adapter has been removed, and timed passive stat modifiers use generic timer keys. The current Falcon shared-runtime character-ID audit is complete: Zackry targeter attribution and Jazen Recoil Dampeners status identity are configured in passive data, not hard-coded in shared runtime. Passive subscription and modifier configuration validation has been expanded. The defensive passive modifier audit is complete for current Falcon passives: conditional stat modifiers and incoming attack modifiers use reusable data contracts consumed by shared systems. Event-driven passive effects remain registry handlers. A focused specialized-handler reuse audit has now classified shared primitives, parameterized mechanic handlers, and coordinated specialized effects. It also identified three named-status branches in the passive lifecycle runtime (`singularityDot`, `commandUplink`, and `tacticalMark`); all three are now migrated to generic status lifecycle consumers. Tactical Mark's active-skill application also now uses the generic `status` effect rather than a dedicated effect handler, while preserving its named status ID for damage and skill consumers. Cipher Tag's dedicated effect handler has now been replaced by the reusable `statusGroup` operation, which replaces matching grouped statuses across a configured side before applying the new group to the selected target. Railshot and Zero Hour now both compose through generic `masteryHit`; Railshot retains its guaranteed accuracy and conditional +30% Unobserved power, while Zero Hour uses a strict-below-40% fixed execute override and a gated Cipher Tag follow-up through `conditionalStatus`. Nanotech Singularity now composes generic `setBattleTimer`, `statusAllies`, `statusEnemies`, area `damageOverTime`, and `announceSummonPowerModifier` effects; its 5% turn-start heal is a timer reaction and applies to non-summon allies entering from reserve while active. Conditional Meo scan and cover-fire bonuses read the same generic battle timer. No Singularity-specific active effect handler remains. Details are in [Handler Reuse Audit](../reference/HANDLER_REUSE_AUDIT.md). The documentation and codebase baseline audit/restructure is recorded in [Baseline Audit](BASELINE_AUDIT.md).
+Steps 1–9, the shared skill effect-registry pipeline, passive event registry and generic summon lifecycle registry are complete. Falcon skill/passive data is active under `characters/skillData/`; `characters/skills.js` builds the character and enemy registries through `core/skillInterpreter.js`. Passive subscriptions are dispatched through `systems/passives/registry.js`; reusable skill effects are in `systems/effects/`; summon owner-turn activation is in `systems/summons/`. Global Combat Stacking v1 and Effect Timing/Trigger v1 are recorded in ADR-017 and covered by the current approved regression tests. Earlier Step 9 balance details are historical wherever they conflict with ADR-017.
 
 See the [architecture reference](../reference/ARCHITECTURE.md), [testing guide](TESTING_AND_PLAYTESTING.md), and [roadmap](ROADMAP.md) for details.
 
@@ -62,11 +82,11 @@ This paragraph records the state at the start of the passive-registry migration,
 ## Passive lifecycle migration status
 
 - Declarative passive event subscriptions and a battle-scoped handler registry are active under `systems/passives/`.
-- Evalete's Catalyst Protocol now uses registered `battleStart`, `turnEnd`, and `summonDestroyed` handlers for Catalyst Wing lifecycle, pulse healing/shields, and its destruction shield.
+- Evalete's Catalyst Protocol uses registered lifecycle handlers for the targetable passive Catalyst Wing, periodic healing/shields, and destruction shutdown (no fallback shield).
 - Elishia's Biotech Overdrive uses registered battle-start/turn-end handlers and generic timer-keyed stat modifiers; no character-specific timer field remains.
 - Unobserved, Recoil Dampeners, and Overwatch Protocol were migrated in the preceding passive-registry step.
-- Meo-v9's Emergency Field, cover fire, and Final Protocol now use declarative activation/expiry handlers in `systems/summons/registry.js`. Summon destruction owner reactions are dispatched from summon-declared owner-event subscriptions, and generic on-destroy effects remain supported. The legacy behavior adapter has been removed. No Phantom Rebellion content is part of this snapshot.
+- Meo-9's Emergency Field and cover fire use declarative owner-turn activation handlers in `systems/summons/registry.js`; Final Protocol was removed by ADR-017. Summon destruction owner reactions remain generic and data-driven. No Phantom Rebellion content is part of this snapshot.
 - Defensive modifier follow-up: Unobserved now uses generic `passiveFlags`, conditional `statMods`, and typed `incomingAttackMods`; no Unobserved-specific field or branch remains in shared combat systems. Railshot bonus state is also tracked through the generic passive flag contract.
 - Railshot uses generic mastery-hit data for conditional power and guaranteed accuracy; no Railshot-specific effect handler remains.
 - Zero Hour uses generic mastery-hit target-HP modifiers and a gated conditional-status follow-up; no Zero Hour-specific effect handler remains.
-- Latest verification: 227 tests pass, 0 fail.
+- Historical verification at the passive-registry migration milestone: 233 passed, 0 failed, 38 superseded legacy assertions skipped. The current verification is listed in the sections above.

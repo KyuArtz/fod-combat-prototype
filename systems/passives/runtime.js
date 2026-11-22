@@ -1,13 +1,15 @@
 // Passive, summon, and actor-lifecycle behavior for declarative skill data.
 const { formatMessage } = require("../../core/skillMessages");
+const { emitCombatEvent } = require("../../core/combatEvents");
 const { createSummonRegistry } = require("../summons/registry");
 const { createPassiveRegistry } = require("./registry");
-const { processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions } = require("../statusEffects");
+const { processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, expireTurnStartStatuses } = require("../statusEffects");
+const { processBattleTimerTurnStart, tickBattleTimers } = require("../battleTimers");
 
 const pct = (value, percent) => Math.floor((value * percent) / 100);
 
 function createRuntime(context) {
-  const { addShield, addStatus, alive, applyDamage, heal, hitMastery, hitPhysical, makeActor, say, state } = context;
+  const { addShield, addStatus, alive, applyDamage, heal, hitMastery, hitPhysical, makeActor, say, state, events } = context;
   const passiveRegistry = createPassiveRegistry(context);
   const summonRegistry = createSummonRegistry(context);
 
@@ -18,20 +20,49 @@ function createRuntime(context) {
   }
 
   function onTurnStart(actor) {
-    processTurnStartStatuses(actor, { applyDamage, say });
-    passiveRegistry.dispatch(actor, "turnStart");
-    for (const status of Object.values(actor.statuses)) {
+    expireTurnStartStatuses(actor);
+    processTurnStartStatuses(actor, { applyDamage, say, state });
+    if (!actor?.alive) return false;
+    // DOT resolves before all healing-over-time and battle-timer recovery.
+    for (const status of Object.values(actor.statuses || {})) {
       if (status.hotPercentMaxHP) heal(actor, pct(actor.stats.HP, status.hotPercentMaxHP));
     }
+    processBattleTimerTurnStart(actor, state, { heal });
+    passiveRegistry.dispatch(actor, "turnStart");
     processTurnStartStatusRefreshes(actor);
+    return actor.alive;
+  }
+
+  function advanceOwnedSummons(owner) {
+    for (const summon of state.actors.filter((unit) =>
+      unit.alive && unit.summon && unit.ownerId === owner.id && unit.ownerTurnLifecycle)) {
+      const lifecycle = summon.ownerTurnLifecycle;
+      if (summon.skipNextOwnerTurnEnd) {
+        summon.skipNextOwnerTurnEnd = false;
+        continue;
+      }
+      summonRegistry.dispatch(summon, lifecycle.activation || []);
+      summon.summonTurns--;
+      if (summon.summonTurns <= 0) {
+        summon.alive = false;
+        say(formatMessage(lifecycle.expireMessage || "{actor}'s deployment expires.", { actor: summon.name }));
+        emitCombatEvent(events, "ActorSummonExpired", {
+          actorId: summon.id, ownerId: owner.id, side: summon.side, round: state.round,
+        });
+        for (const subscription of lifecycle.onExpire || []) summonRegistry.dispatch(summon, [subscription]);
+      }
+    }
   }
 
   function onTurnEnd(actor) {
     passiveRegistry.dispatch(actor, "turnEnd");
+    advanceOwnedSummons(actor);
+    tickBattleTimers(state, actor.id);
   }
 
-  function onDamageTaken(target, amount, damageType, hpLoss = amount) {
-    passiveRegistry.dispatch(target, "damageTaken", { amount, damageType, hpLoss });
+  function onDamageTaken(target, amount, damageType, hpLoss = amount, metadata = {}) {
+    target.damageTakenSinceLastTurn = true;
+    passiveRegistry.dispatch(target, "damageTaken", { amount, damageType, hpLoss, ...metadata });
   }
 
   function onEnemySkillTargeted(attacker, target) {

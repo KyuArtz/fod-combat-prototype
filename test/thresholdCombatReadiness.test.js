@@ -5,6 +5,7 @@ const {
   createThresholdScheduler,
 } = require("../systems/thresholdCombatReadiness");
 const { createBattleState } = require("../core/battleState");
+const { processBattleTimerTurnStart } = require("../systems/battleTimers");
 const { createTurnEngine, removeInactiveSummons } = require("../core/turnEngine");
 const {
   deployFirstReserve,
@@ -230,10 +231,6 @@ test("round completion and actor-turn effects remain tied to actual turns", asyn
     combatReadiness: createThresholdScheduler(),
     effectiveStat,
     getResult: () => (state.round > 1 ? "DONE" : null),
-    heal(unit, amount) {
-      healingTicks++;
-      startOrder.push(`heal:${unit.name}:${amount}`);
-    },
     output: { log() {} },
     playerTurn: async () => {},
     enemyTurn: async () => {},
@@ -244,6 +241,12 @@ test("round completion and actor-turn effects remain tied to actual turns", asyn
     tickCooldowns(unit) {
       turnStarts++;
       startOrder.push(`cooldown:${unit.name}`);
+    },
+    onTurnStart(unit) {
+      processBattleTimerTurnStart(unit, state, { heal: (target, amount) => {
+        healingTicks++;
+        startOrder.push(`heal:${target.name}:${amount}`);
+      } });
     },
     tickStatuses() {
       statusTicks++;

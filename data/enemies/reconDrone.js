@@ -2,6 +2,19 @@ module.exports = {
   id: "recon-drone",
   name: "Recon Drone",
   mastery: "Kinetic",
-  aiPolicy: "basicOnly",
-  stats: { HP: 620, MP: 0, ATK: 58, MPow: 70, DEF: 35, RES: 65, SPD: 115, Evasion: 12 },
+  skillSet: "reconDrone",
+  aiPolicy: "reconDrone",
+  targetSelection: "highestMasteryPower",
+  passive: {
+    id: "evasiveArray",
+    name: "Evasive Array",
+    description: "Predictive movement algorithms grant Evasion +15.",
+    statMods: [{ stat: "Evasion", points: 15 }],
+    events: { battleStart: [{ handler: "announcePassive" }] },
+  },
+  stats: {
+    HP: 1092, MP: 125, ATK: 101, MPow: 134, DEF: 72, RES: 99, SPD: 125,
+    CritRate: 12, Evasion: 18,
+    masteryBonus: { Kinetic: 10 }, masteryResistance: {},
+  },
 };

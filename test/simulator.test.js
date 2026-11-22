@@ -3,12 +3,14 @@ const assert = require("node:assert/strict");
 const { parseArgs, renderCsv, simulateBattles } = require("../tools/simulate");
 
 test("simulator CLI parses supported options and rejects invalid values", () => {
-  assert.deepEqual(parseArgs(["-n", "12", "--seed", "99", "--scheduler", "legacy", "--opening", "speed", "--policy", "basic", "--encounter", "droneCalibration", "--format", "json"]), {
-    battles: 12, seed: 99, scheduler: "legacy", opening: "speed", policy: "basic", encounter: "droneCalibration", format: "json", out: null,
+  assert.deepEqual(parseArgs(["-n", "12", "--seed", "99", "--scheduler", "legacy", "--opening", "speed", "--policy", "tactical", "--encounter", "blightheartSanctum", "--format", "json"]), {
+    battles: 12, seed: 99, scheduler: "legacy", opening: "speed", policy: "tactical", encounter: "blightheartSanctum", active: 5, partyOrder: null, format: "json", out: null,
   });
   assert.throws(() => parseArgs(["--battles", "0"]), /--battles/);
   assert.throws(() => parseArgs(["--scheduler", "unknown"]), /--scheduler/);
   assert.throws(() => parseArgs(["--policy", "unknown"]), /--policy/);
+  assert.throws(() => parseArgs(["--active", "6"]), /--active/);
+  assert.throws(() => parseArgs(["--party-order", "elishia,elishia"]), /--party-order/);
   assert.throws(() => parseArgs(["--encounter", "unknown"]), /--encounter/);
   assert.throws(() => parseArgs(["--format", "xml"]), /--format/);
 });
@@ -23,7 +25,11 @@ test("headless simulator returns complete aggregate and per-battle metrics", asy
   assert.ok(["VICTORY", "DEFEAT"].includes(report.battles[0].result));
   assert.ok(report.summary.averageTurns > 0);
   assert.ok(report.summary.averageSkills >= 0);
+  assert.ok(report.summary.averageAllySkills >= 0);
+  assert.ok(report.summary.averageEnemySkills >= 0);
   assert.ok(report.summary.averageBasicAttacks > 0);
+  assert.ok(report.summary.averageAllyBasicAttacks > 0);
+  assert.ok(report.summary.averageEnemyBasicAttacks > 0);
   assert.equal(report.summary.wins + report.summary.defeats + report.summary.draws, 2);
   assert.equal(report.summary.winRate, report.summary.wins / 2);
   assert.ok(Object.keys(report.battles[0].perActorReceived).length > 0);
@@ -62,4 +68,15 @@ test("simulator reports wave and reinforcement metrics for multi-wave encounters
   assert.equal(report.battles[0].reinforcementUnits, 2);
   assert.equal(report.battles[0].encounterCompleted, true);
   assert.equal(report.summary.completedEncounters, 1);
+});
+
+
+test("simulator tactical policy uses the new two-stage Blightheart encounter", async () => {
+  const report = await simulateBattles({ battles: 1, seed: 88104, policy: "tactical", encounter: "blightheartSanctum" });
+  assert.equal(report.config.policy, "tactical");
+  assert.equal(report.config.encounter, "blightheartSanctum");
+  assert.equal(report.battles[0].wavesStarted, 2);
+  assert.equal(report.battles[0].rejectedDecisions, 0);
+  assert.ok(report.battles[0].skillUsesByActor.elishia);
+  assert.ok(report.battles[0].skillUsesByActor.evalete);
 });

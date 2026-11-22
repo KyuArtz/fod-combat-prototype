@@ -5,7 +5,25 @@ function addStatus(target, key, data) {
   if (key === "staggered" && !target.statuses.staggered && Number.isFinite(data.delayCR) && data.delayCR > 0) {
     target.cr = (Number.isFinite(target.cr) ? target.cr : 0) - data.delayCR;
   }
-  target.statuses[key] = { ...data, ...(target._isTakingTurn ? { appliedDuringCurrentTurn: true } : {}) };
+  const existing = target.statuses[key];
+  let next = { ...data };
+  if (existing && !data.stackable) {
+    // Global stacking rule: reapplying one effect refreshes its duration but
+    // cannot silently change its strength. Explicitly stackable effects opt in.
+    const strengthFields = [
+      "amount", "stat", "damageTakenPercent", "damageDealtPercent", "damageReflectionPercent",
+      "evasionPenalty", "hotPercentMaxHP", "dotDamage", "nextAttackDamagePercent", "shieldPercent",
+    ];
+    for (const field of strengthFields) {
+      if (existing[field] !== undefined && next[field] !== undefined) next[field] = existing[field];
+    }
+    if (existing.stackable) next.stackable = true;
+  }
+  target.statuses[key] = {
+    ...(existing || {}),
+    ...next,
+    ...(target._isTakingTurn ? { appliedDuringCurrentTurn: true } : {}),
+  };
   return true;
 }
 
@@ -18,27 +36,42 @@ function matchesModifierCondition(actor, condition = {}) {
 }
 
 function effectiveStat(state, actor, stat) {
-  let value = actor.stats[stat] || 0;
-  for (const effect of Object.values(actor.statuses)) {
-    if (effect.stat !== stat || !effect.amount) continue;
-    if (stat === "Evasion") value += effect.amount;
-    else value *= 1 + effect.amount / 100;
+  const positive = [];
+  const negative = [];
+  const isPointsStat = stat === "Evasion";
+  const addModifier = (amount) => {
+    if (!Number.isFinite(amount) || amount === 0) return;
+    (amount > 0 ? positive : negative).push(amount);
+  };
+
+  for (const effect of Object.values(actor.statuses || {})) {
+    if (effect.stat === stat) addModifier(effect.amount);
+    // Evasion penalties are point reductions and share the same priority rule
+    // as explicit Evasion buffs/debuffs.
+    if (stat === "Evasion" && Number.isFinite(effect.evasionPenalty)) {
+      addModifier(-Math.abs(effect.evasionPenalty));
+    }
   }
-  if (stat === "Evasion") {
-    for (const effect of Object.values(actor.statuses)) value -= effect.evasionPenalty || 0;
-  }
-  // Passive stat modifiers can be permanent or gated by a generic passive timer.
+
+  // Passive stat modifiers follow the same global priority rule as status modifiers.
   for (const mod of (actor.passive && actor.passive.statMods) || []) {
     if (mod.stat !== stat) continue;
     if (mod.timerKey && !(actor.passiveTimers?.[mod.timerKey] > 0)) continue;
     if (mod.when && !matchesModifierCondition(actor, mod.when)) continue;
-    if (mod.points !== undefined) value += mod.points;
-    else value *= 1 + mod.percent / 100;
+    if (mod.points !== undefined) addModifier(mod.points);
+    else if (mod.percent !== undefined) addModifier(mod.percent);
   }
+
+  const strongestPositive = positive.length ? Math.max(...positive) : 0;
+  const strongestNegative = negative.length ? Math.min(...negative) : 0;
+  const netModifier = strongestPositive + strongestNegative;
+  let value = actor.stats[stat] || 0;
+  if (isPointsStat) value += netModifier;
+  else value *= 1 + netModifier / 100;
   return Math.floor(Math.max(0, value));
 }
 
-function processTurnStartStatuses(actor, { applyDamage, say }) {
+function processTurnStartStatuses(actor, { applyDamage, say, state }) {
   if (!actor?.alive) return;
   for (const status of Object.values(actor.statuses || {})) {
     const tick = status.turnStart;
@@ -46,7 +79,10 @@ function processTurnStartStatuses(actor, { applyDamage, say }) {
     const amount = status[tick.damageField];
     const damageType = status[tick.damageTypeField];
     if (!Number.isFinite(amount) || amount <= 0 || typeof damageType !== "string") continue;
-    applyDamage(actor, amount, damageType);
+    const sourceActor = status.sourceId
+      ? state?.actors?.find((unit) => unit.id === status.sourceId) || null
+      : null;
+    applyDamage(actor, amount, damageType, sourceActor, { kind: "dot" });
     if (tick.message) {
       say(tick.message
         .replaceAll("{actor}", actor.name)
@@ -94,6 +130,13 @@ function processUnitDefeatedStatusReactions(unit, statuses = {}, context = {}) {
   }
 }
 
+function expireTurnStartStatuses(actor) {
+  if (!actor?.alive) return;
+  for (const [key, effect] of Object.entries(actor.statuses || {})) {
+    if (effect.expireAtTurnStart) delete actor.statuses[key];
+  }
+}
+
 function tickStatuses(actor) {
   for (const key of Object.keys(actor.statuses)) {
     const effect = actor.statuses[key];
@@ -107,8 +150,18 @@ function tickStatuses(actor) {
   }
 }
 
+function consumeNextAttackDamageModifier(actor) {
+  const candidates = Object.entries(actor?.statuses || {})
+    .filter(([, status]) => Number.isFinite(status.nextAttackDamagePercent) && status.nextAttackDamagePercent > 0)
+    .sort((left, right) => right[1].nextAttackDamagePercent - left[1].nextAttackDamagePercent);
+  if (!candidates.length) return 0;
+  const [statusId, status] = candidates[0];
+  delete actor.statuses[statusId];
+  return status.nextAttackDamagePercent;
+}
+
 function incomingAttackModifier(target, type) {
   return (target.passive?.incomingAttackMods || []).reduce((total, mod) => total + (mod.type === type ? mod.points || 0 : 0), 0);
 }
 
-module.exports = { addStatus, matchesModifierCondition, effectiveStat, incomingAttackModifier, processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, tickStatuses };
+module.exports = { addStatus, matchesModifierCondition, effectiveStat, incomingAttackModifier, processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, expireTurnStartStatuses, tickStatuses, consumeNextAttackDamageModifier };

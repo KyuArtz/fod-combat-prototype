@@ -7,11 +7,12 @@ A Node.js command-line prototype for experimenting with **Fragments of Decay (F.
 - Controller-driven combat with terminal, AI, scripted, random, and headless controllers.
 - Seeded randomness and deterministic decision replay.
 - Threshold-based continuous readiness scheduler (preferred) and legacy scheduler (comparison).
-- Data-driven Falcon skills and passives, plus the currently implemented enemy skill sets.
+- Data-driven Falcon skills and passives, plus six enemy archetypes (including the Blightheart boss) with a passive, three skills, an Ultimate, and dedicated AI policies.
 - Data-driven enemy archetypes, AI policies, encounter compositions, waves, and defeat-count reinforcements.
+- A coordinated Falcon controller with role-aware target focus, Toxic-counterplay, and three-active/two-reserve rotation.
 - Typed combat events alongside readable battle logs.
 - Headless simulator with table, JSON, and CSV reports.
-- Automated regression suite: **202 tests passing** in the uploaded baseline; run the suite locally to verify your checkout.
+- Automated regression suite: **273 tests passing, 0 failing, 38 superseded legacy assertions skipped** in the current development build; run `npm test` locally to verify your checkout.
 
 Reward awarding, XP, inventory, persistent stage progression, and save/load are not implemented. The encounter completion callback exposes reward metadata for a future progression layer.
 
@@ -68,11 +69,12 @@ The simulator runs the same battle engine used by interactive play. It does not 
 node tools/simulate.js --battles 100 --seed 42 --encounter trainingGround
 node tools/simulate.js --battles 100 --seed 42 --encounter droneCalibration
 node tools/simulate.js --battles 100 --seed 42 --encounter siegeBreakthrough
+node tools/simulate.js --battles 100 --seed 42 --policy tactical --encounter blightheartSanctum
 node tools/simulate.js --battles 100 --format json --out reports/sample.json
 node tools/simulate.js --battles 100 --format csv --out reports/sample.csv
 ```
 
-See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) for options and metric caveats. Generated reports are local artifacts and are ignored by Git; see `reports/README.md`.
+See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) for options and [the enemy archetype and balance notes](docs/reference/ENEMY_ARCHETYPES_AND_BALANCE.md) for current enemy kits, stat comparisons, and the scaled Falcon playtests, tactical controller, and Blightheart boss encounter. Damage events include source attribution for actor contribution analysis. Generated reports are local artifacts and are ignored by Git; see `reports/README.md`.
 
 ## Documentation
 
@@ -103,7 +105,7 @@ package.json          Project metadata and standard npm scripts
 ## Source and data authority
 
 - Executable code and automated tests define actual runtime combat behavior.
-- `data/skills/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, and `data/encounters/` are the runtime data definitions.
+- `characters/skillData/` contains the live Falcon skill/passive definitions; `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, and `data/encounters/` contain enemy and encounter definitions. `ai/falconTactics.js` provides the initial tactical Falcon controller; `ai/falconTacticsV2.js` provides the coordinated controller with reserve rotation and Toxic-counter logic. `characters/skills.js` assembles player and enemy registries through the shared interpreter.
 - `references/characterTerraData.js` is a compact owner-reference extract containing selected skill objects and stat information. It is not a full character roster and is not imported by the combat engine.
 - The owner maintains the separate website-facing character data. When engine mechanics change, update the relevant implementation/reference notes and provide the owner with the corresponding reference changes to apply to the site-facing data. Do not create a duplicate `ref/` directory or package the full original JSON.
 

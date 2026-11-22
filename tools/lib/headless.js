@@ -3,6 +3,8 @@
 
 const { createBattle } = require("../../core/battle");
 const { createBasicAttackController, createRandomController } = require("../../core/controllers");
+const { createTacticalFalconController } = require("../../ai/falconTactics");
+const { createCoordinatedFalconController } = require("../../ai/falconTacticsV2");
 const { createEventBus } = require("../../core/eventBus");
 const threshold = require("../../systems/thresholdCombatReadiness");
 
@@ -36,9 +38,13 @@ async function playHeadless({
       ? createBasicAttackController()
       : policy === "random"
         ? createRandomController({ seed: policySeed })
-        : null
+        : policy === "tactical"
+          ? createTacticalFalconController()
+          : policy === "coordinated"
+            ? createCoordinatedFalconController()
+            : null
   );
-  if (!playerController) throw new TypeError(`Unknown headless policy "${policy}". Use "basic" or "random".`);
+  if (!playerController) throw new TypeError(`Unknown headless policy "${policy}". Use "basic", "random", "tactical" or "coordinated".`);
   const eventBus = events || createEventBus({ record: true });
   const battle = createBattle({
     output: { log() {} },
@@ -51,7 +57,15 @@ async function playHeadless({
     encounter,
     ...(onEncounterComplete ? { onEncounterComplete } : {}),
   });
-  if (maxActive) battle.state.party.maxActive = maxActive;
+  if (maxActive !== undefined) {
+    if (!Number.isInteger(maxActive) || maxActive < 1 || maxActive > 5) {
+      battle.close();
+      throw new RangeError("maxActive must be an integer from 1 to 5.");
+    }
+    // Formation setup occurs inside battle.run(); set the limit beforehand so
+    // setupFormation creates a genuine active/reserve split.
+    battle.state.party.maxActive = maxActive;
+  }
   try {
     const result = await battle.run();
     return { result, picks, rounds: battle.state.round, state: battle.state, events: battle.events };

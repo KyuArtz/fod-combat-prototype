@@ -27,7 +27,8 @@ The uploaded baseline contains **202 tests**. Always use the result from the cur
 | `elishiaMechanics.test.js`, `ownerFalconMechanics.test.js`, `falconFinalizedMechanics.test.js` | Falcon skill/passive behavior and Step 9 implementation choices |
 | `fullBattleRegression.test.js` | Full-battle skill use, AI interactions, battle outcomes, status timing, switching, reserves |
 | `goldenTranscripts.test.js`, `goldenElishia.test.js` | Deterministic full-battle logs and final-state fixtures |
-| `enemyDataAndEncounter.test.js` | Enemy archetype, policy, and encounter data validation |
+| `enemyDataAndEncounter.test.js` | Enemy archetype, policy, boss passive, and encounter data validation |
+| `falconTacticalController.test.js` | Deterministic tactical player controller, legal actions, and boss-encounter execution |
 | `encounterProgression.test.js` | Waves, stat overrides, reinforcement triggers, lifecycle and completion callback |
 | `simulator.test.js` | CLI validation, deterministic batch metrics, output formats, encounter reporting |
 | `referencePackaging.test.js` | Ensures the compact owner-reference package contains only the intended reference file |
@@ -56,10 +57,11 @@ Examples:
 npm run simulate -- --battles 100 --seed 42 --encounter trainingGround
 npm run simulate -- --battles 100 --seed 42 --encounter droneCalibration
 npm run simulate -- --battles 100 --seed 42 --encounter siegeBreakthrough
+npm run simulate -- --battles 150 --seed 20266122 --policy tactical --encounter blightheartSanctum --format json --out reports/falcon-boss.json
 npm run simulate -- --battles 100 --seed 42 --format json --out reports/sample.json
 ```
 
-The simulator reuses `createBattle` and the production battle systems. Review the [Step 5 simulator report](../history/milestones/STEP5_HEADLESS_SIMULATOR.md) for metric definitions and caveats. In particular, damage is reported by receiving side/actor because `DamageApplied` does not currently identify the source actor.
+The simulator reuses `createBattle` and the production battle systems. Review the [Step 5 simulator report](../history/milestones/STEP5_HEADLESS_SIMULATOR.md) for metric definitions and caveats. The simulator reports damage by receiving side and, for source-attributed damage events, by attacking actor; JSON rows also include `skillUsesByActor` and `skillUsesByKey`. The deterministic `tactical` player policy is available for role-aware Falcon comparisons, and `blightheartSanctum` is a two-stage boss encounter. `DamageApplied` includes `sourceId`, `sourceSide`, and `kind`; periodic damage with no retained source is attributed to a null source.
 
 ## Scheduler comparison
 

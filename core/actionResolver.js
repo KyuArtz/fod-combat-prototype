@@ -4,6 +4,7 @@ const {
   calculateMasteryDamage,
   calculatePhysicalDamage,
 } = require("../systems/damage");
+const { consumeNextAttackDamageModifier } = require("../systems/statusEffects");
 
 function createActionResolver({
   state,
@@ -75,8 +76,8 @@ function createActionResolver({
 
   function hitPhysical(attacker, target, power = 1, canCrit = true, options = {}) {
     if (accuracyMiss(attacker, target, options.ignoreAccuracy)) return { damage: 0, crit: false, miss: true };
-    const outcome = calculatePhysical(attacker, target, power, canCrit);
-    applyDamage(target, outcome.damage, "Physical");
+    const outcome = calculatePhysical(attacker, target, power * (options.damageMultiplier || 1), canCrit);
+    applyDamage(target, outcome.damage, "Physical", attacker, { kind: options.kind || "direct" });
     return outcome;
   }
 
@@ -89,7 +90,7 @@ function createActionResolver({
       power,
       canCrit,
     );
-    applyDamage(target, outcome.damage, type);
+    applyDamage(target, outcome.damage, type, attacker, { kind: options.kind || "direct" });
     say(
       `  ${target.name} takes ${outcome.damage} ${type} damage${outcome.crit ? " (CRIT)" : ""}.`,
     );
@@ -119,7 +120,8 @@ function createActionResolver({
     }
 
     const retaliation = target.side === "ally" && target.statuses.retaliation;
-    const outcome = hitPhysical(actor, target);
+    const nextAttackBonus = consumeNextAttackDamageModifier(actor);
+    const outcome = hitPhysical(actor, target, 1, true, { damageMultiplier: 1 + nextAttackBonus / 100 });
     say(
       `${actor.name} attacks ${target.name} for ${outcome.damage} Physical damage${outcome.crit ? " (CRIT)" : ""}.`,
     );
@@ -129,7 +131,7 @@ function createActionResolver({
         1,
         Math.floor((outcome.damage * retaliation.amount) / 100),
       );
-      applyDamage(actor, counterDamage, "Physical");
+      applyDamage(actor, counterDamage, "Physical", target, { kind: "counter", allowReflection: false });
       say(
         `${target.name} retaliates against ${actor.name} for ${counterDamage} damage!`,
       );

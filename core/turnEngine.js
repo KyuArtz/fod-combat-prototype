@@ -1,6 +1,6 @@
 const { emitCombatEvent } = require("./combatEvents");
 const { createEventBus } = require("./eventBus");
-const { processBattleTimerTurnStart, tickBattleTimers } = require("../systems/battleTimers");
+const { tickBattleTimers } = require("../systems/battleTimers");
 function removeInactiveSummons(state) {
   const activeActors = state.actors.filter(
     (actor) =>
@@ -44,14 +44,13 @@ function createTurnEngine(context) {
     }
     if (actionDelayed) delete actor.statuses.actionDelay;
     emitCombatEvent(events, "TurnStarted", { actorId: actor.id, side: actor.side, round: state.round, staggered });
-    onTurnStart(actor);
     actor.mp = Math.min(
       actor.stats.MP,
       actor.mp + Math.ceil(actor.stats.MP * 0.05),
     );
     tickCooldowns(actor);
-    processBattleTimerTurnStart(actor, state, { heal });
-    return actionDelayed;
+    const survivedStartEffects = onTurnStart(actor);
+    return actionDelayed || survivedStartEffects === false || !actor.alive;
   }
 
   function getNextActor() {
@@ -87,8 +86,10 @@ function createTurnEngine(context) {
       const actor = getNextActor();
       if (!actor) break;
 
-      const staggered = turnStart(actor);
-      if (staggered) say(`${actor.name} is action-delayed and loses this action!`);
+      const actionSkipped = turnStart(actor);
+      if (!actor.alive) {
+        say(`${actor.name} is incapacitated by an ongoing effect before acting.`);
+      } else if (actionSkipped) say(`${actor.name} is action-delayed and loses this action!`);
       else {
         // Controller-driven turn: view -> decision -> validate -> execute.
         if (takeTurn) await takeTurn(actor);
@@ -102,7 +103,7 @@ function createTurnEngine(context) {
       tickStatuses(actor);
       tickShields(actor);
       actor._isTakingTurn = false;
-      onTurnEnd(actor);
+      if (actor.alive) onTurnEnd(actor);
       emitCombatEvent(events, "TurnEnded", { actorId: actor.id, side: actor.side, round: state.round });
       combatReadiness.resetCR(actor);
       actedThisRound.add(actor);

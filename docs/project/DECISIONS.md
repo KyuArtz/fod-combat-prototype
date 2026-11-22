@@ -114,8 +114,21 @@
 
 ## ADR-016 — Finalize underspecified Falcon mechanics with explicit balance values (2026-11-17)
 
-**Status:** Accepted for prototype balancing by the project owner.
+**Status:** Historical; the current approved Falcon kit and combat rules in ADR-017 supersede the listed behavior where they differ.
 
 **Decision:** The owner approved changing/adding values where the initial skill design omitted a numeric rule. Use the explicit tuning values in `../reference/FALCON_MECHANICS_FINALIZATION.md`: Meo-v9 EMP 1.0x/0.5x Mpow; Singularity DoT 0.2x Mpow; Catalyst Wing 25% Evalete Max HP and 50% base DEF/RES; Zackry +10 next-attack Accuracy for basic and skill hits; Jazen Stagger 20 CR readiness pushback. These are implementation choices, not retroactive claims about what the original JSON specified.
 
 **Architecture:** Keep effects declarative and route them through the existing shared interpreter, damage, status, targeting, summon and readiness systems. Keep base Falcon stats unchanged until a separate stat-sheet synchronization decision.
+
+
+## ADR-017 — Falcon approved kit v1 and global effect rules (2026-11-21)
+
+**Status:** Accepted by the project owner; implemented in the active prototype runtime.
+
+**Falcon kit decisions:** Meo-9 is limited to cover fire and Emergency Field; its scan bonus, EMP destruction behavior, and Final Protocol are removed. Catalyst Wing grants no destruction fallback shield. Zackry's Overwatch Protocol only reduces Tactical Marked enemies' Evasion; Command Uplink and Full Spectrum Assault grant Mpow +15% and +20%, respectively. Jazen's Recoil Dampeners grants Mpow +10% per stack (maximum two) and no Stagger/action-delay immunity; his other skills no longer add Stagger or Taunt. Zenki's mastery is Energy; Unobserved only grants Evasion; Railshot has no conditional damage bonus; Cipher Tag only reduces RES; Ghost Protocol grants Untargetable plus a one-use +30% next damaging skill bonus; Zero Hour is a three-hit attack with a below-40%-HP final-shot override. Evalete's Catalyst Overdrive grants 25% direct-damage reflection for 3 turns.
+
+**Global Combat Stacking v1:** Applies to all combat units. Different stats stack. Same-stat same-direction modifiers use strongest-value priority, with weaker active effects resuming when stronger effects expire. Opposing percentage modifiers offset. Same-effect reapplication refreshes duration without strengthening unless explicitly stackable. Different status types coexist; shields retain separate capacity/duration and absorb oldest-first.
+
+**Global Effect Timing v1:** MP regeneration and cooldown decrement happen at actor turn start, followed by DOT, HOT/turn-start healing, passive checks, and the actor action. Statuses/shields tick after the affected actor completes their turn; new effects do not lose duration immediately. Owner-clocked fields/summons advance on owner turns. Meo-9 and Catalyst Wing are owner/passive summons, not independent scheduled actors. Direct-damage reflection uses post-mitigation damage before shields and cannot recursively trigger.
+
+**Architecture:** Keep all character-specific skills declarative in `characters/skillData/`, interpreted through the shared `core/skillInterpreter.js` and reusable `systems/effects/`, `systems/passives/`, `systems/summons/`, damage, status, turn, and targeting systems. Base Falcon stats remain prototype values and are not synchronized to the owner website JSON by this ADR.

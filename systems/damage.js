@@ -2,18 +2,34 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function priorityPercentMultiplier(statuses, field) {
+  const values = Object.values(statuses || {})
+    .map((status) => status[field])
+    .filter(Number.isFinite);
+  const positive = values.filter((value) => value > 0);
+  const negative = values.filter((value) => value < 0);
+  const strongestPositive = positive.length ? Math.max(...positive) : 0;
+  const strongestNegative = negative.length ? Math.min(...negative) : 0;
+  return Math.max(0, 1 + (strongestPositive + strongestNegative) / 100);
+}
+
 function markMultiplier(target) {
-  return Object.values(target.statuses || {}).reduce(
-    (multiplier, status) => multiplier * (1 + (status.damageTakenPercent || 0) / 100),
-    1,
-  );
+  return priorityPercentMultiplier(target.statuses, "damageTakenPercent");
 }
 
 function damageDealtMultiplier(attacker) {
-  return Object.values(attacker.statuses || {}).reduce(
-    (multiplier, status) => multiplier * (1 + (status.damageDealtPercent || 0) / 100),
-    1,
-  );
+  return priorityPercentMultiplier(attacker.statuses, "damageDealtPercent");
+}
+
+function mitigateReflectedDamage(target, amount, damageType, effectiveStat) {
+  const defenseStat = damageType === "Physical" ? "DEF" : "RES";
+  let damage = amount * 100 / (100 + effectiveStat(target, defenseStat));
+  if (damageType !== "Physical") {
+    damage *= 1 - clamp(target.stats.masteryResistance?.[damageType] || 0, 0, 100) / 100;
+  }
+  damage *= resistanceMultiplier(target, damageType);
+  damage *= markMultiplier(target);
+  return Math.max(1, Math.floor(damage));
 }
 
 // Adaptive Barrier: resistance to the one damage type the shield last absorbed.
@@ -74,4 +90,4 @@ function calculateMasteryDamage(
   return { damage: Math.max(1, Math.floor(raw)), crit };
 }
 
-module.exports = { calculatePhysicalDamage, calculateMasteryDamage };
+module.exports = { calculatePhysicalDamage, calculateMasteryDamage, mitigateReflectedDamage };

@@ -6,11 +6,13 @@ const enemyDefinitions = {
   "siege-turret": require("../data/enemies/siegeTurret"),
   "recon-drone": require("../data/enemies/reconDrone"),
   "toxic-stalker": require("../data/enemies/toxicStalker"),
+  "blightheart-overseer": require("../data/enemies/blightheartOverseer"),
 };
 const encounters = {
   trainingGround: require("../data/encounters/trainingGround"),
   droneCalibration: require("../data/encounters/droneCalibration"),
   siegeBreakthrough: require("../data/encounters/siegeBreakthrough"),
+  blightheartSanctum: require("../data/encounters/blightheartSanctum"),
 };
 
 function createEnemy(name, stats, mastery = "Kinetic", skillSet = null) {
@@ -37,6 +39,8 @@ function createEnemyFromDefinition(definition, { stats: statOverrides = {}, acto
     side: "enemy",
     mastery: definition.mastery || "Kinetic",
     ...(definition.skillSet ? { skillSet: definition.skillSet } : {}),
+    ...(definition.passive ? { passive: structuredClone(definition.passive) } : {}),
+    ...(definition.targetSelection ? { targetSelection: definition.targetSelection } : {}),
     aiPolicy: definition.aiPolicy || "basicOnly",
     stats: {
       CritRate: 5,
