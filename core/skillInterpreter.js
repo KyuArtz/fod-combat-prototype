@@ -14,13 +14,23 @@ function createSkillInterpreter(context) {
   function runSkill(data, skill, actor, { mode, target } = {}) {
     const variant = skill.targeting === "mode" ? skill.modes.find((candidate) => candidate.id === mode) : skill;
     if (!variant) return false;
+    if (variant?.targeting === "ally" && target) {
+      if (skill.excludeSelf && target.id === actor.id) {
+        say(`${skill.name} cannot target its user.`);
+        return false;
+      }
+      if (skill.targetFaction && target.faction !== skill.targetFaction) {
+        say(`${skill.name} can only target ${skill.targetFaction} allies.`);
+        return false;
+      }
+    }
     if (!ready(actor, skill.key, skill.cost)) {
       say(skill.unavailableMessage || `${skill.name} is unavailable (MP/cooldown).`);
       return false;
     }
     pay(actor, skill.cost);
     actor.cooldowns[skill.key] = skill.cooldown;
-    const run = { data, actor, target, results: {}, after: [] };
+    const run = { data, skill, actor, target, mode, results: {}, after: [] };
     const messageValues = { actor: actor.name, target: target && target.name };
     if (variant.announce) say(formatMessage(variant.announce, messageValues));
     for (const effect of variant.effects) effectRegistry.dispatch(effect, run);
@@ -36,12 +46,14 @@ function createSkillInterpreter(context) {
   }
 
   function buildSkills(data) {
-    validateSkillData(data, effectRegistry);
+    validateSkillData(data, effectRegistry, lifecycle.passiveRegistry, lifecycle.summonRegistry);
     return data.skills.map((skill) => ({
       name: skill.name, key: skill.key, cost: skill.cost, cooldown: skill.cooldown,
       tags: [...(skill.tags || [])], targeting: skill.targeting,
       ...(skill.category ? { category: skill.category } : {}),
       ...(skill.description ? { description: skill.description } : {}),
+      ...(skill.excludeSelf ? { excludeSelf: true } : {}),
+      ...(skill.targetFaction ? { targetFaction: skill.targetFaction } : {}),
       ...(skill.targeting === "mode" ? { modes: skill.modes.map(({ id, label, targeting }) => ({ id, label, targeting })) } : {}),
       run: (actor, args) => runSkill(data, skill, actor, args),
     }));

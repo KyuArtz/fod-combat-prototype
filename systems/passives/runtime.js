@@ -65,8 +65,18 @@ function createRuntime(context) {
     passiveRegistry.dispatch(target, "damageTaken", { amount, damageType, hpLoss, ...metadata });
   }
 
+  function onDamageDealt(actor, target, amount, damageType, metadata = {}) {
+    if (!actor || !target) return;
+    passiveRegistry.dispatch(actor, "damageDealt", { target, amount, damageType, ...metadata });
+  }
+
+  function onEvade(actor, attacker) {
+    if (!actor) return;
+    passiveRegistry.dispatch(actor, "evade", { attacker });
+  }
+
   function onEnemySkillTargeted(attacker, target) {
-    if (!target || target.side !== "ally") return;
+    if (!target || !attacker || target.side === attacker.side) return;
     target.targetedByEnemySinceLastTurn = true;
     target.enemySkillTargetedThisRound = true;
   }
@@ -80,6 +90,19 @@ function createRuntime(context) {
 
   function onUnitDefeated(unit, statuses = {}) {
     processUnitDefeatedStatusReactions(unit, statuses, { alive, state });
+    // Owner-linked summons cannot remain as orphaned active units after their
+    // owner is incapacitated. This is dismissal, not summon destruction: no
+    // onDestroyed burst or owner-destroyed reaction is dispatched.
+    for (const summon of state.actors.filter((candidate) =>
+      candidate.alive && candidate.summon && candidate.ownerId === unit.id)) {
+      summon.alive = false;
+      summon.summonTurns = 0;
+      say(`${summon.name} is dismissed because ${unit.name} is incapacitated.`);
+      emitCombatEvent(events, "ActorSummonExpired", {
+        actorId: summon.id, ownerId: unit.id, side: summon.side, round: state.round,
+        reason: "owner-defeated",
+      });
+    }
   }
 
   // Summon behavior is described by each summon template and dispatched through
@@ -116,7 +139,7 @@ function createRuntime(context) {
     }
   }
 
-  return { onBattleStart, onTurnStart, onTurnEnd, onDamageTaken, onEnemySkillTargeted, onRoundStart, onUnitDefeated, summonTurn, summonDestroyed, passiveRegistry, summonRegistry };
+  return { onBattleStart, onTurnStart, onTurnEnd, onDamageTaken, onDamageDealt, onEvade, onEnemySkillTargeted, onRoundStart, onUnitDefeated, summonTurn, summonDestroyed, passiveRegistry, summonRegistry };
 }
 
 module.exports = { createRuntime };

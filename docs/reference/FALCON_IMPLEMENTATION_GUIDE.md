@@ -27,7 +27,7 @@
 
 ## Evalete — Energy field medic
 
-**Catalyst Protocol.** At battle start, deploy a targetable, non-turn-taking Catalyst Wing. It has 25% of Evalete's Max HP, 50% of her base DEF and 50% of her base RES. It lasts 12 Evalete turns and pulses at the start of every even Evalete turn, beginning on turn 2 and including turn 12. Each pulse heals active non-summon allies for 8% Max HP and grants each a separate shield equal to 10% Max HP for 2 target turns. Destroying the Wing stops future pulses and gives no fallback shield.
+**Catalyst Protocol.** At battle start, deploy a targetable, non-turn-taking Catalyst Wing. It has 25% of Evalete's Max HP, 50% of her base DEF and 50% of her base RES. It lasts 12 Evalete turns and pulses at the start of every even Evalete turn, beginning on turn 2 and including turn 12. Each pulse heals active non-summon combatants on Evalete's own side for 8% Max HP and grants each a separate shield equal to 10% Max HP for 2 target turns. Destroying the Wing stops future pulses and gives no fallback shield.
 
 **Sentinel Pulse — 20 MP, 2-turn cooldown.** Deal 0.75× Energy mastery damage to one enemy and apply DEF -15% for 2 turns.
 

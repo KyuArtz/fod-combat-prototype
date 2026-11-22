@@ -32,7 +32,7 @@ At actor turn start:
 5. Run passive turn-start checks, including Zenki's Unobserved.
 6. Permit the actor's action if still alive.
 
-At actor turn end, run passive and owner-summon lifecycle events, then decrement that actor's status/shield durations. An effect applied during the current actor turn does not immediately lose a duration turn. Actor-turn durations follow the affected unit; owner-clocked fields/summons follow their owner. Global round timers remain separate.
+At actor turn end, run passive and owner-summon lifecycle events, then decrement that actor's status/shield durations. An effect applied during the current actor turn does not immediately lose a duration turn. Actor-turn durations follow the affected unit; owner-clocked fields/summons follow their owner. Global round timers remain separate. A unit in reserve does not take actor turns, so its actor-turn statuses and owner-clocked summon activations/durations pause until it is redeployed.
 
 The round counter is an action-bookkeeping construct, not a fixed duration of scheduler time. A round ends when every living deployed non-passive-summon actor has acted at least once.
 
@@ -62,6 +62,8 @@ Damage is calculated and mitigated before being absorbed by shields, then remain
 
 Damage types are `Physical` or one of the configured masteries: Energy, Kinetic, Electromagnetic, Toxic, Nuclear, Nanotech, Cryogenic and Anomaly.
 
+DoT source attribution resolves the saved source ID and side against deployed actors and both party rosters, so damage remains attributed if its applier is in reserve or has left the active actor list. If a turn-start DoT incapacitates its target, later simultaneous DoT ticks on that target are skipped.
+
 ## Accuracy and evasion
 
 - Enemy basic attacks check ally Evasion, clamped to 0–75%, and may trigger configured counter behavior after a successful hit.
@@ -76,13 +78,14 @@ Damage types are `Physical` or one of the configured masteries: Energy, Kinetic,
 - A downed active actor can be replaced by the first living reserve.
 - Player-controlled actors can manually switch with a living reserve.
 - Victory/defeat use active and reserve roster state; passive summons do not independently prevent a result.
+- When an owner is incapacitated, its active owner-linked summons are dismissed. Dismissal is not summon destruction: it does not dispatch on-destroy bursts or owner-destroyed reactions.
 
-## Falcon skills and summons
+## Character skills, passives and summons
 
-Falcon skill definitions live in `characters/skillData/` and are interpreted through the shared `core/skillInterpreter.js` runtime. Effect handlers are registered in `systems/effects/`; passive and owner-summon hooks are in `systems/passives/` and `systems/summons/`.
+Falcon and Phantom skill definitions live in `characters/skillData/` and are interpreted through the same `core/skillInterpreter.js` runtime. Effect handlers are registered in `systems/effects/`; passive and owner-summon hooks are in `systems/passives/` and `systems/summons/`. Skill-data validation checks that every declared passive event, passive handler, and summon handler exists in the live registries before a battle is assembled. Ally-mode restrictions such as `targetFaction` and `excludeSelf` are rechecked by the interpreter at execution time. Phantom-specific behavior is summarized in the [Phantom Implementation Guide](PHANTOM_IMPLEMENTATION_GUIDE.md).
 
 - **Meo-9:** targetable passive summon. Skips its deployment turn, then acts after each subsequent Elishia turn for three owner activations. It heals the lowest-HP-ratio living active ally below 25% Max HP for 10% Max HP instead of attacking; otherwise it performs non-critical Physical cover fire at 0.5× its ATK (0.75× during Nanotech Singularity). No scan bonus, EMP, Final Protocol or expiry effect.
-- **Catalyst Wing:** targetable passive summon that never takes a separate turn. It has 25% of Evalete's Max HP and 50% of her base DEF/RES. It pulses at the start of every even Evalete turn (2 through 12), healing active non-summon allies by 8% Max HP and granting a separate 10% Max HP shield for 2 target turns. Destruction stops future pulses and grants no fallback shield.
+- **Catalyst Wing:** targetable passive summon that never takes a separate turn. It has 25% of Evalete's Max HP and 50% of her base DEF/RES. It pulses at the start of every even Evalete turn (2 through 12), healing active non-summon combatants on Evalete's own side by 8% Max HP and granting each a separate 10% Max HP shield for 2 target turns. Destruction stops future pulses and grants no fallback shield.
 
 See [Falcon Implementation Guide](FALCON_IMPLEMENTATION_GUIDE.md) for skill-by-skill values and durations.
 

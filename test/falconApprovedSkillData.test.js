@@ -97,7 +97,8 @@ test("all 20 Falcon skills are registered with the approved names, costs and coo
 
 test("every Falcon active skill can execute through the shared interpreter and charges its declared MP", () => {
   const w = createFalconWorld();
-  for (const [id, skills] of Object.entries(w.skillSet.skills)) {
+  for (const id of ["elishia", "evalete", "zackry", "jazen", "zenki"]) {
+    const skills = w.skillSet.skills[id];
     const actor = w.byId[id];
     for (const entry of skills) {
       actor.mp = 200;

@@ -4,6 +4,7 @@ module.exports = {
   passive: {
     id: "unobserved",
     name: "Unobserved",
+    description: "At the start of each turn, if Zenki has not taken damage since his previous turn, he gains Evasion +12 until he is hit.",
     initialFlags: { unobservedEvasionActive: false },
     statMods: [{ stat: "Evasion", points: 12, when: { flag: "unobservedEvasionActive", equals: true } }],
     events: {

@@ -9,8 +9,9 @@ function isBattleTimerActive(state, key) {
 }
 
 const TURN_START_HANDLERS = Object.freeze({
-  healPercentMaxHP(actor, effect, { heal }) {
-    if (effect.side && actor.side !== effect.side) return;
+  healPercentMaxHP(actor, effect, { heal, ownerSide }) {
+    const requiredSide = effect.side === "owner" ? ownerSide : effect.side;
+    if (requiredSide && actor.side !== requiredSide) return;
     if (effect.excludeSummons && actor.summon) return;
     heal(actor, Math.floor((actor.stats.HP * effect.percentMaxHP) / 100));
   },
@@ -23,7 +24,7 @@ function processBattleTimerTurnStart(actor, state, context = {}) {
     for (const effect of timer?.turnStart || []) {
       const handler = TURN_START_HANDLERS[effect.handler];
       if (!handler) throw new Error(`Unknown battle-timer turnStart handler: ${effect.handler}`);
-      handler(actor, effect, context);
+      handler(actor, effect, { ...context, ownerSide: timer.ownerSide });
     }
   }
 }

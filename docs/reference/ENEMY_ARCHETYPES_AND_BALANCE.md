@@ -200,4 +200,4 @@ Reproduce the primary run with:
 node tools/simulate.js --battles 150 --seed 996000 --policy coordinated --active 3 --party-order jazen,evalete,zackry,elishia,zenki --encounter blightheartSanctum --format json --out reports/iteration3/falcon-coordinated-3active-150.json
 ```
 
-Verification at the Iteration 3 snapshot (before the 2026-11-22 cleanup): `npm test` reported 273 passed, 0 failed, and 38 superseded legacy assertions skipped. After the cleanup, the current suite reports 260 passed, 0 failed, and 0 skipped.
+Verification at the Iteration 3 snapshot (before the 2026-11-22 cleanup): `npm test` reported 273 passed, 0 failed, and 38 superseded legacy assertions skipped. After cleanup the suite reported 260 passed; after the initial Phantom migration it reported 283 passed, 0 failed, and 0 skipped. The later unified-roster-selection checkout reports 306 passed, 0 failed, and 0 skipped; see [Project Status](../project/PROJECT_STATUS.md) for the current count.

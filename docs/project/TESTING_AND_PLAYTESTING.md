@@ -10,7 +10,7 @@ npm test
 
 This runs Node's built-in test runner (`node --test`). No third-party test framework or install step is required.
 
-The pre-cleanup Iteration 3 snapshot contained 311 discovered tests, including 38 skipped superseded assertions. The cleaned checkout now reports **260 tests passing, 0 failing, 0 skipped**. Always use the result from the current checkout rather than relying on a historical count.
+The pre-cleanup Iteration 3 snapshot contained 311 discovered tests, including 38 superseded assertions. After the conservative cleanup, 260 tests passed with none skipped; the initial Phantom migration adds focused kit and real-battle integration coverage. The current unified-roster-selection checkout reports **306 tests passing, 0 failing, 0 skipped**. Always use the result from the current checkout rather than relying on a historical count.
 
 ## Test suite map
 
@@ -26,15 +26,16 @@ The pre-cleanup Iteration 3 snapshot contained 311 discovered tests, including 3
 | `openingInitiative.test.js` | Player-first and speed opening policies, ties, scheduler compatibility |
 | `thresholdCombatReadiness.test.js` | Continuous readiness, tie ordering, CR adjustments, reserves, cloned state |
 | `turnViewAndDecisions.test.js` | Turn views, legal action shapes, target validation, terminal decisions |
-| `falconApprovedSkillData.test.js`, `falconSkillData.test.js`, `enemySkillData.test.js` | Approved Falcon definitions, generic data validation, registry construction and shared interpreter execution |
+| `falconApprovedSkillData.test.js`, `falconSkillData.test.js`, `phantomMigration.test.js`, `enemySkillData.test.js` | Approved Falcon and Phantom definitions, hidden-operative neutral-copy check, generic validation, registry construction and shared interpreter execution |
 | `elishiaMechanics.test.js`, `falconApprovedElishia.test.js`, `falconApprovedLifecycle.test.js`, `falconApprovedRoster.test.js`, `falconFinalizedMechanics.test.js`, `effectTiming.test.js` | Adaptive Barrier, approved Falcon passives/skills, cross-kit generic mechanics, and status/shield duration timing |
-| `fullBattleRegression.test.js` | Full-battle skill use, AI interactions, battle outcomes, status timing, switching, reserves |
+| `fullBattleRegression.test.js`, `phantomBattleIntegration.test.js` | Full-battle skill use, AI interactions, battle outcomes, status timing, switching/reserves, and all five Phantom kits in a real battle |
 | `goldenTranscripts.test.js`, `goldenElishia.test.js` | Deterministic full-battle logs and final-state fixtures |
 | `enemyDataAndEncounter.test.js` | Enemy archetype, policy, boss passive, and encounter data validation |
 | `falconTacticalController.test.js` | Deterministic tactical player controller, legal actions, and boss-encounter execution |
 | `encounterProgression.test.js` | Waves, stat overrides, reinforcement triggers, lifecycle and completion callback |
 | `simulator.test.js` | CLI validation, deterministic batch metrics, output formats, encounter reporting |
 | `referencePackaging.test.js` | Ensures the compact owner-reference package contains only the intended reference file |
+| `unifiedRosterSelection.test.js` | Unified Falcon/Phantom roster, faction/mastery/role filters, public-safe previews, ordered active/reserve formation, and real battle integration |
 
 Golden fixtures are stored in `test/fixtures/golden/` as compressed files.
 

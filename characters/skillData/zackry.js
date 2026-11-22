@@ -1,7 +1,8 @@
 // Zackry's tactics are composed from generic statuses and mastery-damage effects.
 module.exports = {
   characterId: "zackry",
-  passive: { id: "overwatchProtocol", name: "Overwatch Protocol", markEvasionPenalty: 10 },
+  passive: { id: "overwatchProtocol", name: "Overwatch Protocol",
+    description: "Enemies affected by Tactical Mark lose 10 Evasion for the duration of the mark.", markEvasionPenalty: 10 },
   skills: [
     {
       key: "mark", name: "Tactical Mark", cost: 20, cooldown: 2, tags: [], targeting: "enemy",

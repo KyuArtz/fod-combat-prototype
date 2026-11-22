@@ -12,6 +12,8 @@
     "start": "node index.js",
     "test": "node --test",
     "simulate": "node tools/simulate.js",
-    "compare:schedulers": "node tools/compareSchedulers.js"
+    "compare:schedulers": "node tools/compareSchedulers.js",
+    "simulate:factions": "node tools/factionDuel.js",
+    "simulate:medic-swap": "node tools/fieldMedicSwap.js"
   }
 }

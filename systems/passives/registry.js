@@ -2,6 +2,10 @@
 // the lifecycle runtime only emits events and never branches on character IDs.
 const pct = (value, percent) => Math.floor((value * percent) / 100);
 
+const SUPPORTED_PASSIVE_EVENTS = Object.freeze([
+  "battleStart", "turnStart", "turnEnd", "damageTaken", "damageDealt", "evade", "skillUsed", "summonDestroyed",
+]);
+
 function createPassiveRegistry(context) {
   const { addStatus, addShield, alive, state, makeActor, say } = context;
   const handlers = {
@@ -28,7 +32,7 @@ function createPassiveRegistry(context) {
       actor.catalystWingTurns = p.wingTurns;
       actor.catalystWingTurnCount = 0;
       const wing = makeActor({
-        id: `catalyst-wing-${actor.id}`, name: p.summon.name, side: "ally", mastery: p.summon.mastery,
+        id: `catalyst-wing-${actor.id}`, name: p.summon.name, side: actor.side, mastery: p.summon.mastery,
         summon: true, passiveSummon: true, targetableByEnemy: true,
         summonTurns: p.wingTurns, ownerId: actor.id,
         stats: {
@@ -52,7 +56,7 @@ function createPassiveRegistry(context) {
       actor.catalystWingTurnCount++;
       // Catalyst Protocol pulses at the start of every second Evalete turn.
       if (actor.catalystWingTurnCount % p.pulseEvery === 0) {
-        for (const ally of ctx.alive(ctx.state, "ally").filter((unit) => !unit.summon)) {
+        for (const ally of ctx.alive(ctx.state, actor.side).filter((unit) => !unit.summon)) {
           ctx.heal(ally, pct(ally.stats.HP, p.healPercent));
           const amount = pct(ally.stats.HP, p.shieldPercent);
           ctx.addShield(ally, amount, p.shieldTurns);
@@ -103,6 +107,58 @@ function createPassiveRegistry(context) {
       const stacks = Math.min(p.maxStacks, (actor.statuses[statusId]?.stacks || 0) + 1);
       addStatus(actor, statusId, { stat: "MPow", amount: p.mpowBonusPercent * stacks, stacks, stackable: true, turns: p.duration });
     },
+    applyStatusesOnDamageDealt(actor, event, subscription) {
+      if (!actor.alive || !event.target?.alive || (event.kind && event.kind !== "direct")) return;
+      if (subscription.damageTypes?.length && !subscription.damageTypes.includes(event.damageType)) return;
+      if (subscription.onlyAgainstOpponents && event.target.side === actor.side) return;
+      for (const entry of subscription.statuses || []) {
+        addStatus(event.target, entry.id, structuredClone(entry.data || {}));
+      }
+    },
+    applyStatusesOnEvade(actor, event, subscription) {
+      if (!actor.alive) return;
+      for (const entry of subscription.statuses || []) {
+        if (entry.requiresStatus && !actor.statuses?.[entry.requiresStatus]) continue;
+        if (entry.requiresMissingStatus && actor.statuses?.[entry.requiresMissingStatus]) continue;
+        if (entry.refresh === false && actor.statuses?.[entry.id]) continue;
+        addStatus(actor, entry.id, structuredClone(entry.data || {}));
+      }
+    },
+    consumeStatusesOnSkillUse(actor, event, subscription) {
+      const skill = event.skill;
+      if (!skill) return;
+      if (subscription.skillTag && !skill.tags?.includes(subscription.skillTag)) return;
+      if (subscription.skillKey && skill.key !== subscription.skillKey) return;
+      for (const statusId of subscription.statusIds || []) delete actor.statuses[statusId];
+    },
+    consumeReinforcementOnChargedSkill(actor, event, subscription) {
+      if (!event.run?.results?.skillBonus) return;
+      if (!actor.passiveFlags?.[subscription.primedFlag]) return;
+      delete actor.statuses[subscription.reinforcementStatusId];
+      actor.passiveFlags[subscription.primedFlag] = false;
+    },
+    lucazReinforcement(actor, event, subscription) {
+      if (!actor.alive || (event.kind && event.kind !== "direct")) return;
+      const statusId = subscription.statusId;
+      const existingStacks = actor.statuses[statusId]?.stacks || 0;
+      const stacks = Math.min(subscription.maxStacks, existingStacks + 1);
+      addStatus(actor, statusId, {
+        stat: subscription.stat,
+        amount: subscription.amountPerStack * stacks,
+        stacks,
+        stackable: true,
+        turns: subscription.duration,
+      });
+      if (stacks >= subscription.maxStacks) {
+        addStatus(actor, subscription.chargeStatusId, {
+          nextSkillDamagePercent: subscription.nextSkillDamagePercent,
+          ...(subscription.damageType ? { damageType: subscription.damageType } : {}),
+          turns: subscription.duration,
+        });
+        actor.passiveFlags ||= {};
+        actor.passiveFlags[subscription.primedFlag] = true;
+      }
+    },
 
   };
 
@@ -114,10 +170,16 @@ function createPassiveRegistry(context) {
       handler(actor, payload, subscription, context);
     }
   }
-  return { dispatch, register(name, handler) {
-    if (handlers[name]) throw new Error(`Passive handler "${name}" is already registered`);
-    if (typeof handler !== "function") throw new TypeError("Passive handler must be a function");
-    handlers[name] = handler;
-  } };
+  return {
+    dispatch,
+    has(name) { return typeof handlers[name] === "function"; },
+    entries() { return Object.entries(handlers); },
+    register(name, handler) {
+      if (handlers[name]) throw new Error(`Passive handler "${name}" is already registered`);
+      if (typeof handler !== "function") throw new TypeError("Passive handler must be a function");
+      handlers[name] = handler;
+      return this;
+    },
+  };
 }
-module.exports = { createPassiveRegistry };
+module.exports = { createPassiveRegistry, SUPPORTED_PASSIVE_EVENTS };

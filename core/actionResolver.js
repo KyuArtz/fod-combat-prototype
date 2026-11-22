@@ -12,6 +12,8 @@ function createActionResolver({
   say,
   random = () => nextFloat(state.rng),
   incomingAttackModifier = () => 0,
+  onEvade = () => {},
+  symmetricEvasion = false,
 }) {
 
   const calculatePhysical = (attacker, target, power = 1, canCrit = true) =>
@@ -30,6 +32,8 @@ function createActionResolver({
     type,
     power = 1,
     canCrit = true,
+    scalingStat = "MPow",
+    critRateBonus = 0,
   ) =>
     calculateMasteryDamage(
       attacker,
@@ -39,6 +43,8 @@ function createActionResolver({
       power,
       canCrit,
       random,
+      scalingStat,
+      critRateBonus,
     );
 
   function accuracyMiss(attacker, target, ignoreAccuracy = false) {
@@ -46,7 +52,7 @@ function createActionResolver({
     if (bonus <= 0) return false;
     attacker.nextAttackAccuracy = 0;
     if (ignoreAccuracy) return false;
-    const baseEvasion = target.side === "ally"
+    const baseEvasion = (target.side === "ally" || symmetricEvasion)
       ? effectiveStat(target, "Evasion")
       : (target.stats.Evasion || 0);
     const evasion = Math.max(0, Math.min(75, baseEvasion - bonus));
@@ -72,6 +78,8 @@ function createActionResolver({
       type,
       power,
       canCrit,
+      options.scalingStat || "MPow",
+      options.critRateBonus || 0,
     );
     applyDamage(target, outcome.damage, type, attacker, { kind: options.kind || "direct" });
     say(
@@ -80,29 +88,31 @@ function createActionResolver({
     return outcome;
   }
 
-  // One execution path for every basic attack. Defensive reactions are currently
-  // an ally-side rule: enemy attacks check the target's Evasion and can trigger
-  // Retaliation. Player attacks retain their historical behavior (no enemy dodge
-  // roll or retaliation proc), preserving balance and seeded replay sequences.
+  // PvE preserves its historical player-side defensive reactions. Faction-vs-
+  // faction duels opt into symmetricEvasion so both sides use identical Evasion
+  // checks and Retaliation behavior without changing ordinary PvE replay streams.
   function basicAttack(actor, target) {
     if (!actor || !target) return false;
 
-    if (target.side === "ally" || actor.nextAttackAccuracy > 0) {
-      let dodge = target.side === "ally" ? effectiveStat(target, "Evasion") : (target.stats.Evasion || 0);
+    if (target.side === "ally" || symmetricEvasion || actor.nextAttackAccuracy > 0) {
+      let dodge = effectiveStat(target, "Evasion");
       dodge -= actor.nextAttackAccuracy || 0;
-      if (target.side === "ally") dodge += incomingAttackModifier(target, "evasion");
+      dodge += incomingAttackModifier(target, "evasion");
+      dodge += Object.values(actor.statuses || {}).reduce((sum, status) => sum + (Number(status.accuracyPenalty) || 0), 0);
       dodge = Math.max(0, Math.min(75, dodge));
-      // Preserve the historic enemy-vs-ally RNG draw. Accuracy bonuses also
-      // consume their next-attack token when the target has no evasion to beat.
-      const shouldRoll = target.side === "ally" || dodge > 0;
+      // Preserve the historic enemy-vs-ally RNG draw. Symmetric evasion is an
+      // opt-in for faction-vs-faction testing, so existing PvE replay streams
+      // remain unchanged by default.
+      const shouldRoll = target.side === "ally" || symmetricEvasion || dodge > 0;
       actor.nextAttackAccuracy = 0;
       if (shouldRoll && random() * 100 < dodge) {
         say(`${actor.name} attacks ${target.name}, but ${target.name} evades!`);
+        onEvade(target, actor);
         return true;
       }
     }
 
-    const retaliation = target.side === "ally" && target.statuses.retaliation;
+    const retaliation = (target.side === "ally" || symmetricEvasion) && target.statuses.retaliation;
     const nextAttackBonus = consumeNextAttackDamageModifier(actor);
     const outcome = hitPhysical(actor, target, 1, true, { damageMultiplier: 1 + nextAttackBonus / 100 });
     say(

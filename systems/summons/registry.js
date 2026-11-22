@@ -17,7 +17,8 @@ function createSummonRegistry(context) {
       return true;
     },
     coverFire(summon, rule) {
-      const target = alive(state, rule.targetSide || "enemy")[0];
+      const opposingSide = summon.side === "ally" ? "enemy" : "ally";
+      const target = alive(state, rule.targetSide || opposingSide)[0];
       if (!target) return;
       const modifier = (rule.conditionalPower || []).find((entry) => isBattleTimerActive(state, entry.battleTimer));
       const power = modifier?.power ?? rule.power;
@@ -38,10 +39,13 @@ function createSummonRegistry(context) {
 
   return {
     dispatch,
+    has(name) { return typeof handlers[name] === "function"; },
+    entries() { return Object.entries(handlers); },
     register(name, handler) {
       if (handlers[name]) throw new Error(`Summon handler "${name}" is already registered`);
       if (typeof handler !== "function") throw new TypeError("Summon handler must be a function");
       handlers[name] = handler;
+      return this;
     },
   };
 }

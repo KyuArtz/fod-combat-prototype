@@ -38,3 +38,25 @@ If a report is intended to be a reviewed project artifact, document its encounte
 - `iteration3/falcon-iteration3-sample-battles.md`: complete deterministic victory/defeat logs for seeds 996000 and 996004.
 - `iteration3/falcon-iteration3-report.md`: consolidated implementation, regression, metrics, and interpretation.
 - `../docs/reference/ENEMY_ARCHETYPES_AND_BALANCE.md`: current encounter, enemy, and playtest balance notes.
+
+
+## 2026-11-22 Phantom migration and faction-duel baseline
+
+- `phantom-vs-falcon-500.json`: 500 seeded AI-versus-AI battles with three active members and two reserves per faction; player-side faction alternates each battle and the duel harness applies symmetric Evasion handling.
+- Current interpretation and seating fairness breakdown: `../docs/reference/PHANTOM_IMPLEMENTATION_GUIDE.md`, section “Initial faction-versus-faction playtest”.
+- The project exposes the same faction selector interactively via `npm start`; choose either Falcon Company or Phantom Rebellion, then order all five roster members.
+
+
+## 2026-11-22 Phantom vs Falcon faction-duel baseline
+
+- `phantom-vs-falcon-500.json`: raw output from 500 seeded tactical AI-vs-AI battles with three active combatants and two reserves per faction; faction seating alternates and Evasion is symmetric.
+- `phantom-vs-falcon-playtest-report.md`: outcome, seat fairness, damage attribution, balance interpretation, and reproduction command.
+- `phantom-vs-falcon-sample-battles.md`: curated deterministic excerpts from one Falcon win and one Phantom win.
+- For interactive Phantom selection, run `npm start`, choose `2. Phantom Rebellion`, then order the five roster members; the first three deploy and the remaining two enter reserve.
+
+## 2026-11-22 Evalete substitution experiment
+
+- `field-medic-substitution-100.json`: six matched variants (full Falcon control plus each of the five Phantom characters temporarily replacing Evalete), 100 seeded battles per variant, alternating faction seating, and three active/two reserve formation.
+- `field-medic-substitution-report.md`: aggregate win rates, sustain metrics, candidate skill usage interpretation, and reproduction command.
+- Run again with `npm run simulate:medic-swap -- --battles 100 --seed 20261122 --active 3`.
+- This is an experimental mixed-faction lineup; it does not change the permanent Falcon or Phantom rosters.

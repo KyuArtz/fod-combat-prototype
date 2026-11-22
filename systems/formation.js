@@ -56,8 +56,9 @@ function deployFirstReserve(state, side, downedActor) {
   return { incoming, slot };
 }
 
-function switchPartyMember(state, reserveIndex, activeIndex) {
-  const { active, reserve } = state.party;
+function switchPartyMember(state, reserveIndex, activeIndex, side = "ally") {
+  const party = side === "enemy" ? state.enemyParty : state.party;
+  const { active, reserve } = party;
   if (
     !Number.isInteger(reserveIndex) ||
     reserveIndex < 0 ||
@@ -77,9 +78,10 @@ function switchPartyMember(state, reserveIndex, activeIndex) {
   outgoing.cr = 0;
   active[activeIndex] = incoming;
   reserve[reserveIndex] = outgoing;
+  const opposingSide = side === "ally" ? "enemy" : "ally";
   state.actors = [
     ...active,
-    ...state.actors.filter((actor) => actor.summon || actor.side === "enemy"),
+    ...state.actors.filter((actor) => actor.summon || actor.side === opposingSide),
   ];
   return { changed: true, incoming, outgoing };
 }

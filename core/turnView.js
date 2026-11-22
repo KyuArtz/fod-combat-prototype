@@ -30,6 +30,10 @@ function summarize(state, actor) {
     id: viewIdOf(state, actor),
     name: actor.name,
     side: actor.side,
+    faction: actor.faction || null,
+    role: actor.role || null,
+    mastery: actor.mastery || null,
+    skillSet: actor.skillSet || actor.id,
     summon: Boolean(actor.summon),
     targetableByEnemy: Boolean(actor.targetableByEnemy),
     untargetable: Boolean(actor.statuses?.untargetable || Object.values(actor.statuses || {}).some((status) => status.untargetable)),
@@ -67,6 +71,10 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
       id: viewIdOf(state, actor),
       name: actor.name,
       side: actor.side,
+      faction: actor.faction || null,
+      role: actor.role || null,
+      mastery: actor.mastery || null,
+      skillSet: actor.skillSet || actor.id,
       summon: Boolean(actor.summon),
       hp: actor.hp,
       maxHp: actor.stats.HP,
@@ -78,15 +86,28 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
     },
     allies,
     enemies,
+    // Relative aliases let either faction use the same tactical controller and skill data.
+    friendlies: actor.side === "ally" ? allies : enemies,
+    opponents: actor.side === "ally" ? enemies : allies,
     actions: [],
   };
 
   if (kind === "player") {
     const enemyIds = enemies.filter((unit) => !unit.untargetable).map((unit) => unit.id);
     const allyIds = allies.filter((unit) => !unit.summon).map((unit) => unit.id);
-    const targetsFor = (targeting) =>
-      targeting === "enemy" ? enemyIds : targeting === "ally" ? allyIds : [];
-    const actorSkills = skills[actor.id] || [];
+    const targetsFor = (targeting, skill = {}) => {
+      if (targeting === "enemy") return enemyIds;
+      if (targeting !== "ally") return [];
+      return allyIds.filter((id) => {
+        if (skill.excludeSelf && id === actor.id) return false;
+        if (skill.targetFaction) {
+          const target = allies.find((unit) => unit.id === id);
+          if (target?.faction !== skill.targetFaction) return false;
+        }
+        return true;
+      });
+    };
+    const actorSkills = skills[actor.skillSet || actor.id] || [];
 
     view.actions.push({ type: "basic", targeting: "enemy", targets: enemyIds });
     actorSkills.forEach((skill, index) => {
@@ -106,10 +127,10 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
           id: mode.id,
           label: mode.label,
           targeting: mode.targeting,
-          targets: targetsFor(mode.targeting),
+          targets: targetsFor(mode.targeting, skill),
         }));
       } else {
-        action.targets = targetsFor(skill.targeting);
+        action.targets = targetsFor(skill.targeting, skill);
       }
       view.actions.push(action);
     });
@@ -119,19 +140,64 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
       active: state.party.active.map(partyMember),
     });
   } else if (kind === "enemy") {
-    const foeIds = allies.filter((unit) => (!unit.summon || unit.targetableByEnemy) && !unit.untargetable).map((unit) => unit.id);
-    if (foeIds.length) view.actions.push({ type: "basic", targeting: "ally", targets: foeIds });
+    const factionActor = Boolean(actor.faction);
+    const foeUnits = view.opponents.filter((unit) => (!unit.summon || unit.targetableByEnemy) && !unit.untargetable);
+    const friendUnits = view.friendlies.filter((unit) => !unit.summon && !unit.untargetable);
+    const foeIds = foeUnits.map((unit) => unit.id);
+    const friendIds = friendUnits.map((unit) => unit.id);
+    if (foeIds.length) view.actions.push({ type: "basic", targeting: "enemy", targets: foeIds });
+
+    const enemyTargetsFor = (targeting, skill = {}) => {
+      let targets = [];
+      let candidates = [];
+      if (targeting === "none") return targets;
+      if (factionActor && targeting === "ally") {
+        targets = friendIds;
+        candidates = friendUnits;
+      } else if (targeting === "enemy" || (!factionActor && targeting === "ally")) {
+        // Existing neutral enemy archetypes use `ally` to mean the player side;
+        // faction actors use the same player/character semantics as their own kits.
+        targets = foeIds;
+        candidates = foeUnits;
+      }
+      if (skill.excludeSelf) targets = targets.filter((id) => id !== actor.id);
+      if (skill.targetFaction) {
+        targets = targets.filter((id) => candidates.find((unit) => unit.id === id)?.faction === skill.targetFaction);
+      }
+      return targets;
+    };
     for (const skill of describeEnemySkills(actor)) {
-      view.actions.push({
+      const action = {
         type: "enemySkill",
         key: skill.key,
         name: skill.name,
+        category: skill.category,
         targeting: skill.targeting,
         usable: skill.usable,
-        targets: skill.targeting === "ally" ? foeIds : [],
+      };
+      if (skill.targeting === "mode") {
+        action.modes = (skill.modes || []).map((mode) => ({
+          id: mode.id,
+          label: mode.label,
+          targeting: mode.targeting,
+          targets: enemyTargetsFor(mode.targeting, skill),
+        }));
+      } else {
+        action.targets = enemyTargetsFor(skill.targeting, skill);
+      }
+      view.actions.push(action);
+    }
+    if (factionActor) {
+      const sideParty = actor.side === "ally" ? state.party : state.enemyParty;
+      view.actions.push({
+        type: "switch",
+        reserves: sideParty.reserve.map(partyMember),
+        active: sideParty.active.map(partyMember),
       });
     }
-    if (!foeIds.length) view.actions.push({ type: "pass" });
+    if (!foeIds.length && !view.actions.some((action) => action.type === "enemySkill" && action.usable)) {
+      view.actions.push({ type: "pass" });
+    }
   } else if (kind === "summon") {
     view.actions.push({ type: "summonAuto" });
   }

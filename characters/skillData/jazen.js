@@ -4,6 +4,7 @@ module.exports = {
   passive: {
     id: "recoilDampeners",
     name: "Recoil Dampeners",
+    description: "When a hit deals more than 10% of Jazen’s Max HP, he gains Mpow +10% for 2 turns, up to 2 stacks. Further qualifying hits at the stack limit refresh the duration.",
     damageThresholdPercent: 10,
     mpowBonusPercent: 10,
     maxStacks: 2,

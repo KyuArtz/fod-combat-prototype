@@ -22,7 +22,7 @@ function actor(id, side, overrides = {}) {
   });
 }
 
-function harness({ rolls = [0.99, 0.99] } = {}) {
+function harness({ rolls = [0.99, 0.99], symmetricEvasion = false } = {}) {
   const state = { actors: [], battleTimers: {}, rng: {} };
   const damage = [];
   const messages = [];
@@ -33,6 +33,7 @@ function harness({ rolls = [0.99, 0.99] } = {}) {
     applyDamage: (target, amount, type) => damage.push({ target, amount, type }),
     say: (message) => messages.push(message),
     random: () => rolls[rollIndex++] ?? 0.99,
+    symmetricEvasion,
   });
   return { resolver, state, damage, messages, rollsUsed: () => rollIndex };
 }
@@ -88,4 +89,20 @@ test("basicAttack rejects missing actors or targets without mutating combat stat
   assert.equal(h.resolver.basicAttack(actor("actor", "ally"), null), false);
   assert.equal(h.damage.length, 0);
   assert.equal(h.messages.length, 0);
+});
+
+
+test("faction-duel symmetric rules apply Evasion and Retaliation on either side", () => {
+  const h = harness({ rolls: [0.99, 0.99], symmetricEvasion: true });
+  const phantom = actor("phantom", "ally");
+  const falcon = actor("falcon", "enemy");
+  falcon.statuses.retaliation = { amount: 25 };
+  h.state.actors.push(phantom, falcon);
+
+  assert.equal(h.resolver.basicAttack(phantom, falcon), true);
+  assert.deepEqual(h.damage.map(({ target, amount, type }) => ({ id: target.id, amount, type })), [
+    { id: "falcon", amount: 100, type: "Physical" },
+    { id: "phantom", amount: 25, type: "Physical" },
+  ]);
+  assert.equal(h.messages[1], "falcon retaliates against phantom for 25 damage!");
 });

@@ -4,6 +4,7 @@ module.exports = {
   passive: {
     id: "catalystProtocol",
     name: "Catalyst Protocol",
+    description: "The Catalyst Wing lasts for 12 Evalete turns. At the start of every second turn, it heals all active allies for 8% Max HP and grants a shield equal to 10% Max HP for 2 turns. Destroying the Wing ends its support; it grants no fallback shield.",
     wingTurns: 12,
     summon: { name: "Catalyst Wing", mastery: "Energy", hpPercent: 25, defPercent: 50, resPercent: 50 },
     events: {

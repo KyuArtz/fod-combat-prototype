@@ -83,7 +83,7 @@ function createBattleMenu(context) {
       });
       output.log("");
       output.log("6. View Status");
-      output.log("7. View Falcon Party");
+      output.log("7. View Active Party");
       output.log("8. Switch Party Member");
 
       const choice = (await ask("Choose action (1-8): ")).trim();

@@ -23,6 +23,8 @@ async function main() {
     seed: process.env.FOD_SEED,
     // FOD_OPENING=speed turns off the player-first opening and uses pure SPD order.
     openingInitiative: getOpeningInitiative(),
+    selectPartyCharacters: true,
+    maxActive: 3,
   });
   try {
     console.log(`Readiness scheduler: ${schedulerName}`);

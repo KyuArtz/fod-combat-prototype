@@ -10,7 +10,9 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Legacy and threshold readiness schedulers; threshold is preferred.
 - [x] Seeded RNG, typed event bus, controller-driven turns, decision validation, and deterministic replay.
 - [x] Player-first PvE opening initiative.
-- [x] Data-driven Falcon skills/passives and shared skill interpreter.
+- [x] Data-driven Falcon and Phantom skills/passives using the shared skill interpreter.
+- [x] Unified mixed-faction roster selector with public-profile filters, character previews, three active slots, and up to two ordered reserves.
+- [x] Initial Phantom Rebellion migration: five playable kits, party factory, neutral hidden-operative skill descriptions, shared effect/passive integration, and a full-battle smoke test.
 - [x] Shared player/enemy basic-attack resolver.
 - [x] Full-battle regression coverage and golden transcript fixtures.
 - [x] Typed combat event contracts.
@@ -22,8 +24,9 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Multi-wave encounter progression, per-instance stat overrides, defeat-count reinforcements, and completion/reward metadata hooks.
 - [x] Falcon mechanics finalization with owner-approved implementation values documented separately from owner-authored values.
 - [x] Documentation and codebase baseline audit/restructure: modular skill runtime, standard project metadata, ignore/formatting conventions, and reorganized documentation.
+- [x] Iteration 5 combat effect coverage audit: validate passive/summon handler registrations at load time, enforce ally-mode restrictions in the interpreter, preserve DoT attribution across reserve/defeat transitions, stop simultaneous DoTs after incapacitation, and dismiss owner-linked summons when their owner is incapacitated.
 
-## Active architecture work — passive event migration
+## Completed architecture work — passive event migration
 
 - [x] Keep active skill effect execution behind the pluggable `systems/effects/` registry.
 - [x] Move passive/summon lifecycle implementation ownership out of `core/` while preserving the compatibility facade.
@@ -37,7 +40,7 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Remove the legacy summon behavior compatibility adapter.
 - [x] Add focused modifier and regression tests; preserve seeded RNG draw order and existing behavior.
 
-## Active architecture follow-up — status lifecycle generalization
+## Completed architecture follow-up — status lifecycle generalization
 
 - [x] Classify effect, passive, and summon handlers by reuse boundary without changing combat behavior.
 - [x] Replace named `singularityDot` turn-start handling with a declarative status tick contract.
@@ -49,7 +52,16 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Review Zero Hour and compose its execute threshold and Cipher Tag follow-up from generic `masteryHit` and `conditionalStatus`; preserve strict HP boundary and miss/defeat semantics.
 - [x] Review Singularity and compose its battle-wide timer/heal, status application, area DoT, conditional summon power, and summon announcement from reusable contracts; preserve reserve-entry behavior and turn-start ordering.
 
+## Completed faction-testing work
+
+- [x] Build a Phantom tactical controller and support Phantom actors on either faction side.
+- [x] Add symmetric Falcon-versus-Phantom tactical simulation with three-active/two-reserve formations and alternating faction seating.
+- [x] Run a 500-battle seeded faction baseline; record the 71% Falcon win rate and the near-even side-placement split as controller-dependent observations.
+- [ ] Review the provisional Phantom Bleeding tick magnitude (0.15× applier ATK as Anomaly damage per affected-unit turn for 2 turns) and approve or replace it.
+
 ## Open technical decisions
+- [ ] Decide whether to add saved formations/loadout slots after the interactive unified selector has been playtested.
+- [ ] Add Serpent Syndicate to the playable-roster registry after its skill migration and regression coverage are complete.
 
 - [ ] Decide whether and when runtime Falcon base stats should be synchronized with the owner-maintained stat sheet.
 - [ ] Decide PvP and ambush opening-initiative policies.
@@ -58,19 +70,22 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Add source attribution to direct, reflected, and DoT damage events for attacker-level damage analytics.
 - [ ] Continue evaluating stage/level scaling and broader combat balance using additional policies, encounters, seed ranges, and human playtests.
 
-## Next planned feature milestone — not started
+## Next planned feature milestone — Serpent Syndicate migration
 
-**Reward System and Stage Progression Foundation**
+**Serpent Syndicate shared-runtime integration**
 
-Potential scope, subject to approval before implementation:
+The Iteration 5 engine coverage audit is complete. The next planned faction expansion is Serpent Syndicate migration. Scope:
 
-1. Define reward payloads for XP, currency, and items.
-2. Award rewards only after successful encounter completion.
-3. Define stage progression and encounter sequencing.
-4. Separate persistent agent/progression data from battle runtime state.
-5. Establish a versioned save-data schema and migration policy.
+1. Inspect the latest Serpent skill definitions and runtime stats without silently changing character concepts or lore.
+2. Migrate Verra, Kane, Galloz, and Claude through the existing shared skill/effect/passive/summon registries.
+3. Keep Tekushiki out of the user's owned roster unless explicitly requested; he is a friend's OC and should be handled separately.
+4. Add Serpent to `characters/roster.js` only after its actor factories and complete skill sets pass registry-backed validation.
+5. Add faction-specific tactical behavior only where Serpent's approved mechanics require it; preserve generic target and status contracts.
+6. Validate mixed-faction selection and battle execution with Serpent members, then run targeted tests and seeded balance samples.
 
-The encounter completion callback and reward metadata from Step 8 are integration points, not an existing reward system.
+Keep Phantom Bleeding's 0.15× ATK Anomaly tick provisional until the owner approves or replaces it.
+
+The reward and stage-progression foundation remains a later milestone; encounter completion metadata is an integration hook, not an existing reward system.
 
 ## Release / merge gate
 

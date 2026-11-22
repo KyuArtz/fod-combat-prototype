@@ -14,6 +14,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Architecture decisions](project/DECISIONS.md) | Accepted and deferred design decisions (ADRs) |
 | [Changelog](project/CHANGELOG.md) | Chronological record of implementation milestones |
 | [Cleanup report](project/CLEANUP_REPORT.md) | Obsolete-code/test removals and intentionally preserved compatibility coverage |
+| [Engine coverage audit](project/ENGINE_COVERAGE_AUDIT.md) | Registry, targeting, DoT attribution, summon ownership, and reserve-lifecycle verification |
 
 ## Technical references
 
@@ -22,7 +23,9 @@ This index is the entry point for project documentation. Current-state documents
 | [Architecture](reference/ARCHITECTURE.md) | Module ownership, runtime flow, and data boundaries |
 | [Combat mechanics](reference/COMBAT_MECHANICS.md) | Current scheduler, turn, damage, status, and encounter rules |
 | [Roster and skills](reference/ROSTER_AND_SKILLS.md) | Runtime roster, mastery types, skill registry overview |
+| [Unified roster selection](reference/UNIFIED_ROSTER_SELECTION.md) | Mixed-faction selection, filters, character previews, formation ordering, and extension guidance |
 | [Falcon implementation guide](reference/FALCON_IMPLEMENTATION_GUIDE.md) | Executable Falcon skill/passive behavior and exact values |
+| [Phantom implementation guide](reference/PHANTOM_IMPLEMENTATION_GUIDE.md) | Executable Phantom skill/passive behavior, neutral hidden-operative copy, and migration notes |
 | [Falcon approved-kit history](history/milestones/STEP9_SUPERSEDED_FALCON_MECHANICS.md) | Historical Step 9 decisions, superseded where they conflict with ADR-017 |
 | [Enemy archetypes and balance](reference/ENEMY_ARCHETYPES_AND_BALANCE.md) | Six enemy passive/skill kits, the Blightheart boss, tactical Falcon policy, and seeded playtest results |
 | [Owner skill reference](reference/OWNER_SKILL_REFERENCE.md) | Authority and handling of the compact owner-reference extract |

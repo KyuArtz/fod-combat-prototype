@@ -36,14 +36,18 @@ function createEnemyAI(context) {
       key: skill.key,
       name: skill.name,
       targeting: skill.targeting,
+      category: skill.category,
+      targetFaction: skill.targetFaction,
+      excludeSelf: skill.excludeSelf,
+      ...(skill.modes ? { modes: structuredClone(skill.modes) } : {}),
       usable: enemySkillReady(actor, skill.key),
     }));
   }
 
-  function useSkill(actor, key, target) {
+  function useSkill(actor, key, target, mode) {
     const skill = findSkill(actor, key);
     if (!skill || !enemySkillReady(actor, key)) return false;
-    return skill.run(actor, { target });
+    return skill.run(actor, { target, mode });
   }
 
   function conditionPasses(condition, actor, target) {
