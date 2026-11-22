@@ -5,7 +5,7 @@ const { createFalconParty } = require("../characters/falcon");
 const { createTrainingEnemies } = require("../characters/enemies");
 const { createSkills } = require("../characters/skills");
 const { createActionResolver } = require("../core/actionResolver");
-const { addStatus, effectiveStat } = require("../systems/statusEffects");
+const { addStatus, effectiveStat, incomingAttackModifier } = require("../systems/statusEffects");
 const { addShield } = require("../systems/shields");
 const { applyDamage, heal } = require("../systems/damageApplication");
 const { pay, ready, tickCooldowns } = require("../systems/cooldowns");
@@ -20,7 +20,7 @@ function world(randomValue = 0.99) {
   const say = (line) => logs.push(line);
   const random = () => randomValue;
   const effective = (actor, stat) => effectiveStat(state, actor, stat);
-  const resolver = createActionResolver({ state, effectiveStat: effective, applyDamage: (target, amount, type) => applyDamage(target, amount, say, () => {}, type), say, random });
+  const resolver = createActionResolver({ state, effectiveStat: effective, applyDamage: (target, amount, type) => applyDamage(target, amount, say, () => {}, type), say, random, incomingAttackModifier });
   const context = {
     state, say, random, alive: formation.alive, addStatus, addShield,
     applyDamage: (target, amount, type) => applyDamage(target, amount, say, () => {}, type),
@@ -71,6 +71,11 @@ test("Nanotech Singularity applies a non-critical Nanotech DoT at the start of e
   const dot = target.statuses.singularityDot;
   assert.ok(dot.dotDamage > 0);
   assert.equal(dot.turns, 3);
+  assert.ok(w.enemies.every((enemy) => enemy.statuses.singularityDot?.turns === 3), "the reusable area DoT is assigned to every living enemy");
+  assert.deepEqual(dot.turnStart, {
+    damageField: "dotDamage", damageTypeField: "damageType",
+    message: "{actor} takes {damage} Nanotech damage from Nanotech Singularity.",
+  });
   const before = target.hp;
   w.skillSet.onTurnStart(target);
   assert.equal(target.hp, before - dot.dotDamage);

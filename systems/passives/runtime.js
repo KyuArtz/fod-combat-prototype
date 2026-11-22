@@ -1,0 +1,91 @@
+// Passive, summon, and actor-lifecycle behavior for declarative skill data.
+const { formatMessage } = require("../../core/skillMessages");
+const { createSummonRegistry } = require("../summons/registry");
+const { createPassiveRegistry } = require("./registry");
+const { processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions } = require("../statusEffects");
+
+const pct = (value, percent) => Math.floor((value * percent) / 100);
+
+function createRuntime(context) {
+  const { addShield, addStatus, alive, applyDamage, heal, hitMastery, hitPhysical, makeActor, say, state } = context;
+  const passiveRegistry = createPassiveRegistry(context);
+  const summonRegistry = createSummonRegistry(context);
+
+  function onBattleStart(actors) {
+    for (const actor of actors) {
+      passiveRegistry.dispatch(actor, "battleStart");
+    }
+  }
+
+  function onTurnStart(actor) {
+    processTurnStartStatuses(actor, { applyDamage, say });
+    passiveRegistry.dispatch(actor, "turnStart");
+    for (const status of Object.values(actor.statuses)) {
+      if (status.hotPercentMaxHP) heal(actor, pct(actor.stats.HP, status.hotPercentMaxHP));
+    }
+    processTurnStartStatusRefreshes(actor);
+  }
+
+  function onTurnEnd(actor) {
+    passiveRegistry.dispatch(actor, "turnEnd");
+  }
+
+  function onDamageTaken(target, amount, damageType, hpLoss = amount) {
+    passiveRegistry.dispatch(target, "damageTaken", { amount, damageType, hpLoss });
+  }
+
+  function onEnemySkillTargeted(attacker, target) {
+    if (!target || target.side !== "ally") return;
+    target.targetedByEnemySinceLastTurn = true;
+    target.enemySkillTargetedThisRound = true;
+  }
+
+  function onRoundStart() {
+    for (const actor of state.actors) {
+      actor.enemySkillTargetedThisRound = false;
+      actor.targetedByAllyId = null;
+    }
+  }
+
+  function onUnitDefeated(unit, statuses = {}) {
+    processUnitDefeatedStatusReactions(unit, statuses, { alive, state });
+  }
+
+  // Summon behavior is described by each summon template and dispatched through
+  // a reusable handler registry; the runtime owns only turn and lifecycle timing.
+  function summonTurn(summon) {
+    if (!summon.alive || summon.summonTurns <= 0) return;
+    const lifecycle = summon.lifecycle || {};
+    summonRegistry.dispatch(summon, lifecycle.activation || []);
+    summon.summonTurns--;
+    if (summon.summonTurns <= 0) {
+      summon.alive = false;
+      const expireMessage = lifecycle.expireMessage || "{actor}'s deployment expires.";
+      say(formatMessage(expireMessage, { actor: summon.name }));
+      summonRegistry.dispatch(summon, lifecycle.onExpire || []);
+    }
+  }
+
+  function summonDestroyed(summon) {
+    const owner = summon.ownerId
+      ? state.actors.find((unit) => unit.id === summon.ownerId && unit.alive)
+      : null;
+    if (owner && summon.ownerEvents?.destroyed?.length) {
+      for (const subscription of summon.ownerEvents.destroyed) {
+        if (subscription.event) passiveRegistry.dispatch(owner, subscription.event, { summon });
+      }
+    }
+    const burst = summon.onDestroyed;
+    if (!burst) return;
+    say(formatMessage(burst.message, { actor: summon.name }));
+    const opposing = summon.side === "ally" ? "enemy" : "ally";
+    for (const foe of alive(state, opposing)) {
+      hitMastery(summon, foe, burst.element, burst.power, false);
+      if (foe.alive) addStatus(foe, burst.status.id, { stat: burst.status.stat, amount: burst.status.amount, turns: burst.status.turns });
+    }
+  }
+
+  return { onBattleStart, onTurnStart, onTurnEnd, onDamageTaken, onEnemySkillTargeted, onRoundStart, onUnitDefeated, summonTurn, summonDestroyed, passiveRegistry, summonRegistry };
+}
+
+module.exports = { createRuntime };

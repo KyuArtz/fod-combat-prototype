@@ -5,7 +5,7 @@ const { createFalconParty } = require("../characters/falcon");
 const { createTrainingEnemies } = require("../characters/enemies");
 const { createSkills } = require("../characters/skills");
 const { createActionResolver } = require("../core/actionResolver");
-const { addStatus, effectiveStat } = require("../systems/statusEffects");
+const { addStatus, effectiveStat, incomingAttackModifier } = require("../systems/statusEffects");
 const { addShield } = require("../systems/shields");
 const { applyDamage, heal } = require("../systems/damageApplication");
 const { pay, ready, tickCooldowns } = require("../systems/cooldowns");
@@ -18,9 +18,9 @@ function world(randomValue = 0.99) {
   state.actors = [...allies, ...enemies];
   const logs = [];
   const say = (line) => logs.push(line);
-  const random = () => randomValue;
+  const random = typeof randomValue === "function" ? randomValue : () => randomValue;
   const effective = (actor, stat) => effectiveStat(state, actor, stat);
-  const resolver = createActionResolver({ state, effectiveStat: effective, applyDamage: (target, amount, type) => applyDamage(target, amount, say, () => {}, type), say, random });
+  const resolver = createActionResolver({ state, effectiveStat: effective, applyDamage: (target, amount, type) => applyDamage(target, amount, say, () => {}, type), say, random, incomingAttackModifier });
   const context = {
     state, say, random, alive: formation.alive, addStatus, addShield,
     applyDamage: (target, amount, type) => applyDamage(target, amount, say, () => {}, type),
@@ -53,7 +53,7 @@ test("Biotech Overdrive grants +10% SPD and +10 Evasion for three Elishia turns"
   const w = world();
   const elishia = w.byId.elishia;
   w.skillSet.onBattleStart(w.allies);
-  assert.equal(elishia.biotechOverdriveTurns, 3);
+  assert.equal(elishia.passiveTimers.overdrive, 3);
   assert.equal(w.effective(elishia, "SPD"), 104);
   assert.equal(w.effective(elishia, "Evasion"), 20);
   w.skillSet.onTurnEnd(elishia);
@@ -92,9 +92,12 @@ test("Nanotech Singularity applies the specified team buffs, enemy slow and 5% t
   const elishia = w.byId.elishia;
   elishia.hp -= 100;
   skill(w, "elishia", "ultimate").run(elishia, {});
-  assert.equal(w.state.singularityTurns, 3);
+  assert.equal(w.state.battleTimers.singularity.turns, 3);
   assert.equal(elishia.statuses.singularityAtk.amount, 15);
   assert.equal(elishia.statuses.singularitySpd.amount, 10);
+  assert.deepEqual(w.state.battleTimers.singularity.turnStart, [
+    { handler: "healPercentMaxHP", percentMaxHP: 5, side: "ally", excludeSummons: true },
+  ]);
   assert.equal(w.enemies[0].statuses.singularitySpdDown.amount, -10);
   const before = elishia.hp;
   w.skillSet.onTurnStart(elishia);
@@ -168,14 +171,27 @@ test("Zackry Tactical Mark increases incoming damage and reduces Evasion; marked
   assert.equal(w.effective(target, "Evasion"), -10 < 0 ? 0 : (target.stats.Evasion || 0) - 10);
   for (const ally of w.allies) ally.mp = 0;
   const before = w.allies.map((ally) => ally.mp);
-  w.skillSet.onUnitDefeated(target, { tacticalMark: { ...target.statuses.tacticalMark } });
+  const summon = { alive: true, side: "ally", summon: true, mp: 0, stats: { MP: 100 }, statuses: {} };
+  w.state.actors.push(summon);
+  const defeatStatuses = { tacticalMark: { ...target.statuses.tacticalMark } };
+  w.skillSet.onUnitDefeated(target, defeatStatuses);
   assert.ok(w.allies.every((ally, i) => ally.mp === before[i] + Math.floor(ally.stats.MP * 0.05)));
+  assert.equal(summon.mp, 0, "summons are excluded from the team MP reward");
+  w.skillSet.onUnitDefeated(target, defeatStatuses);
+  assert.ok(w.allies.every((ally, i) => ally.mp === before[i] + Math.floor(ally.stats.MP * 0.05)), "the same defeat reaction can only be claimed once");
 });
 
 test("Zackry Command Uplink recalculates its conditional ATK bonus at each ally turn", () => {
   const w = world();
   skill(w, "zackry", "uplink").run(w.byId.zackry, {});
   const evalete = w.byId.evalete;
+  w.skillSet.onTurnStart(evalete);
+  assert.equal(evalete.statuses.commandUplink.amount, 20);
+  assert.equal(evalete.statuses.commandUplink.baseAmount, 15);
+  evalete.hp = evalete.stats.HP / 2;
+  w.skillSet.onTurnStart(evalete);
+  assert.equal(evalete.statuses.commandUplink.amount, 15, "the conditional bonus requires HP strictly above 50%");
+  evalete.hp = evalete.stats.HP * 0.75;
   w.skillSet.onTurnStart(evalete);
   assert.equal(evalete.statuses.commandUplink.amount, 20);
   evalete.hp = 500;
@@ -249,11 +265,28 @@ test("Zenki's basic-attack Accuracy penalty remains active when Unobserved's Eva
   const w = world(0);
   const zenki = w.byId.zenki;
   zenki.stats.Evasion = 0;
-  zenki.unobservedSuppressed = true;
+  zenki.passiveFlags.unobservedActive = false;
   const before = zenki.hp;
   w.resolver.basicAttack(w.enemies[0], zenki);
   assert.equal(zenki.hp, before);
   assert.ok(w.logs.some((line) => line.includes("evades")));
+});
+
+test("Railshot's generic mastery-hit contract guarantees accuracy without an extra RNG draw", () => {
+  let draws = 0;
+  const w = world(() => { draws++; return 0.99; });
+  const zenki = w.byId.zenki;
+  const target = w.enemies[0];
+  target.stats.Evasion = 75;
+  zenki.nextAttackAccuracy = 10;
+  const before = target.hp;
+
+  skill(w, "zenki", "railshot").run(zenki, { target });
+
+  assert.ok(target.hp < before, "the guaranteed hit bypasses the enemy Evasion check");
+  assert.equal(zenki.nextAttackAccuracy, 0, "the supported next-attack Accuracy token is still consumed");
+  assert.equal(draws, 1, "only the ordinary mastery critical roll is consumed; no accuracy RNG draw is added");
+  assert.ok(w.logs.some((line) => line.includes("(unobserved bonus)")));
 });
 
 test("Zenki Unobserved, Railshot, Cipher Tag, Ghost Protocol and Zero Hour use owner values", () => {
@@ -266,30 +299,91 @@ test("Zenki Unobserved, Railshot, Cipher Tag, Ghost Protocol and Zero Hour use o
   w.skillSet.onDamageTaken(zenki, 1);
   assert.equal(w.effective(zenki, "Evasion"), zenki.stats.Evasion || 0);
   w.skillSet.onTurnStart(zenki);
-  assert.equal(zenki.unobservedSuppressed, false);
+  assert.equal(zenki.passiveFlags.unobservedEvasionActive, true);
 
-  zenki.railshotUntargeted = true;
+  zenki.passiveFlags.unobservedActive = true;
   const before = target.hp;
   skill(w, "zenki", "railshot").run(zenki, { target });
   const bonusDamage = before - target.hp;
   target.hp = target.stats.HP;
   zenki.cooldowns.railshot = 0;
-  zenki.railshotUntargeted = false;
+  zenki.passiveFlags.unobservedActive = false;
   const beforeNormal = target.hp;
   skill(w, "zenki", "railshot").run(zenki, { target });
   const normalDamage = beforeNormal - target.hp;
   assert.ok(bonusDamage > normalDamage * 1.25);
+  assert.ok(w.logs.some((line) => line.includes("(unobserved bonus)")));
+  assert.ok(w.logs.at(-1).includes("Energy damage."), "the normal-power shot omits the Unobserved bonus label");
 
   skill(w, "zenki", "cipher").run(zenki, { target });
   assert.equal(target.statuses.cipherTag.damageTakenPercent, 12);
   assert.equal(target.statuses.cipherResDown.amount, -15);
+  assert.equal(target.statuses.cipherTag.statusGroup, "zenkiCipherTag");
+  assert.equal(target.statuses.cipherResDown.statusGroup, "zenkiCipherTag");
+  const replacementTarget = w.enemies[1];
+  zenki.cooldowns.cipher = 0;
+  skill(w, "zenki", "cipher").run(zenki, { target: replacementTarget });
+  assert.equal(target.statuses.cipherTag, undefined, "replacing the tag removes the prior target's primary status");
+  assert.equal(target.statuses.cipherResDown, undefined, "replacing the tag removes the prior target's linked resistance status");
+  assert.equal(replacementTarget.statuses.cipherTag.damageTakenPercent, 12);
+  assert.equal(replacementTarget.statuses.cipherResDown.amount, -15);
+  replacementTarget.statuses.cipherTag.turns = 1;
+  replacementTarget.statuses.cipherResDown.turns = 1;
+  zenki.cooldowns.cipher = 0;
+  skill(w, "zenki", "cipher").run(zenki, { target: replacementTarget });
+  assert.equal(replacementTarget.statuses.cipherTag.turns, 3, "reapplication refreshes the complete status group");
+  assert.equal(replacementTarget.statuses.cipherResDown.turns, 3);
   skill(w, "zenki", "ghost").run(zenki, {});
   assert.equal(zenki.statuses.ghostDamage.damageDealtPercent, 25);
   assert.equal(zenki.statuses.ghostEvasion.amount, 25);
 
-  target.stats.HP = 5000;
-  target.hp = Math.floor(target.stats.HP * 0.35);
+  replacementTarget.stats.HP = 5000;
+  replacementTarget.hp = Math.floor(replacementTarget.stats.HP * 0.35);
   zenki.mp = zenki.stats.MP;
+  skill(w, "zenki", "ultimate").run(zenki, { target: replacementTarget });
+  assert.equal(replacementTarget.statuses.zeroHourSpdDown.amount, -25);
+});
+
+test("Zero Hour does not apply its Cipher Tag follow-up when its mastery hit misses", () => {
+  const w = world(() => 0);
+  const zenki = w.byId.zenki;
+  const target = w.enemies[0];
+  target.stats.Evasion = 75;
+  target.statuses.cipherTag = { turns: 2, debuff: true };
+  zenki.nextAttackAccuracy = 10;
+  const before = target.hp;
+
   skill(w, "zenki", "ultimate").run(zenki, { target });
+
+  assert.equal(target.hp, before, "the accuracy check prevents damage");
+  assert.equal(target.statuses.zeroHourSpdDown, undefined, "the follow-up is skipped after a miss");
+  assert.equal(zenki.nextAttackAccuracy, 0, "the usual one-use Accuracy token is consumed");
+});
+
+test("Zero Hour's generic composition does not add RNG draws", () => {
+  let draws = 0;
+  const w = world(() => { draws++; return 0.99; });
+  const zenki = w.byId.zenki;
+  const target = w.enemies[0];
+  target.stats.HP = 10000;
+  target.hp = 3500;
+  target.statuses.cipherTag = { turns: 2, debuff: true };
+
+  skill(w, "zenki", "ultimate").run(zenki, { target });
+
+  assert.equal(draws, 1, "only the ordinary mastery critical roll is consumed");
   assert.equal(target.statuses.zeroHourSpdDown.amount, -25);
+});
+
+test("Zero Hour does not apply its Cipher Tag follow-up when the hit defeats the target", () => {
+  const w = world();
+  const zenki = w.byId.zenki;
+  const target = w.enemies[0];
+  target.hp = 1;
+  target.statuses.cipherTag = { turns: 2, debuff: true };
+
+  skill(w, "zenki", "ultimate").run(zenki, { target });
+
+  assert.equal(target.alive, false, "the hit defeats the target");
+  assert.equal(target.statuses.zeroHourSpdDown, undefined, "defeat clears statuses and prevents the follow-up");
 });

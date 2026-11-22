@@ -1,14 +1,14 @@
 // Shared runtime for declarative Falcon and enemy skills.
 // Controllers choose actions; this module validates, interprets and dispatches them.
 
-const { createSkillEffects } = require("./skillEffects");
+const { createDefaultEffectRegistry } = require("../systems/effects");
 const { createSkillLifecycle } = require("./skillLifecycle");
 const { formatMessage } = require("./skillMessages");
 const { validateSkillData } = require("./skillDataValidation");
 
 function createSkillInterpreter(context) {
   const { pay, ready, say, state } = context;
-  const EFFECTS = createSkillEffects(context);
+  const effectRegistry = context.effectRegistry || createDefaultEffectRegistry(context, context.effectHandlers || {});
   const lifecycle = createSkillLifecycle(context);
 
   function runSkill(data, skill, actor, { mode, target } = {}) {
@@ -23,28 +23,20 @@ function createSkillInterpreter(context) {
     const run = { data, actor, target, results: {}, after: [] };
     const messageValues = { actor: actor.name, target: target && target.name };
     if (variant.announce) say(formatMessage(variant.announce, messageValues));
-    for (const effect of variant.effects) EFFECTS[effect.type](effect, run);
+    for (const effect of variant.effects) effectRegistry.dispatch(effect, run);
     if (variant.message) say(formatMessage(variant.message, { ...messageValues, ...run.results }));
     for (const line of run.after) say(line);
 
     for (const hook of (data.passive && data.passive.onSkillUsed) || []) {
       if (!skill.tags.includes(hook.tag)) continue;
-      for (const effect of hook.effects) EFFECTS[effect.type](effect, run);
+      for (const effect of hook.effects) effectRegistry.dispatch(effect, run);
     }
-    if (data.passive?.id === "overwatchProtocol") {
-      const recipients = [];
-      if (target?.side === "ally") recipients.push(target);
-      else if (target?.targetedByAllyId) {
-        const recipient = state.actors.find((unit) => unit.id === target.targetedByAllyId && unit.alive);
-        if (recipient) recipients.push(recipient);
-      }
-      for (const recipient of recipients) recipient.nextAttackAccuracy = data.passive.nextAttackAccuracy || 10;
-    }
+    lifecycle.passiveRegistry?.dispatch(actor, "skillUsed", { skill, target, mode, run });
     return true;
   }
 
   function buildSkills(data) {
-    validateSkillData(data);
+    validateSkillData(data, effectRegistry);
     return data.skills.map((skill) => ({
       name: skill.name, key: skill.key, cost: skill.cost, cooldown: skill.cooldown,
       tags: [...(skill.tags || [])], targeting: skill.targeting,
@@ -55,7 +47,7 @@ function createSkillInterpreter(context) {
     }));
   }
 
-  return { buildSkills, runSkill, ...lifecycle };
+  return { buildSkills, runSkill, effectRegistry, ...lifecycle };
 }
 
 module.exports = { createSkillInterpreter, validateSkillData, formatMessage };

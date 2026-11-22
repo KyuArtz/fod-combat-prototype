@@ -215,19 +215,24 @@ test("round completion and actor-turn effects remain tied to actual turns", asyn
   second.mp = 0;
   const state = createBattleState();
   state.actors = [first, second];
-  state.singularityTurns = 1;
+  state.battleTimers.singularity = {
+    turns: 1,
+    turnStart: [{ handler: "healPercentMaxHP", percentMaxHP: 5, side: "ally", excludeSummons: true }],
+  };
   let turnStarts = 0;
   let statusTicks = 0;
   let shieldTicks = 0;
   let healingTicks = 0;
   let statusDisplays = 0;
+  const startOrder = [];
   const engine = createTurnEngine({
     state,
     combatReadiness: createThresholdScheduler(),
     effectiveStat,
     getResult: () => (state.round > 1 ? "DONE" : null),
-    heal() {
+    heal(unit, amount) {
       healingTicks++;
+      startOrder.push(`heal:${unit.name}:${amount}`);
     },
     output: { log() {} },
     playerTurn: async () => {},
@@ -236,8 +241,9 @@ test("round completion and actor-turn effects remain tied to actual turns", asyn
     showStatus() {
       statusDisplays++;
     },
-    tickCooldowns() {
+    tickCooldowns(unit) {
       turnStarts++;
+      startOrder.push(`cooldown:${unit.name}`);
     },
     tickStatuses() {
       statusTicks++;
@@ -249,11 +255,14 @@ test("round completion and actor-turn effects remain tied to actual turns", asyn
 
   await engine.runRounds();
   assert.equal(state.round, 2);
-  assert.equal(state.singularityTurns, 0);
+  assert.equal(state.battleTimers.singularity.turns, 0);
   assert.equal(turnStarts, 2);
   assert.equal(statusTicks, 2);
   assert.equal(shieldTicks, 2);
   assert.equal(healingTicks, 2);
+  assert.deepEqual(startOrder, [
+    "cooldown:First", "heal:First:5", "cooldown:Second", "heal:Second:5",
+  ], "generic turn-start healing remains after MP recovery and cooldown ticking");
   assert.equal(first.mp, 5);
   assert.equal(second.mp, 5);
   assert.equal(statusDisplays, 1);

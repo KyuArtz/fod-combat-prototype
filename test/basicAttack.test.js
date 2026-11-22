@@ -23,7 +23,7 @@ function actor(id, side, overrides = {}) {
 }
 
 function harness({ rolls = [0.99, 0.99] } = {}) {
-  const state = { actors: [], singularityTurns: 0, rng: {} };
+  const state = { actors: [], battleTimers: {}, rng: {} };
   const damage = [];
   const messages = [];
   let rollIndex = 0;

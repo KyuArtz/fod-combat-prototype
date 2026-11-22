@@ -2,11 +2,11 @@
 // core/skillInterpreter.js; controllers remain responsible for choosing targets.
 const { createSkillInterpreter } = require("../core/skillInterpreter");
 const skillData = {
-  elishia: require("../data/skills/elishia"),
-  evalete: require("../data/skills/evalete"),
-  zackry: require("../data/skills/zackry"),
-  jazen: require("../data/skills/jazen"),
-  zenki: require("../data/skills/zenki"),
+  elishia: require("./skillData/elishia"),
+  evalete: require("./skillData/evalete"),
+  zackry: require("./skillData/zackry"),
+  jazen: require("./skillData/jazen"),
+  zenki: require("./skillData/zenki"),
   trainingDrone: require("../data/enemySkills/trainingDrone"),
   rogueAutomaton: require("../data/enemySkills/rogueAutomaton"),
 };

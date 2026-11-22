@@ -1,5 +1,6 @@
 const { emitCombatEvent } = require("./combatEvents");
 const { createEventBus } = require("./eventBus");
+const { processBattleTimerTurnStart, tickBattleTimers } = require("../systems/battleTimers");
 function removeInactiveSummons(state) {
   const activeActors = state.actors.filter(
     (actor) =>
@@ -49,9 +50,7 @@ function createTurnEngine(context) {
       actor.mp + Math.ceil(actor.stats.MP * 0.05),
     );
     tickCooldowns(actor);
-    if (state.singularityTurns > 0 && actor.side === "ally" && !actor.summon) {
-      heal(actor, Math.floor((actor.stats.HP * 5) / 100));
-    }
+    processBattleTimerTurnStart(actor, state, { heal });
     return actionDelayed;
   }
 
@@ -67,7 +66,7 @@ function createTurnEngine(context) {
     ) {
       return false;
     }
-    if (state.singularityTurns > 0) state.singularityTurns--;
+    tickBattleTimers(state);
     emitCombatEvent(events, "RoundEnded", { round: state.round });
     state.round++;
     emitCombatEvent(events, "RoundStarted", { round: state.round });

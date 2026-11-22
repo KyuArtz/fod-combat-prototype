@@ -1,11 +1,11 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const skillData = {
-  elishia: require("../data/skills/elishia"),
-  evalete: require("../data/skills/evalete"),
-  zackry: require("../data/skills/zackry"),
-  jazen: require("../data/skills/jazen"),
-  zenki: require("../data/skills/zenki"),
+  elishia: require("../characters/skillData/elishia"),
+  evalete: require("../characters/skillData/evalete"),
+  zackry: require("../characters/skillData/zackry"),
+  jazen: require("../characters/skillData/jazen"),
+  zenki: require("../characters/skillData/zenki"),
 };
 const { validateSkillData } = require("../core/skillInterpreter");
 const { createFalconParty } = require("../characters/falcon");
