@@ -15,8 +15,9 @@ const { createTurnRunner } = require("./turnRunner");
 const cooldowns = require("../systems/cooldowns");
 const formation = require("../systems/formation");
 const { addShield, tickShields } = require("../systems/shields");
-const { applyDamage, heal, } = require("../systems/damageApplication");
-const { addStatus, effectiveStat: getEffectiveStat, incomingAttackModifier, tickStatuses, } = require("../systems/statusEffects");
+const { applyDamage, heal } = require("../systems/damageApplication");
+const { mitigateReflectedDamage } = require("../systems/damage");
+const { addStatus, effectiveStat: getEffectiveStat, incomingAttackModifier, tickStatuses } = require("../systems/statusEffects");
 const { createBattleLog } = require("../ui/battleLog");
 const { createBattleMenu } = require("../ui/battleMenu");
 const { createDeploymentSelector } = require("../ui/deploymentSelection");
@@ -25,6 +26,10 @@ const thresholdCombatReadiness = require("../systems/thresholdCombatReadiness");
 const enemyPolicies = {
   trainingDrone: require("../data/enemyAI/trainingDrone"),
   rogueAutomaton: require("../data/enemyAI/rogueAutomaton"),
+  siegeTurret: require("../data/enemyAI/siegeTurret"),
+  reconDrone: require("../data/enemyAI/reconDrone"),
+  toxicStalker: require("../data/enemyAI/toxicStalker"),
+  blightheartOverseer: require("../data/enemyAI/blightheartOverseer"),
   basicOnly: require("../data/enemyAI/basicOnly"),
 };
 
@@ -158,10 +163,14 @@ function createBattle({
   // Late-bound: assigned once the skills (which define summon behaviour) exist.
   let summonDestroyed = () => {};
   let passiveHooks = {};
-  const applyTargetDamage = (target, amount, damageType) => {
+  const applyTargetDamage = (target, amount, damageType, sourceActor = null, metadata = {}) => {
     const beforeHp = target.hp;
     let absorbedAmount = 0;
     const shieldBefore = target.shields.reduce((sum, shield) => sum + shield.value, 0);
+    const reflectionPercent = metadata.kind === "direct" && metadata.allowReflection !== false &&
+      sourceActor && sourceActor.side !== target.side
+      ? Math.max(0, ...Object.values(target.statuses || {}).map((status) => status.damageReflectionPercent || 0))
+      : 0;
     const hpLoss = applyDamage(
       target,
       amount,
@@ -185,15 +194,36 @@ function createBattle({
     );
     if (target.alive) {
       const afterShield = target.shields.reduce((sum, shield) => sum + shield.value, 0);
-      // A living target retains its shields, so their value delta is exact.
       absorbedAmount = Math.max(0, Math.min(amount, shieldBefore - afterShield));
     }
     const actualHpLoss = Math.max(0, beforeHp - target.hp);
     emitCombatEvent(events, "DamageApplied", {
-      targetId: target.id, requestedAmount: amount, hpLoss: actualHpLoss,
-      absorbedAmount, damageType: damageType || "Unspecified",
+      sourceId: sourceActor?.id || null,
+      sourceSide: sourceActor?.side || null,
+      kind: metadata.kind || "direct",
+      targetId: target.id,
+      requestedAmount: amount,
+      hpLoss: actualHpLoss,
+      absorbedAmount,
+      damageType: damageType || "Unspecified",
     });
-    if (passiveHooks.onDamageTaken) passiveHooks.onDamageTaken(target, amount, damageType, hpLoss);
+    if (passiveHooks.onDamageTaken) {
+      passiveHooks.onDamageTaken(target, amount, damageType, hpLoss, {
+        kind: metadata.kind || "direct", sourceId: sourceActor?.id || null,
+      });
+    }
+
+    // Reflection is based on post-mitigation damage before the recipient's shields.
+    // Reflected damage is mitigated by the original attacker's defenses, and cannot reflect again.
+    if (reflectionPercent > 0 && sourceActor?.alive && amount > 0) {
+      const reflectedBase = Math.floor(amount * reflectionPercent / 100);
+      if (reflectedBase <= 0) return hpLoss;
+      const reflectedDamage = mitigateReflectedDamage(sourceActor, reflectedBase, damageType || "Physical", effectiveStat);
+      say(`${target.name} reflects ${reflectedDamage} damage back to ${sourceActor.name}!`);
+      applyTargetDamage(sourceActor, reflectedDamage, damageType || "Physical", target, {
+        kind: "reflected", allowReflection: false,
+      });
+    }
     return hpLoss;
   };
   const trackedHeal = (target, amount) => {
@@ -307,13 +337,14 @@ function createBattle({
       : await deploymentSelector.selectFormation(allyRoster, state.party.maxActive);
     emitCombatEvent(events, "FormationSelected", { ids: selectedParty.map((actor) => actor.id) });
     formation.setupParty(state, selectedParty);
-    const actorsBeforeBattleStart = new Set(state.actors);
-    skillSet.onBattleStart(allyRoster);
-    const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
     const encounterDefinition = encounters[encounter];
     if (!encounterDefinition) throw new Error(`Unknown encounter "${encounter}".`);
     const enemyRoster = createEncounterWaveEnemies(encounter, 0);
     formation.setupEnemyParty(state, enemyRoster);
+    const actorsBeforeBattleStart = new Set(state.actors);
+    // Battle-start passives are global: both Falcon and enemy units receive them.
+    skillSet.onBattleStart([...allyRoster, ...enemyRoster]);
+    const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
     const waves = Array.isArray(encounterDefinition.waves)
       ? encounterDefinition.waves
       : [{ id: "main", name: encounterDefinition.name || "Main Wave", enemies: encounterDefinition.enemies }];

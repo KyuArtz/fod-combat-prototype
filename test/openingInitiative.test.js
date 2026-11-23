@@ -10,11 +10,14 @@ const { createTrainingEnemies } = require("../characters/enemies");
 const { effectiveStat } = require("../systems/statusEffects");
 const { applyOpeningInitiative, DEFAULT_MARGIN } = require("../systems/openingInitiative");
 
-// The real 5v5 development roster: fastest enemy (Recon Drone, 115) beats the
-// fastest ally (Zenki, 110).
+// The real 5v5 development roster: the scaled Recon Drone (125 SPD) opens,
+// followed by Zenki (110) and Elishia (104 with battle-start Overdrive).
 function realState() {
   const state = createBattleState({ seed: 1 });
   state.actors = [...createFalconParty(), ...createTrainingEnemies()];
+  // Battle-start passive initialization: Elishia's 3-turn Biotech Overdrive is
+  // active before opening initiative is calculated in a real encounter.
+  state.actors.find((actor) => actor.id === "elishia").passiveTimers.overdrive = 3;
   return state;
 }
 const statFor = (state) => (actor, stat) => effectiveStat(state, actor, stat);
@@ -44,15 +47,15 @@ test("player-first opening: Zenki acts first, then Recon Drone, rest of the open
   assert.equal(result.side, "ally");
   const order = pickOrder(threshold, state, 10);
   assert.deepEqual(order, [
-    "Zenki", "Recon Drone", "Elishia", "Zackry", "Toxic Stalker",
-    "Evalete", "Jazen", "Training Drone", "Rogue Automaton", "Recon Drone",
+    "Zenki", "Recon Drone", "Elishia", "Toxic Stalker", "Training Drone",
+    "Zackry", "Evalete", "Jazen", "Rogue Automaton", "Recon Drone",
   ]);
 });
 
 test("head start equals the readiness gap (plus margin), scaled by each ally's own SPD; enemies untouched", () => {
   const state = realState();
   const es = statFor(state);
-  const gap = 100 / 115 - 100 / 110; // Recon ready time minus Zenki ready time (negative: Recon earlier)
+  const gap = 100 / 125 - 100 / 110; // Recon ready time minus Zenki ready time (negative: Recon earlier)
   const result = applyOpeningInitiative(state, es);
   const expectedDelta = -gap + DEFAULT_MARGIN;
   assert.ok(Math.abs(result.deltaTime - expectedDelta) < 1e-12);
@@ -70,7 +73,7 @@ test("only a head start in time: long-run turn counts stay SPD-proportional and 
   const state = realState();
   const es = statFor(state);
   const { deltaTime } = applyOpeningInitiative(state, es);
-  // Effective SPD: Elishia's Biotech Overdrive makes hers 104, not her base 95.
+  // Effective SPD includes Elishia's battle-start Biotech Overdrive (104 vs base 95).
   const spd = Object.fromEntries(state.actors.map((actor) => [actor.name, statFor(state)(actor, "SPD")]));
   const isAlly = Object.fromEntries(state.actors.map((actor) => [actor.name, actor.side === "ally"]));
   const turns = 800;

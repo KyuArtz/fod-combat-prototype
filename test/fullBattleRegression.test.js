@@ -111,28 +111,25 @@ test("full battle: 3-active formation can switch to reserves and preserve determ
   assert.deepEqual(replay.state.party.active.map((actor) => actor.id), first.state.party.active.map((actor) => actor.id));
 });
 
-test("full battle: Jazen's Reinforced Plating redirects built-in enemy targeting through Taunt", async () => {
+test("full battle: Reinforced Plating protects Jazen without applying Taunt", async () => {
   const events = createEventBus();
-  const enemyActions = [];
-  events.on("ActionChosen", (event) => { if (event.kind === "enemy") enemyActions.push(event); });
-  let tauntUsed = false;
   const player = {
     chooseAction(view) {
-      if (view.actor.id === "jazen" && !tauntUsed) {
+      if (view.actor.id === "jazen") {
         const plating = view.actions.find((item) => item.type === "skill" && item.key === "reinforcedPlating" && item.usable);
-        if (plating) { tauntUsed = true; return { type: "skill", skillKey: plating.key }; }
+        if (plating) return { type: "skill", skillKey: plating.key };
       }
       const basic = view.actions.find((item) => item.type === "basic");
       return basic?.targets.length ? { type: "basic", targetId: basic.targets[0] } : { type: "pass" };
     },
   };
   const result = await playHeadless({ seed: 4519, events, controllers: { player } });
-  assert.equal(tauntUsed, true);
-  assert.ok(enemyActions.some((event) => event.decision.type === "basic" && event.decision.targetId === "jazen"), "enemy AI selects the taunting Jazen");
+  assert.ok(result.state.log.some((line) => /Reinforced Plating/.test(line)));
+  assert.ok(!result.state.log.some((line) => /Taunt|taunting/.test(line)), "the approved kit has no Taunt mechanic");
   assert.ok(["VICTORY", "DEFEAT"].includes(result.result));
 });
 
-test("full battle: Breach Charge Stagger delays readiness without deleting the enemy's next action", async () => {
+test("full battle: Breach Charge reduces DEF without applying Stagger", async () => {
   const events = createEventBus();
   let breachUsed = false;
   const player = {
@@ -147,7 +144,8 @@ test("full battle: Breach Charge Stagger delays readiness without deleting the e
   };
   const result = await playHeadless({ seed: 9914, events, controllers: { player } });
   assert.equal(breachUsed, true);
-  assert.ok(result.state.log.some((line) => /next action was delayed by Stagger/.test(line)), "battle log records the readiness delay");
+  assert.ok(result.state.log.some((line) => /DEF -20%/.test(line)), "Breach Charge applies its intended DEF debuff");
+  assert.ok(!result.state.log.some((line) => /Stagger|action was delayed/.test(line)), "Breach Charge no longer applies Stagger");
 });
 
 test("full battle: automatic reserve deployment replaces an incapacitated active Falcon", async () => {

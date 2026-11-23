@@ -59,7 +59,7 @@ test("events: FormationSelected once, ActionChosen per accepted action, payloads
   assert.deepEqual(formation[0].ids, DEFAULT_PARTY_ORDER);
   assert.equal(rejected.length, 0);
   // Every scheduler pick is one turn, and every turn is exactly one accepted action.
-  assert.equal(chosen.length, picks.length);
+  assert.ok(chosen.length <= picks.length, "a turn-start DOT may defeat the scheduled actor before an action is accepted");
   assert.ok(chosen.every((event) => structuredClone(event.decision) && ["player", "enemy", "summon"].includes(event.kind)));
   assert.ok(chosen.some((event) => event.kind === "enemy"));
   assert.ok(chosen.some((event) => event.kind === "player" && event.decision.type === "basic"));
@@ -85,7 +85,8 @@ test("views handed to controllers are plain data with consistent targets", async
     await playHeadless({ seed, maxActive: 3, controllers: { player: spy(inner), enemy: spy(createRandomController({ seed: seed + 50 })), summon: spy({ chooseAction: () => ({ type: "summonAuto" }) }) } });
   }
   assert.ok(views.length > 100);
-  assert.ok(views.some((view) => view.kind === "summon"), "a Meo-9 turn should appear");
+  assert.ok(views.some((view) => view.allies.some((unit) => unit.id === "meo-9" && unit.summon && unit.targetableByEnemy)), "Meo-9 is visible as a targetable passive summon");
+  assert.ok(views.every((view) => view.actor.id !== "meo-9"), "owner-turn summons do not receive independent scheduled turns");
   assert.ok(views.some((view) => view.actions.some((action) => action.type === "enemySkill")));
   for (const view of views) {
     assert.deepEqual(structuredClone(view), view);

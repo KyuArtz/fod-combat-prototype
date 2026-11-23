@@ -28,9 +28,17 @@ function processBattleTimerTurnStart(actor, state, context = {}) {
   }
 }
 
-function tickBattleTimers(state) {
+function tickBattleTimers(state, ownerActorId) {
   state.battleTimers ||= {};
   for (const [key, timer] of Object.entries(state.battleTimers)) {
+    const ownerScoped = Boolean(timer && typeof timer === "object" && timer.ownerId);
+    // Unowned timers use global battle rounds; owner-scoped timers use the
+    // owning actor's completed turns. They must never tick on both clocks.
+    if (ownerActorId === undefined ? ownerScoped : (!ownerScoped || timer.ownerId !== ownerActorId)) continue;
+    if (ownerScoped && timer.skipNextOwnerTurnEnd) {
+      state.battleTimers[key] = { ...timer, skipNextOwnerTurnEnd: false };
+      continue;
+    }
     if (typeof timer === "number") {
       state.battleTimers[key] = Math.max(0, timer - 1);
     } else if (timer && Number.isFinite(timer.turns)) {

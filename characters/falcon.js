@@ -19,11 +19,20 @@ const TYPES = [
   "Anomaly",
 ];
 
+const ROLES = Object.freeze({
+  elishia: "versatile",
+  evalete: "field-medic",
+  zackry: "tactician",
+  jazen: "juggernaut",
+  zenki: "stalker",
+});
+
 function falconMember(id, name, mastery, stats) {
   return makeActor({
     id,
     name,
     side: "ally",
+    role: ROLES[id],
     mastery,
     passive: structuredClone(skillData[id].passive),
     stats: {
@@ -44,6 +53,7 @@ function createFalconParty() {
       id: "elishia",
       name: "Elishia",
       side: "ally",
+      role: ROLES.elishia,
       mastery: "Nanotech",
       // Biotech Overdrive: its stat modifiers are read by effectiveStat.
       passive: structuredClone(elishiaSkills.passive),
@@ -90,7 +100,7 @@ function createFalconParty() {
       RES: 75,
       SPD: 70,
     }),
-    falconMember("zenki", "Zenki", "Anomaly", {
+    falconMember("zenki", "Zenki", "Energy", {
       HP: 1000,
       MP: 150,
       ATK: 80,
@@ -102,4 +112,4 @@ function createFalconParty() {
   ];
 }
 
-module.exports = { TYPES, createFalconParty };
+module.exports = { TYPES, ROLES, createFalconParty };

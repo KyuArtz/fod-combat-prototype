@@ -1,13 +1,23 @@
 # Changelog
 
+## 2026-11-21 — Falcon approved kit v1, global stacking/timing and playtest
+
+- Updated the active Falcon skill definitions in `characters/skillData/` to the five owner-approved kits. The shared interpreter and effect registries remain character-agnostic.
+- Removed Meo-9 scan, EMP destruction and Final Protocol behavior; retained only owner-turn cover fire and Emergency Field healing.
+- Removed Catalyst Wing destruction fallback; defined its turn-2/4/6/8/10/12 pulse schedule and passive summon lifecycle.
+- Updated Zackry's Overwatch/marks and Mpow buffs; updated Jazen's Mpow-based Recoil Dampeners and removed his Stagger/Taunt/immunity mechanics; set Zenki to Energy and simplified his stealth/precision/three-hit Ultimate.
+- Implemented Evalete's 25% non-recursive direct damage reflection through the battle damage pipeline.
+- Implemented global strongest-value stat stacking, opposing-modifier offsets, effect refresh behavior, separate oldest-first shields, DOT-before-HOT turn-start ordering, owner-clock timers and passive summon owner-turn activations.
+- Added approved-kit, lifecycle, stacking and battle-pipeline regression tests; regenerated deterministic golden transcripts. Latest `npm test`: 233 passed, 0 failed, 38 old assertions skipped as superseded by the new approved coverage.
+- Seeded playtests: 300/300 `trainingGround` wins using the basic policy, 300/300 using the random policy, and 100/100 `siegeBreakthrough` wins using the random policy. This is a positive smoke/balance signal for the current prototype encounters, not proof against tougher or adversarial formations.
+- Synced `references/characterTerraData.js` and supplied a separate updated website-facing JSON copy. The user's original JSON and base Falcon stat sheet were not modified in place.
+
 ## 2026-11-21 — Nanotech Singularity effect composition
 
 - Removed the dedicated `singularity` active-effect handler and its specialized validation.
-- Composed the ultimate from reusable `setBattleTimer`, `statusAllies`, `statusEnemies`, area `damageOverTime`, and `announceSummonPowerModifier` operations.
-- Added generic battle-scoped timer contracts in `systems/battleTimers.js`, including actor turn-start reactions and completed-round ticking. Singularity's 5% Max HP heal remains after MP recovery and cooldown ticking and applies to living non-summon allies who enter from reserve while the field is active.
-- Converted Meo-v9 scan and cover-fire bonuses to declarative conditional modifiers keyed to the battle timer.
-- Preserved the three-turn field, +15% ATK, +10% SPD, -10% enemy SPD, stored non-critical 0.2x Nanotech DoT, summon announcement, and seeded combat outcomes.
-- Added timer-contract and area-DoT coverage. **227 tests passed, 0 failed; golden transcripts unchanged.**
+- Composed the ultimate from reusable `setBattleTimer`, `statusAllies`, `statusEnemies`, and `announceSummonPowerModifier` operations.
+- Added generic battle-scoped timer contracts in `systems/battleTimers.js`, including actor turn-start reactions and completed-round ticking. Singularity's 5% Max HP heal remains after MP recovery and cooldown ticking and applies to non-summon allies who enter from reserve while active.
+- Converted Meo-9's cover-fire bonus to a declarative conditional modifier keyed to the battle timer.
 
 ## 2026-11-19 — Declarative Falcon passive lifecycle migration (Step 3)
 
@@ -230,3 +240,48 @@ This file records notable implementation milestones. Detailed historical scope a
 - Added validation and regression coverage for boundary, fixed power, bonus text, miss, defeat, and missing-tag behavior.
 - Updated the handler reuse audit, architecture reference, roadmap, and project status in place. Singularity is now the sole remaining specialized Falcon active-skill effect in this review.
 - Full test suite: 224 passed, 0 failed; deterministic replay and golden transcript tests pass. An additional draw-count regression confirms Zero Hour consumes only its normal mastery critical roll when no Accuracy-token check is in play.
+
+## 2026-11-22 — Scaled enemy roster, full enemy kits, and Falcon balance playtest
+
+- Scaled the five standard Training Ground enemy stat profiles against the five-member Falcon prototype roster; enemy party totals are HP +12.7%, ATK +27.4%, MPow -1.9%, DEF +9.0%, RES +3.5%, and SPD -0.7% versus Falcon base totals.
+- Added a passive and four declarative abilities (three skills plus an Ultimate) to Training Drone, Rogue Automaton, Siege Turret, Recon Drone, and Toxic Stalker.
+- Added five enemy AI policies and role-based target-selection profiles; all 20 enemy abilities execute through the shared skill interpreter.
+- Added generic battle-start passive announcement and HP-threshold flag handlers. Enemy passives are initialized by the shared battle-start lifecycle.
+- Added source attribution (`sourceId`, `sourceSide`, `kind`) to `DamageApplied` events, including source-retained DoT ticks, and per-actor damage contribution metrics to the simulator.
+- Added regression coverage for all 20 enemy skills, enemy data/passives, target profiles, and source-attributed simulation metrics; refreshed golden transcripts for intentional combat-log changes.
+- Seeded `trainingGround` playtest: 194/300 victories (64.7%) with random legal player actions; 0/100 victories using basic attacks only. These are initial controller-dependent balance signals, not a final claim of equal player/enemy difficulty.
+- `npm test`: 253 passed, 0 failed, 38 skipped legacy assertions superseded by the updated approved-kits and engine tests.
+
+
+## 2026-11-22 — Tactical Falcon controller and Blightheart boss encounter
+
+- Added a deterministic role-aware tactical Falcon controller that chooses from legal turn-view actions and can be used by the headless simulator (`--policy tactical`).
+- Extended turn views with copied status and shield state for tactical decision-making.
+- Added generic `masteryDamageAllOpponents` effect handling for both battle sides.
+- Added the data-driven Blightheart Overseer boss: phase-change passive, three regular skills, Ultimate, and dedicated AI.
+- Added the two-stage `blightheartSanctum` encounter.
+- Added boss/passive/skill/tactical-controller tests and updated the enemy balance reference with 150-seed comparison results.
+- Verification: 262 tests passed, 0 failed, 38 superseded legacy assertions skipped.
+
+
+## 2026-11-22 — Tactical Falcon controller, Blightheart boss tuning, and iteration 2 playtest
+
+- Added the deterministic role-aware `tactical` Falcon player policy and exposed copied status/shield data in controller turn views.
+- Added the generic `masteryDamageAllOpponents` effect and the two-stage `blightheartSanctum` encounter featuring the phase-changing Blightheart Overseer and four accompanying guards.
+- Added boss passive/skill/AI data and regression coverage through the existing shared interpreter and registries.
+- Added per-actor and per-skill usage counts to simulator JSON output.
+- Tuned the boss after comparing an overly player-favoured profile (91.7% tactical wins) and an over-tuned profile (5.0% tactical wins); retained the intermediate profile for a 150-seed tactical benchmark.
+- Final seeded results: `trainingGround` tactical 120/120 wins (100.0%); `blightheartSanctum` random legal-action 2/150 wins (1.3%); `blightheartSanctum` tactical 63/150 wins (42.0%).
+- Final verification: `npm test` 263 passed, 0 failed, 38 superseded legacy assertions skipped. These are headless prototype results, not manual GUI tests or a guarantee of player win probability.
+
+
+## 2026-11-22 — Coordinated Falcon controller, cleanse counterplay, and three-active reserve playtest (Iteration 3)
+
+- Added `ai/falconTacticsV2.js`, a deterministic coordinated policy using legal turn-view actions, dangerous-add prioritization, Toxic DoT awareness, Adaptive Barrier selection, cleanse reservation, and reserve rotation.
+- Fixed headless setup so `--active 3` produces a true three-active/two-reserve formation before party initialization.
+- Wired `cleanseAllies` into Evalete's live Catalyst Overdrive skill data. It removes harmful/debuff statuses from living active non-summon allies while preserving positive buffs, before healing and defensive effects resolve.
+- Added regression coverage for the live cleanse path, Toxic cleanse decisions, adaptive shielding, target focus, reserve switching, and true active/reserve formation.
+- Re-ran seeded `blightheartSanctum` batches: coordinated 3-active 103/150 wins (68.7%); random 3-active 1/100 (1.0%); coordinated 5-active 100/100 (100.0%). The five-active result is a formation control, not the main fairness target.
+- Three-active coordinated averages: 56.79 rounds, 1.86 party-switch events, 0.91 reserve-deployment events, 1.8 statuses cleansed, 4,432 healing, and 1,844 shield absorption per battle; zero rejected decisions.
+- Full verification: `npm test` 273 passed, 0 failed, 38 superseded legacy assertions skipped.
+- Added full deterministic victory and defeat transcripts for seeds 996000 and 996004.

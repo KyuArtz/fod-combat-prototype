@@ -11,8 +11,8 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
   const summons = data.summons || {};
   const keys = new Set();
   const resultKeys = {
-    heal: ["healed"], damage: ["damage"], physicalHit: ["damage"], masteryHit: ["damage", "missed", "bonusText"], shield: ["shield"],
-    shieldSelf: ["shield"], summon: ["scan"],
+    heal: ["healed"], damage: ["damage"], physicalHit: ["damage"], masteryHit: ["damage", "missed", "bonusText"], masteryMultiHit: ["damage", "missed", "bonusText", "hitsLanded", "hitDamages"], shield: ["shield"],
+    shieldSelf: ["shield"], summon: ["summon"], cleanseAllies: ["cleansedCount"],
   };
   const checkText = (where, value, allowed, label) => {
     if (value === undefined) return;
@@ -43,12 +43,22 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
       if (type === "damageOverTime" && effect.side !== undefined && !["ally", "enemy"].includes(effect.side)) {
         fail(where, "damageOverTime side must be ally or enemy");
       }
-      if (["heal", "shield", "masteryHit", "damage", "damageOverTime", "conditionalStatus", "statusGroup", "physicalHit"].includes(type) &&
+      if (["heal", "shield", "masteryHit", "masteryMultiHit", "damage", "damageOverTime", "conditionalStatus", "statusGroup", "physicalHit"].includes(type) &&
         !(type === "damageOverTime" && ["ally", "enemy"].includes(effect.side)) && !["enemy", "ally"].includes(targeting)) {
         fail(where, `${type} effect acts on a target but targeting is "${targeting}"`);
       }
       if (["heal", "healAllies", "hotAllies"].includes(type) && !(isNum(effect.percentMaxHP) && effect.percentMaxHP > 0)) fail(where, `${type} needs percentMaxHP > 0`);
-      if (["damage", "masteryHit", "masteryDamageAllEnemies", "damageOverTime"].includes(type) && !(typeof effect.element === "string" && isNum(effect.power) && effect.power > 0)) fail(where, `${type} needs element and power > 0`);
+      if (["damage", "masteryHit", "masteryDamageAllEnemies", "masteryDamageAllOpponents", "damageOverTime"].includes(type) && !(typeof effect.element === "string" && isNum(effect.power) && effect.power > 0)) fail(where, `${type} needs element and power > 0`);
+      if (type === "masteryMultiHit") {
+        if (targeting !== "enemy") fail(where, "masteryMultiHit requires enemy targeting");
+        if (typeof effect.element !== "string" || !Array.isArray(effect.hits) || !effect.hits.length || effect.hits.some((power) => !isNum(power) || power <= 0)) fail(where, "masteryMultiHit needs an element and non-empty hits array of powers > 0");
+        if (effect.accuracy !== undefined && !["standard", "guaranteed"].includes(effect.accuracy)) fail(where, "masteryMultiHit accuracy must be standard or guaranteed");
+        if (effect.lastHitModifier !== undefined) {
+          const modifier = effect.lastHitModifier;
+          if (!modifier || !isNum(modifier.targetHpPercentBelow) || modifier.targetHpPercentBelow <= 0 || modifier.targetHpPercentBelow > 100 || !isNum(modifier.setPower) || modifier.setPower <= 0) fail(where, "masteryMultiHit lastHitModifier needs targetHpPercentBelow (0–100) and setPower > 0");
+        }
+      }
+      if (type === "masteryDamageAllOpponents" && targeting !== "none") fail(where, "masteryDamageAllOpponents requires none targeting");
       if (type === "damageOverTime") {
         if (typeof effect.id !== "string" || !effect.id || !Number.isInteger(effect.turns) || effect.turns < 1) fail(where, "damageOverTime needs id and turns > 0");
         if (effect.side !== undefined && !["ally", "enemy"].includes(effect.side)) fail(where, "damageOverTime side must be ally or enemy");
@@ -60,6 +70,7 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
         }
       }
       if (type === "setBattleTimer") {
+        if (effect.ownerTurnClock !== undefined && typeof effect.ownerTurnClock !== "boolean") fail(where, "setBattleTimer ownerTurnClock must be a boolean");
         if (typeof effect.key !== "string" || !effect.key || !Number.isInteger(effect.turns) || effect.turns < 1) {
           fail(where, "setBattleTimer needs a non-empty key and turns > 0");
         }
@@ -107,6 +118,16 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
       if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.hotPercentMaxHP !== undefined &&
         !(isNum(effect.hotPercentMaxHP) && effect.hotPercentMaxHP > 0 && effect.hotPercentMaxHP <= 100)) {
         fail(where, "hotPercentMaxHP must be greater than 0 and at most 100");
+      }
+      if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.damageReflectionPercent !== undefined &&
+        !(isNum(effect.damageReflectionPercent) && effect.damageReflectionPercent >= 0 && effect.damageReflectionPercent <= 100)) {
+        fail(where, "damageReflectionPercent must be between 0 and 100");
+      }
+      if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.untargetable !== undefined && typeof effect.untargetable !== "boolean") {
+        fail(where, "untargetable must be a boolean");
+      }
+      if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.expireAtTurnStart !== undefined && typeof effect.expireAtTurnStart !== "boolean") {
+        fail(where, "expireAtTurnStart must be a boolean");
       }
       if (type === "conditionalStatus") {
         checkStatus(where, effect, true);
@@ -184,6 +205,18 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
   if (passive.statusId !== undefined && (typeof passive.statusId !== "string" || !passive.statusId)) {
     fail("passive", "statusId must be a non-empty string");
   }
+  if (passive.damageThresholdPercent !== undefined && !(isNum(passive.damageThresholdPercent) && passive.damageThresholdPercent >= 0 && passive.damageThresholdPercent < 100)) {
+    fail("passive", "damageThresholdPercent must be from 0 up to (but not including) 100");
+  }
+  if (passive.mpowBonusPercent !== undefined && !(isNum(passive.mpowBonusPercent) && passive.mpowBonusPercent > 0)) {
+    fail("passive", "mpowBonusPercent must be greater than 0");
+  }
+  if (passive.maxStacks !== undefined && (!Number.isInteger(passive.maxStacks) || passive.maxStacks < 1)) {
+    fail("passive", "maxStacks must be an integer greater than 0");
+  }
+  if (passive.duration !== undefined && (!Number.isInteger(passive.duration) || passive.duration < 1)) {
+    fail("passive", "duration must be an integer greater than 0");
+  }
   if (passive.events !== undefined) {
     if (!passive.events || typeof passive.events !== "object" || Array.isArray(passive.events)) fail("passive", "events must be an event-to-subscriptions object");
     for (const [eventName, subscriptions] of Object.entries(passive.events)) {
@@ -214,6 +247,19 @@ function validateSkillData(data, effectRegistry = DEFAULT_VALIDATION_REGISTRY) {
     if (summon.scan?.conditionalBonuses !== undefined && (!Array.isArray(summon.scan.conditionalBonuses) ||
       summon.scan.conditionalBonuses.some((modifier) => !modifier || typeof modifier.battleTimer !== "string" || !modifier.battleTimer || !isNum(modifier.damageBonus)))) {
       fail(`summon ${name}`, "scan conditionalBonuses need a battleTimer key and numeric damageBonus");
+    }
+    if (summon.targetableByEnemy !== undefined && typeof summon.targetableByEnemy !== "boolean") fail(`summon ${name}`, "targetableByEnemy must be a boolean");
+    if (summon.ownerTurnLifecycle) {
+      const lifecycle = summon.ownerTurnLifecycle;
+      if (lifecycle.skipFirstTurnEnd !== undefined && typeof lifecycle.skipFirstTurnEnd !== "boolean") fail(`summon ${name}`, "ownerTurnLifecycle.skipFirstTurnEnd must be a boolean");
+      if (lifecycle.activation !== undefined && !Array.isArray(lifecycle.activation)) fail(`summon ${name}`, "ownerTurnLifecycle.activation must be an array");
+      for (const subscription of lifecycle.activation || []) {
+        if (!subscription || typeof subscription.handler !== "string" || !subscription.handler) fail(`summon ${name}`, "ownerTurnLifecycle activation entries need a handler name");
+        if (subscription.thresholdPercent !== undefined && !(isNum(subscription.thresholdPercent) && subscription.thresholdPercent >= 0 && subscription.thresholdPercent <= 100)) fail(`summon ${name}`, "ownerTurnLifecycle thresholdPercent must be between 0 and 100");
+        if (subscription.healPercent !== undefined && !(isNum(subscription.healPercent) && subscription.healPercent > 0 && subscription.healPercent <= 100)) fail(`summon ${name}`, "ownerTurnLifecycle healPercent must be greater than 0 and at most 100");
+        if (subscription.power !== undefined && !(isNum(subscription.power) && subscription.power > 0)) fail(`summon ${name}`, "ownerTurnLifecycle power must be greater than 0");
+        if (subscription.conditionalPower !== undefined && (!Array.isArray(subscription.conditionalPower) || subscription.conditionalPower.some((modifier) => !modifier || typeof modifier.battleTimer !== "string" || !modifier.battleTimer || !isNum(modifier.power) || modifier.power <= 0))) fail(`summon ${name}`, "ownerTurnLifecycle conditionalPower entries need a timer and power > 0");
+      }
     }
     if (summon.lifecycle) {
       for (const phase of ["activation", "onExpire"]) {

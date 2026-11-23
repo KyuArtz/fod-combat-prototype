@@ -32,8 +32,13 @@ function summarize(state, actor) {
     side: actor.side,
     summon: Boolean(actor.summon),
     targetableByEnemy: Boolean(actor.targetableByEnemy),
+    untargetable: Boolean(actor.statuses?.untargetable || Object.values(actor.statuses || {}).some((status) => status.untargetable)),
     hp: actor.hp,
     maxHp: actor.stats.HP,
+    mp: actor.mp,
+    maxMp: actor.stats.MP,
+    shields: (actor.shields || []).map((shield) => ({ value: shield.value, turns: shield.turns })),
+    statuses: structuredClone(actor.statuses || {}),
   };
 }
 
@@ -68,6 +73,8 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
       mp: actor.mp,
       maxMp: actor.stats.MP,
       cr: actor.cr,
+      statuses: structuredClone(actor.statuses || {}),
+      shields: (actor.shields || []).map((shield) => ({ value: shield.value, turns: shield.turns })),
     },
     allies,
     enemies,
@@ -75,7 +82,7 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
   };
 
   if (kind === "player") {
-    const enemyIds = enemies.map((unit) => unit.id);
+    const enemyIds = enemies.filter((unit) => !unit.untargetable).map((unit) => unit.id);
     const allyIds = allies.filter((unit) => !unit.summon).map((unit) => unit.id);
     const targetsFor = (targeting) =>
       targeting === "enemy" ? enemyIds : targeting === "ally" ? allyIds : [];
@@ -112,7 +119,7 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
       active: state.party.active.map(partyMember),
     });
   } else if (kind === "enemy") {
-    const foeIds = allies.filter((unit) => !unit.summon || unit.targetableByEnemy).map((unit) => unit.id);
+    const foeIds = allies.filter((unit) => (!unit.summon || unit.targetableByEnemy) && !unit.untargetable).map((unit) => unit.id);
     if (foeIds.length) view.actions.push({ type: "basic", targeting: "ally", targets: foeIds });
     for (const skill of describeEnemySkills(actor)) {
       view.actions.push({

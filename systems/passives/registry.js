@@ -5,6 +5,24 @@ const pct = (value, percent) => Math.floor((value * percent) / 100);
 function createPassiveRegistry(context) {
   const { addStatus, addShield, alive, state, makeActor, say } = context;
   const handlers = {
+    announcePassive(actor, event, subscription, ctx) {
+      if (!actor.alive || !actor.passive?.name) return;
+      const detail = actor.passive.description ? `: ${actor.passive.description}` : " is active.";
+      ctx.say(`${actor.name} passive — ${actor.passive.name}${detail}`);
+    },
+    activateFlagBelowHpPercent(actor, event, subscription, ctx) {
+      if (!actor.alive || !subscription.flag || actor.passiveFlags?.[subscription.flag]) return;
+      const threshold = pct(actor.stats.HP, subscription.thresholdPercent);
+      if (actor.hp > threshold) return;
+      actor.passiveFlags ||= {};
+      actor.passiveFlags[subscription.flag] = true;
+      if (subscription.transitionStatus?.id) {
+        const { id, ...status } = subscription.transitionStatus;
+        addStatus(actor, id, status);
+      }
+      if (subscription.message) ctx.say(subscription.message.replaceAll("{actor}", actor.name));
+      else ctx.say(`${actor.name}'s ${actor.passive?.name || "passive"} activates!`);
+    },
     initializeCatalystWing(actor, event, subscription, ctx) {
       const p = actor.passive;
       actor.catalystWingTurns = p.wingTurns;
@@ -13,7 +31,6 @@ function createPassiveRegistry(context) {
         id: `catalyst-wing-${actor.id}`, name: p.summon.name, side: "ally", mastery: p.summon.mastery,
         summon: true, passiveSummon: true, targetableByEnemy: true,
         summonTurns: p.wingTurns, ownerId: actor.id,
-        ownerEvents: { destroyed: [{ event: "summonDestroyed" }] },
         stats: {
           HP: pct(actor.stats.HP, p.summon.hpPercent), MP: 0, ATK: 0, MPow: 0,
           DEF: pct(actor.stats.DEF, p.summon.defPercent), RES: pct(actor.stats.RES, p.summon.resPercent), SPD: 1,
@@ -25,25 +42,34 @@ function createPassiveRegistry(context) {
     },
     tickCatalystProtocol(actor, event, subscription, ctx) {
       if (!(actor.catalystWingTurns > 0)) return;
-      actor.catalystWingTurnCount++;
-      actor.catalystWingTurns--;
-      const wing = ctx.state.actors.find((unit) => unit.id === actor.catalystWingId);
-      if (wing?.alive) {
-        wing.summonTurns = actor.catalystWingTurns;
-        if (actor.catalystWingTurns <= 0) wing.alive = false;
-      }
       const p = actor.passive;
-      if (actor.catalystWingTurnCount % p.pulseEvery !== 0) return;
-      for (const ally of ctx.alive(ctx.state, "ally").filter((unit) => !unit.summon)) {
-        ctx.heal(ally, pct(ally.stats.HP, p.healPercent));
-        const amount = pct(ally.stats.HP, p.shieldPercent);
-        const existing = ally.shields.find((shield) => shield.sourceId === p.shieldSource);
-        if (existing) { existing.value = amount; existing.turns = p.shieldTurns; }
-        else {
+      const wing = ctx.state.actors.find((unit) => unit.id === actor.catalystWingId);
+      if (!wing?.alive) {
+        actor.catalystWingTurns = 0;
+        return;
+      }
+
+      actor.catalystWingTurnCount++;
+      // Catalyst Protocol pulses at the start of every second Evalete turn.
+      if (actor.catalystWingTurnCount % p.pulseEvery === 0) {
+        for (const ally of ctx.alive(ctx.state, "ally").filter((unit) => !unit.summon)) {
+          ctx.heal(ally, pct(ally.stats.HP, p.healPercent));
+          const amount = pct(ally.stats.HP, p.shieldPercent);
           ctx.addShield(ally, amount, p.shieldTurns);
           ally.shields[ally.shields.length - 1].sourceId = p.shieldSource;
         }
       }
+    },
+    expireCatalystProtocol(actor, event, subscription, ctx) {
+      if (!(actor.catalystWingTurns > 0)) return;
+      const wing = ctx.state.actors.find((unit) => unit.id === actor.catalystWingId);
+      if (!wing?.alive) {
+        actor.catalystWingTurns = 0;
+        return;
+      }
+      actor.catalystWingTurns--;
+      wing.summonTurns = actor.catalystWingTurns;
+      if (actor.catalystWingTurns <= 0) wing.alive = false;
     },
     startTimedPassive(actor, event, subscription) {
       const key = subscription.timerKey || "default";
@@ -54,14 +80,6 @@ function createPassiveRegistry(context) {
       const key = subscription.timerKey || "default";
       actor.passiveTimers ||= {};
       if (actor.passiveTimers[key] > 0) actor.passiveTimers[key]--;
-    },
-    grantCatalystDestructionShield(owner, event, subscription, ctx) {
-      if (!(owner.catalystWingTurns > 0)) return;
-      owner.catalystWingTurns = 0;
-      const p = owner.passive;
-      const amount = pct(owner.stats.HP, p.destructionShieldPercent);
-      ctx.addShield(owner, amount, p.destructionShieldTurns);
-      ctx.say(`${p.summon.name} is destroyed. ${owner.name} gains an emergency shield (${amount}) for ${p.destructionShieldTurns} turns.`);
     },
     setFlagFromHistory(actor, event, subscription) {
       actor.passiveFlags ||= {};
@@ -78,22 +96,14 @@ function createPassiveRegistry(context) {
     },
     recoilDampeners(actor, event) {
       const p = actor.passive;
-      if (!actor.alive || event.hpLoss <= pct(actor.stats.HP, p.damageThresholdPercent)) return;
+      if (!actor.alive || (event.kind && event.kind !== "direct")) return;
+      if (event.amount <= pct(actor.stats.HP, p.damageThresholdPercent)) return;
       const statusId = p.statusId;
       if (!statusId) throw new Error("recoilDampeners passive requires statusId");
       const stacks = Math.min(p.maxStacks, (actor.statuses[statusId]?.stacks || 0) + 1);
-      addStatus(actor, statusId, { stat: "ATK", amount: p.attackBonusPercent * stacks, stacks, turns: p.duration });
+      addStatus(actor, statusId, { stat: "MPow", amount: p.mpowBonusPercent * stacks, stacks, stackable: true, turns: p.duration });
     },
-    grantOverwatchAccuracy(actor, event) {
-      const p = actor.passive;
-      const recipients = [];
-      if (event.target?.side === "ally") recipients.push(event.target);
-      else if (event.target?.targetedByAllyId) {
-        const recipient = state.actors.find((unit) => unit.id === event.target.targetedByAllyId && unit.alive);
-        if (recipient) recipients.push(recipient);
-      }
-      for (const recipient of recipients) recipient.nextAttackAccuracy = p.nextAttackAccuracy || 10;
-    },
+
   };
 
   function dispatch(actor, eventName, payload = {}) {

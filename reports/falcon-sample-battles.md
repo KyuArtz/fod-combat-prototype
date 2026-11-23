@@ -1,0 +1,916 @@
+# Falcon vs. Scaled Enemy Roster — Sample Battles
+
+These are complete seeded headless battles from the current engine. Player actions use the random-legal-action controller; enemies use their dedicated ordered-rule AI. Damage contribution counts HP damage plus shield absorption, with DoT and reflected damage source-attributed.
+
+# Falcon Victory — Seed 20261122
+
+- **Result:** VICTORY
+- **Duration:** 20 rounds
+- **Actions:** 110 skill uses, 146 basic attacks
+- **HP damage to enemies:** 6933
+- **HP damage to allies:** 6007
+- **Ally shields absorbed:** 1462
+- **Ally healing:** 2595
+- **Rejected decisions:** 0
+
+## Remaining units
+
+**Falcon:** Jazen (1288/1350 HP); Evalete (1450/1450 HP)
+
+**Enemies:** None
+
+## Skill usage
+
+- Rogue Automaton — Armor Scan: 10
+- Zackry — Tactical Mark: 10
+- Training Drone — Pulse Shot: 6
+- Jazen — Impact Grenade: 6
+- Zenki — Railshot: 6
+- Evalete — Sentinel Pulse: 6
+- Toxic Stalker — Venom Strike: 5
+- Recon Drone — Spotter Mark: 5
+- Rogue Automaton — Heavy Strike: 4
+- Evalete — Triage Infusion: 4
+- Siege Turret — Fortify: 4
+- Training Drone — Kinetic Burst: 3
+- Jazen — Reinforced Plating: 3
+- Recon Drone — Spoofing Maneuver: 3
+- Zenki — Cipher Tag: 3
+- Elishia — Nano Swarm: 3
+- Toxic Stalker — Predator Instinct: 3
+- Rogue Automaton — Overload: 3
+- Elishia — Meo-9: 2
+- Toxic Stalker — Caustic Spit: 2
+- Elishia — Adaptive Barrier: 2
+- Recon Drone — Precision Burst: 2
+- Recon Drone — Targeting Cascade: 1
+- Zackry — Command Uplink: 1
+- Evalete — Catalyst Overdrive: 1
+- Zackry — Full Spectrum Assault: 1
+- Evalete — Guardian Field: 1
+- Zenki — Ghost Protocol: 1
+- Jazen — Cataclysmic Payload: 1
+- Siege Turret — Suppression Round: 1
+- Toxic Stalker — Blight Surge: 1
+- Training Drone — Overclocked Shot: 1
+- Siege Turret — Ballistic Shell: 1
+- Elishia — Nanotech Singularity: 1
+- Zenki — Zero Hour Execution: 1
+- Siege Turret — Siege Salvo: 1
+- Training Drone — Evasive Thrusters: 1
+
+## Damage contribution
+
+| Source | Total damage (HP + shields) | HP loss | Shield absorbed |
+|---|---:|---:|---:|
+| Jazen | 3220 | 3004 | 216 |
+| Toxic Stalker | 2020 | 1581 | 439 |
+| Rogue Automaton | 1815 | 1643 | 172 |
+| Training Drone | 1559 | 1147 | 412 |
+| Zenki | 1531 | 1462 | 69 |
+| Evalete | 1422 | 1164 | 258 |
+| Siege Turret | 1178 | 898 | 280 |
+| Zackry | 915 | 865 | 50 |
+| Recon Drone | 897 | 738 | 159 |
+| Elishia | 377 | 377 | 0 |
+| Meo-9 | 61 | 61 | 0 |
+
+## Battle log
+
+- [Round 1] Training Drone passive — Calibration Core: Its calibrated control system grants Evasion +8.
+- [Round 1] Rogue Automaton passive — Reactive Plating: When its HP falls to 55% or lower, reinforced armor engages and grants DEF +20% for the rest of the encounter.
+- [Round 1] Siege Turret passive — Braced Emplacement: Its anchored frame grants DEF +15%, but limits its mobility and reduces SPD by 10%.
+- [Round 1] Recon Drone passive — Evasive Array: Predictive movement algorithms grant Evasion +15.
+- [Round 1] Toxic Stalker passive — Virulent Core: A volatile catalyst core increases Mpow by 12% and strengthens its Toxic techniques.
+- [Round 1] The Falcon team seizes the initiative!
+- [Round 1] Zenki attacks Rogue Automaton for 37 Physical damage.
+- [Round 1]   Elishia takes 176 Kinetic damage (CRIT).
+- [Round 1] Recon Drone executes TARGETING CASCADE on Elishia: 176 Kinetic damage and incoming damage +18% (2 turns).
+- [Round 1] Elishia deploys Meo-9 for 3 subsequent Elishia turns. It provides covering fire or emergency healing after each turn.
+- [Round 1]   Elishia takes 110 Toxic damage.
+- [Round 1] Toxic Stalker strikes Elishia with VENOM STRIKE: 110 Toxic damage and lingering venom (2 turns).
+- [Round 1] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 1] COMMAND UPLINK! Active allies gain MPow +15% (3 turns).
+- [Round 1] CATALYST OVERDRIVE! Allies recover 18% Max HP, gain DEF +25%, reflect 25% of direct incoming damage, and recover 10% Max HP at the start of each turn (3 turns).
+- [Round 1]   Training Drone takes 53 Kinetic damage.
+- [Round 1]   Rogue Automaton takes 47 Kinetic damage.
+- [Round 1]   Siege Turret takes 55 Kinetic damage.
+- [Round 1]   Recon Drone takes 50 Kinetic damage.
+- [Round 1]   Toxic Stalker takes 50 Kinetic damage.
+- [Round 1] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 1] Rogue Automaton scans Elishia! DEF -15% (2 turns).
+- [Round 1] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 1]   Siege Turret takes 115 Energy damage.
+- [Round 1] Zenki fires Railshot at Siege Turret for 115 Energy damage.
+- [Round 1] Elishia suffers 23 Toxic damage from Venom Strike.
+- [Round 1] Elishia attacks Toxic Stalker for 50 Physical damage.
+- [Round 1] Meo-9 cover fire hits Training Drone for 17 Physical damage.
+- [Round 1] Elishia reflects 14 damage back to Toxic Stalker!
+- [Round 1]   Elishia takes 117 Toxic damage.
+- [Round 1] Toxic Stalker spits CAUSTIC COMPOUND at Elishia: 117 Toxic damage and RES -15% (2 turns).
+- [Round 1] Zenki reflects 7 damage back to Training Drone!
+- [Round 1] Training Drone attacks Zenki for 55 Physical damage.
+- [Round 1] FULL SPECTRUM ASSAULT! All living enemies are Tactical Marked and active allies gain MPow +20% and SPD +10% (3 turns).
+- [Round 1] Elishia reflects 10 damage back to Recon Drone!
+- [Round 1] Recon Drone attacks Elishia for 62 Physical damage.
+- [Round 1] GUARDIAN FIELD! Active allies recover 12% Max HP and gain DEF +15% (2 turns).
+- [Round 1] Zenki activates Ghost Protocol, becoming Untargetable until the start of his next turn. His next attack deals 30% additional damage.
+- [Round 1]   Training Drone takes 120 Kinetic damage.
+- [Round 1]   Rogue Automaton takes 107 Kinetic damage.
+- [Round 1]   Siege Turret takes 124 Kinetic damage.
+- [Round 1]   Recon Drone takes 170 Kinetic damage (CRIT).
+- [Round 1]   Toxic Stalker takes 113 Kinetic damage.
+- [Round 1] CATACLYSMIC PAYLOAD! All enemies take 1.5x Kinetic mastery damage and suffer DEF -15% (2 turns).
+- [Round 1] Elishia reflects 12 damage back to Siege Turret!
+- [Round 1]   Elishia takes 76 Kinetic damage.
+- [Round 1] Siege Turret fires a SUPPRESSION ROUND at Elishia: 76 Kinetic damage and SPD -15% (2 turns).
+- [Round 2] Elishia suffers 23 Toxic damage from Venom Strike.
+- [Round 2] Zenki gains Adaptive Barrier (250 shield, up to 2 turns).
+- [Round 2] Meo-9 cover fire hits Training Drone for 22 Physical damage.
+- [Round 2] Elishia reflects 15 damage back to Rogue Automaton!
+- [Round 2] Rogue Automaton unleashes HEAVY STRIKE on Elishia for 107 damage!
+- [Round 2] Elishia reflects 26 damage back to Toxic Stalker!
+- [Round 2]   Elishia takes 184 Toxic damage.
+- [Round 2] Toxic Stalker unleashes BLIGHT SURGE on Elishia: 184 Toxic damage and a 3-turn Toxic effect!
+- [Round 2] Elishia reflects 11 damage back to Training Drone!
+- [Round 2]   Elishia takes 72 Kinetic damage.
+- [Round 2] Training Drone releases a KINETIC BURST at Elishia for 72 Kinetic damage!
+- [Round 2] Elishia reflects 13 damage back to Recon Drone!
+- [Round 2] Recon Drone fires a PRECISION BURST at Elishia for 78 damage!
+- [Round 2] Zackry designates Siege Turret with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 2]   Recon Drone takes 165 Energy damage.
+- [Round 2] Zenki fires Railshot at Recon Drone for 165 Energy damage.
+- [Round 2] Evalete attacks Recon Drone for 60 Physical damage.
+- [Round 2] Elishia suffers 29 Toxic damage from Blight Surge.
+- [Round 2] Elishia attacks Recon Drone for 67 Physical damage.
+- [Round 2] Meo-9 cover fire hits Training Drone for 22 Physical damage.
+- [Round 2] Meo-9's deployment expires.
+- [Round 2] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 2]   Elishia takes 105 Toxic damage.
+- [Round 2] Toxic Stalker strikes Elishia with VENOM STRIKE: 105 Toxic damage and lingering venom (2 turns).
+- [Round 2] Jazen activates Reinforced Plating (337 shield and DEF +20% for 3 turns).
+- [Round 2] Zenki's Adaptive Barrier adapts to Physical damage (+15% resistance).
+- [Round 2] Training Drone unleashes an OVERCLOCKED SHOT at Zenki for 115 damage!
+- [Round 2] Zenki attacks Recon Drone for 46 Physical damage.
+- [Round 2] Rogue Automaton attacks Elishia for 85 Physical damage.
+- [Round 2] Zackry attacks Training Drone for 63 Physical damage.
+- [Round 2] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 2] Elishia suffers 29 Toxic damage from Blight Surge.
+- [Round 2] Elishia suffers 22 Toxic damage from Venom Strike.
+- [Round 2] Elishia deploys Meo-9 for 3 subsequent Elishia turns. It provides covering fire or emergency healing after each turn.
+- [Round 2] Evalete attacks Training Drone for 53 Physical damage.
+- [Round 2] Toxic Stalker attacks Elishia for 113 Physical damage (CRIT).
+- [Round 2]   Toxic Stalker takes 138 Energy damage (CRIT).
+- [Round 2] Zenki fires Railshot at Toxic Stalker for 138 Energy damage.
+- [Round 2] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 2] Jazen attacks Siege Turret for 63 Physical damage.
+- [Round 2] Siege Turret launches a BALLISTIC SHELL at Elishia for 171 damage!
+- [Round 3] Zackry designates Siege Turret with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 3] Recon Drone fires a PRECISION BURST at Elishia for 145 damage!
+- [Round 3] Rogue Automaton scans Elishia! DEF -15% (2 turns).
+- [Round 3] Elishia suffers 29 Toxic damage from Blight Surge.
+- [Round 3] Elishia suffers 22 Toxic damage from Venom Strike.
+- [Round 3] Elishia attacks Rogue Automaton for 43 Physical damage.
+- [Round 3] Meo-9's Emergency Field restores Elishia for 110 HP.
+- [Round 3]   Elishia takes 93 Toxic damage.
+- [Round 3] Toxic Stalker strikes Elishia with VENOM STRIKE: 93 Toxic damage and lingering venom (2 turns).
+- [Round 3] Zenki applies Cipher Tag to Toxic Stalker, reducing RES by 15% for 3 turns.
+- [Round 3] Evalete uses Triage Infusion on Evalete, restoring 0 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 3]   Zenki takes 58 Kinetic damage.
+- [Round 3] Training Drone releases a KINETIC BURST at Zenki for 58 Kinetic damage!
+- [Round 3] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 3] Zackry attacks Rogue Automaton for 46 Physical damage.
+- [Round 3] Jazen attacks Rogue Automaton for 57 Physical damage.
+- [Round 3]   Rogue Automaton takes 87 Energy damage.
+- [Round 3] Zenki fires Railshot at Rogue Automaton for 87 Energy damage.
+- [Round 3] Elishia suffers 19 Toxic damage from Venom Strike.
+- [Round 3] Elishia deploys a decoy (+15 Evasion for 2 turns).
+- [Round 3] Meo-9's Emergency Field restores Elishia for 110 HP.
+- [Round 3] Toxic Stalker attacks Elishia for 75 Physical damage.
+- [Round 3] Rogue Automaton attacks Elishia, but Elishia evades!
+- [Round 3] Recon Drone attacks Elishia for 64 Physical damage.
+- [Round 3] Training Drone attacks Zenki for 90 Physical damage (CRIT).
+- [Round 3] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 3] Zackry designates Rogue Automaton with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 3] Zenki attacks Toxic Stalker for 42 Physical damage.
+- [Round 3]   Elishia takes 117 Toxic damage.
+- [Round 3] Toxic Stalker spits CAUSTIC COMPOUND at Elishia: 117 Toxic damage and RES -15% (2 turns).
+- [Round 3] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 3] Elishia suffers 19 Toxic damage from Venom Strike.
+- [Round 3] NANOTECH SINGULARITY! Allies gain ATK +15% and SPD +10% and recover 5% Max HP at the start of their turns. Enemies suffer SPD -10% (3 turns). Meo-9's covering fire increases to 75% of its ATK while deployed.
+- [Round 3] Meo-9's covering fire is amplified to 75% of its ATK.
+- [Round 3] Meo-9's Emergency Field restores Elishia for 110 HP.
+- [Round 3] Meo-9's deployment expires.
+- [Round 3] Siege Turret attacks Elishia for 92 Physical damage.
+- [Round 4] Jazen attacks Recon Drone for 124 Physical damage (CRIT).
+- [Round 4] Training Drone attacks Zenki for 60 Physical damage.
+- [Round 4] Rogue Automaton attacks Elishia for 76 Physical damage.
+- [Round 4] Zenki applies Cipher Tag to Training Drone, reducing RES by 15% for 3 turns.
+- [Round 4] Evalete attacks Toxic Stalker for 51 Physical damage.
+- [Round 4] Recon Drone attacks Elishia, but Elishia evades!
+- [Round 4] Zackry attacks Training Drone for 62 Physical damage.
+- [Round 4] Elishia attacks Toxic Stalker for 57 Physical damage.
+- [Round 4] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 4]   Training Drone takes 50 Kinetic damage.
+- [Round 4]   Rogue Automaton takes 47 Kinetic damage.
+- [Round 4]   Siege Turret takes 55 Kinetic damage.
+- [Round 4]   Recon Drone takes 43 Kinetic damage.
+- [Round 4]   Toxic Stalker takes 43 Kinetic damage.
+- [Round 4] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 4] Zenki attacks Training Drone for 50 Physical damage.
+- [Round 4] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 4] Recon Drone attacks Elishia for 57 Physical damage.
+- [Round 4] Elishia deploys a decoy (+15 Evasion for 2 turns).
+- [Round 4] Zackry attacks Toxic Stalker for 60 Physical damage.
+- [Round 4] Toxic Stalker attacks Elishia for 67 Physical damage.
+- [Round 4] Evalete attacks Recon Drone for 56 Physical damage.
+- [Round 4] Rogue Automaton scans Elishia! DEF -15% (2 turns).
+- [Round 4]   Siege Turret takes 94 Energy damage.
+- [Round 4]   Siege Turret takes 142 Energy damage (CRIT).
+- [Round 4]   Siege Turret takes 142 Energy damage (CRIT).
+- [Round 4] Zenki executes Zero Hour on Siege Turret with 3 rail shots for 378 total Energy damage.
+- [Round 4] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 4] Jazen attacks Siege Turret for 66 Physical damage.
+- [Round 4] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 5]   Zenki takes 58 Kinetic damage.
+- [Round 5] Training Drone releases a KINETIC BURST at Zenki for 58 Kinetic damage!
+- [Round 5] Elishia attacks Training Drone for 59 Physical damage.
+- [Round 5] Toxic Stalker attacks Elishia for 81 Physical damage.
+- [Round 5] Zackry designates Toxic Stalker with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 5] Zenki attacks Toxic Stalker for 48 Physical damage.
+- [Round 5] Evalete attacks Toxic Stalker for 59 Physical damage.
+- [Round 5] Recon Drone attacks Elishia for 69 Physical damage.
+- [Round 5] Rogue Automaton attacks Elishia for 92 Physical damage.
+- [Round 5] Training Drone attacks Zenki for 60 Physical damage.
+- [Round 5] Zenki gains Adaptive Barrier (250 shield, up to 2 turns).
+- [Round 5]   Elishia takes 93 Toxic damage.
+- [Round 5] Toxic Stalker strikes Elishia with VENOM STRIKE: 93 Toxic damage and lingering venom (2 turns).
+- [Round 5] Jazen attacks Recon Drone for 72 Physical damage.
+- [Round 5] Zenki attacks Siege Turret for 37 Physical damage.
+- [Round 5] Zackry attacks Rogue Automaton for 46 Physical damage.
+- [Round 5] Recon Drone attacks Elishia for 57 Physical damage.
+- [Round 5] Evalete uses Triage Infusion on Zackry, restoring 0 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 5] Zenki's Adaptive Barrier adapts to Physical damage (+15% resistance).
+- [Round 5] Training Drone attacks Zenki for 60 Physical damage.
+- [Round 5] Elishia suffers 19 Toxic damage from Venom Strike.
+- [Round 5] Elishia deploys a decoy (+15 Evasion for 2 turns).
+- [Round 5] Toxic Stalker attacks Elishia for 67 Physical damage.
+- [Round 5] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 5] Zenki applies Cipher Tag to Recon Drone, reducing RES by 15% for 3 turns.
+- [Round 5] Rogue Automaton unleashes HEAVY STRIKE on Elishia for 118 damage!
+- [Round 5] Zackry attacks Recon Drone for 58 Physical damage.
+- [Round 5] Elishia is incapacitated!
+- [Round 5]   Elishia takes 141 Kinetic damage.
+- [Round 5] Siege Turret unleashes SIEGE SALVO on Elishia: 141 Kinetic damage and DEF -15% (2 turns).
+- [Round 6] Jazen attacks Rogue Automaton for 57 Physical damage.
+- [Round 6] Recon Drone attacks Zenki for 59 Physical damage.
+- [Round 6] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 6] Evalete attacks Toxic Stalker for 51 Physical damage.
+- [Round 6] Zenki attacks Siege Turret for 32 Physical damage.
+- [Round 6] Toxic Stalker attacks Zenki for 69 Physical damage.
+- [Round 6] Zackry designates Rogue Automaton with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 6] Rogue Automaton scans Zenki! DEF -15% (2 turns).
+- [Round 6] Recon Drone designates Zenki with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 6]   Toxic Stalker takes 92 Energy damage.
+- [Round 6] Zenki fires Railshot at Toxic Stalker for 92 Energy damage.
+- [Round 6] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 6] Jazen attacks Training Drone for 68 Physical damage.
+- [Round 6] Training Drone attacks Zenki for 108 Physical damage (CRIT).
+- [Round 6]   Recon Drone takes 56 Energy damage.
+- [Round 6] Evalete fires Sentinel Pulse at Recon Drone: 56 Energy damage; DEF -15% (2 turns).
+- [Round 6] Recon Drone attacks Zenki for 71 Physical damage.
+- [Round 6] Zackry attacks Toxic Stalker for 53 Physical damage.
+- [Round 6] Zenki attacks Recon Drone for 49 Physical damage.
+- [Round 6] Toxic Stalker attacks Zenki for 69 Physical damage.
+- [Round 6] Training Drone attacks Zenki for 90 Physical damage (CRIT).
+- [Round 6] Rogue Automaton attacks Zenki for 118 Physical damage (CRIT).
+- [Round 6] Siege Turret attacks Zackry for 127 Physical damage (CRIT).
+- [Round 7] Recon Drone attacks Zenki for 59 Physical damage.
+- [Round 7]   Training Drone takes 69 Kinetic damage (CRIT).
+- [Round 7]   Rogue Automaton takes 47 Kinetic damage.
+- [Round 7]   Siege Turret takes 48 Kinetic damage.
+- [Round 7]   Recon Drone takes 43 Kinetic damage.
+- [Round 7]   Toxic Stalker takes 43 Kinetic damage.
+- [Round 7] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 7] Evalete attacks Rogue Automaton for 45 Physical damage.
+- [Round 7] Zenki attacks Siege Turret for 32 Physical damage.
+- [Round 7] Toxic Stalker attacks Zenki, but Zenki evades!
+- [Round 7] Recon Drone is incapacitated!
+- [Round 7] Zackry attacks Recon Drone for 87 Physical damage (CRIT).
+- [Round 7] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 7] Rogue Automaton unleashes HEAVY STRIKE on Zenki for 122 damage!
+- [Round 7]   Training Drone takes 97 Energy damage.
+- [Round 7] Zenki fires Railshot at Training Drone for 97 Energy damage.
+- [Round 7]   Zenki takes 81 Toxic damage.
+- [Round 7] Toxic Stalker strikes Zenki with VENOM STRIKE: 81 Toxic damage and lingering venom (2 turns).
+- [Round 7] Jazen attacks Toxic Stalker for 66 Physical damage.
+- [Round 7] Evalete attacks Rogue Automaton for 39 Physical damage.
+- [Round 7] Zackry designates Siege Turret with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 7] Training Drone attacks Zenki for 60 Physical damage.
+- [Round 7] Zenki suffers 17 Toxic damage from Venom Strike.
+- [Round 7] Zenki attacks Toxic Stalker for 42 Physical damage.
+- [Round 7] Toxic Stalker attacks Zenki for 69 Physical damage.
+- [Round 7] Siege Turret attacks Zackry for 85 Physical damage.
+- [Round 8] Rogue Automaton scans Zenki! DEF -15% (2 turns).
+- [Round 8] Training Drone attacks Zenki for 64 Physical damage.
+- [Round 8] Zackry attacks Siege Turret for 46 Physical damage.
+- [Round 8] Jazen attacks Training Drone for 68 Physical damage.
+- [Round 8] Evalete attacks Rogue Automaton for 39 Physical damage.
+- [Round 8] Zenki suffers 17 Toxic damage from Venom Strike.
+- [Round 8] Zenki attacks Siege Turret for 37 Physical damage.
+- [Round 8] Zenki is incapacitated!
+- [Round 8] Toxic Stalker attacks Zenki for 74 Physical damage.
+- [Round 8] Training Drone fires PULSE SHOT at Jazen for 66 damage!
+- [Round 8] Rogue Automaton attacks Zackry for 70 Physical damage.
+- [Round 8] Zackry attacks Toxic Stalker for 79 Physical damage (CRIT).
+- [Round 8]   Siege Turret takes 65 Energy damage.
+- [Round 8] Evalete fires Sentinel Pulse at Siege Turret: 65 Energy damage; DEF -15% (2 turns).
+- [Round 8]   Training Drone takes 46 Kinetic damage.
+- [Round 8] Rogue Automaton's Reactive Plating activates!
+- [Round 8]   Rogue Automaton takes 62 Kinetic damage (CRIT).
+- [Round 8]   Siege Turret takes 55 Kinetic damage.
+- [Round 8]   Toxic Stalker takes 43 Kinetic damage.
+- [Round 8] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 8] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 8] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 8] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 9] Zackry attacks Training Drone for 54 Physical damage.
+- [Round 9] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 9] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 9] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 9] Jazen attacks Training Drone for 68 Physical damage.
+- [Round 9] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 9] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 9] Zackry designates Training Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 9] Rogue Automaton scans Zackry! DEF -15% (2 turns).
+- [Round 9] Evalete attacks Siege Turret for 43 Physical damage.
+- [Round 9] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 9] Toxic Stalker attacks Zackry for 67 Physical damage.
+- [Round 9] Toxic Stalker is incapacitated!
+- [Round 9] Jazen attacks Toxic Stalker for 66 Physical damage.
+- [Round 9] Zackry attacks Siege Turret for 50 Physical damage.
+- [Round 9] Siege Turret attacks Zackry for 92 Physical damage.
+- [Round 10] Training Drone activates EVASIVE THRUSTERS (+18 Evasion for 2 turns).
+- [Round 10] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 10] Rogue Automaton unleashes HEAVY STRIKE on Zackry for 140 damage!
+- [Round 10] Jazen attacks Training Drone for 78 Physical damage.
+- [Round 10] Zackry attacks Training Drone for 63 Physical damage.
+- [Round 10] Training Drone attacks Jazen, but Jazen evades!
+- [Round 10] Evalete uses Triage Infusion on Jazen, restoring 219 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 10] Rogue Automaton attacks Zackry for 70 Physical damage.
+- [Round 10] Zackry designates Training Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 10] Training Drone is incapacitated!
+- [Round 10] Jazen attacks Training Drone for 118 Physical damage (CRIT).
+- [Round 10] Siege Turret attacks Zackry for 85 Physical damage.
+- [Round 11] Evalete attacks Siege Turret for 34 Physical damage.
+- [Round 11] Rogue Automaton attacks Zackry for 105 Physical damage (CRIT).
+- [Round 11] Zackry attacks Siege Turret for 40 Physical damage.
+- [Round 11] Jazen activates Reinforced Plating (337 shield and DEF +20% for 3 turns).
+- [Round 11] Evalete attacks Siege Turret for 34 Physical damage.
+- [Round 11] Zackry attacks Rogue Automaton for 41 Physical damage.
+- [Round 11] Rogue Automaton scans Zackry! DEF -15% (2 turns).
+- [Round 11] Jazen attacks Rogue Automaton for 52 Physical damage.
+- [Round 11] Siege Turret attacks Zackry for 92 Physical damage.
+- [Round 12] Zackry designates Siege Turret with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 12]   Siege Turret takes 65 Energy damage.
+- [Round 12] Evalete fires Sentinel Pulse at Siege Turret: 65 Energy damage; DEF -15% (2 turns).
+- [Round 12] Rogue Automaton attacks Zackry for 114 Physical damage (CRIT).
+- [Round 12] Jazen attacks Siege Turret for 63 Physical damage.
+- [Round 12] Zackry attacks Rogue Automaton for 41 Physical damage.
+- [Round 12] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 12] Rogue Automaton attacks Zackry for 105 Physical damage (CRIT).
+- [Round 12] Jazen attacks Rogue Automaton for 52 Physical damage.
+- [Round 12] Zackry attacks Rogue Automaton for 41 Physical damage.
+- [Round 12] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 13] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 13] Rogue Automaton scans Zackry! DEF -15% (2 turns).
+- [Round 13] Zackry attacks Rogue Automaton for 62 Physical damage (CRIT).
+- [Round 13]   Rogue Automaton takes 41 Kinetic damage.
+- [Round 13]   Siege Turret takes 55 Kinetic damage.
+- [Round 13] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 13] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 13] Zackry designates Siege Turret with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 13] Rogue Automaton attacks Zackry for 70 Physical damage.
+- [Round 13] Jazen attacks Rogue Automaton for 52 Physical damage.
+- [Round 13] Zackry is incapacitated!
+- [Round 13] Siege Turret attacks Zackry for 85 Physical damage.
+- [Round 14] Evalete attacks Siege Turret for 39 Physical damage.
+- [Round 14] Rogue Automaton attacks Jazen for 67 Physical damage.
+- [Round 14] Jazen attacks Siege Turret for 58 Physical damage.
+- [Round 14]   Rogue Automaton takes 49 Energy damage.
+- [Round 14] Evalete fires Sentinel Pulse at Rogue Automaton: 49 Energy damage; DEF -15% (2 turns).
+- [Round 14] Rogue Automaton scans Jazen! DEF -15% (2 turns).
+- [Round 14] Siege Turret attacks Jazen for 87 Physical damage.
+- [Round 15] Jazen attacks Rogue Automaton for 56 Physical damage.
+- [Round 15] Evalete attacks Siege Turret for 39 Physical damage.
+- [Round 15] Rogue Automaton attacks Jazen for 72 Physical damage.
+- [Round 15] Jazen attacks Siege Turret for 58 Physical damage.
+- [Round 15]   Rogue Automaton takes 49 Energy damage.
+- [Round 15] Evalete fires Sentinel Pulse at Rogue Automaton: 49 Energy damage; DEF -15% (2 turns).
+- [Round 15] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 15] Siege Turret attacks Jazen for 121 Physical damage (CRIT).
+- [Round 16] Evalete attacks Rogue Automaton for 38 Physical damage.
+- [Round 16] Jazen attacks Siege Turret for 50 Physical damage.
+- [Round 16] Rogue Automaton attacks Jazen for 80 Physical damage.
+- [Round 16] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 16] Jazen activates Reinforced Plating (337 shield and DEF +20% for 3 turns).
+- [Round 16] Rogue Automaton attacks Jazen for 72 Physical damage.
+- [Round 16] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 17] Evalete attacks Siege Turret for 34 Physical damage.
+- [Round 17] Jazen attacks Rogue Automaton for 52 Physical damage.
+- [Round 17]   Siege Turret takes 85 Energy damage (CRIT).
+- [Round 17] Evalete fires Sentinel Pulse at Siege Turret: 85 Energy damage; DEF -15% (2 turns).
+- [Round 17] Rogue Automaton scans Jazen! DEF -15% (2 turns).
+- [Round 17] Jazen attacks Siege Turret for 55 Physical damage.
+- [Round 17] Siege Turret attacks Jazen for 79 Physical damage.
+- [Round 18] Evalete attacks Siege Turret for 37 Physical damage.
+- [Round 18] Rogue Automaton attacks Jazen for 65 Physical damage.
+- [Round 18]   Rogue Automaton takes 41 Kinetic damage.
+- [Round 18]   Siege Turret takes 48 Kinetic damage.
+- [Round 18] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 18] Evalete attacks Siege Turret for 37 Physical damage.
+- [Round 18] Rogue Automaton attacks Jazen for 67 Physical damage.
+- [Round 18] Siege Turret is incapacitated!
+- [Round 18] Jazen attacks Siege Turret for 55 Physical damage.
+- [Round 19] Evalete uses Triage Infusion on Jazen, restoring 297 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 19] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 19] Rogue Automaton is incapacitated!
+- [Round 19] Jazen attacks Rogue Automaton for 52 Physical damage.
+
+---
+
+# Enemy Victory — Seed 20261130
+
+- **Result:** DEFEAT
+- **Duration:** 23 rounds
+- **Actions:** 126 skill uses, 175 basic attacks
+- **HP damage to enemies:** 5843
+- **HP damage to allies:** 9117
+- **Ally shields absorbed:** 1598
+- **Ally healing:** 2967
+- **Rejected decisions:** 0
+
+## Remaining units
+
+**Falcon:** None
+
+**Enemies:** Rogue Automaton (277/1702 HP); Siege Turret (559/1552 HP); Toxic Stalker (254/1322 HP)
+
+## Skill usage
+
+- Toxic Stalker — Venom Strike: 14
+- Rogue Automaton — Armor Scan: 10
+- Training Drone — Pulse Shot: 9
+- Evalete — Sentinel Pulse: 8
+- Toxic Stalker — Predator Instinct: 8
+- Zackry — Tactical Mark: 7
+- Recon Drone — Spotter Mark: 5
+- Training Drone — Evasive Thrusters: 5
+- Rogue Automaton — Overload: 5
+- Elishia — Nano Swarm: 4
+- Recon Drone — Spoofing Maneuver: 4
+- Siege Turret — Fortify: 4
+- Evalete — Guardian Field: 3
+- Zenki — Cipher Tag: 3
+- Siege Turret — Suppression Round: 3
+- Zenki — Railshot: 3
+- Evalete — Triage Infusion: 3
+- Jazen — Impact Grenade: 3
+- Siege Turret — Ballistic Shell: 3
+- Zenki — Ghost Protocol: 2
+- Jazen — Reinforced Plating: 2
+- Recon Drone — Precision Burst: 2
+- Rogue Automaton — Heavy Strike: 2
+- Zenki — Zero Hour Execution: 1
+- Elishia — Nanotech Singularity: 1
+- Training Drone — Overclocked Shot: 1
+- Recon Drone — Targeting Cascade: 1
+- Jazen — Cataclysmic Payload: 1
+- Elishia — Meo-9: 1
+- Toxic Stalker — Blight Surge: 1
+- Zackry — Full Spectrum Assault: 1
+- Zackry — EMP Burst: 1
+- Toxic Stalker — Caustic Spit: 1
+- Elishia — Adaptive Barrier: 1
+- Training Drone — Kinetic Burst: 1
+- Jazen — Breach Charge: 1
+- Rogue Automaton — Crusher Protocol: 1
+
+## Damage contribution
+
+| Source | Total damage (HP + shields) | HP loss | Shield absorbed |
+|---|---:|---:|---:|
+| Toxic Stalker | 4305 | 3952 | 353 |
+| Jazen | 2191 | 2093 | 98 |
+| Rogue Automaton | 1959 | 1794 | 165 |
+| Training Drone | 1893 | 1371 | 522 |
+| Evalete | 1818 | 1784 | 34 |
+| Siege Turret | 1644 | 1249 | 395 |
+| Zenki | 1026 | 1026 | 0 |
+| Recon Drone | 914 | 751 | 163 |
+| Zackry | 792 | 752 | 40 |
+| Elishia | 108 | 108 | 0 |
+| Meo-9 | 80 | 80 | 0 |
+
+## Battle log
+
+- [Round 1] Training Drone passive — Calibration Core: Its calibrated control system grants Evasion +8.
+- [Round 1] Rogue Automaton passive — Reactive Plating: When its HP falls to 55% or lower, reinforced armor engages and grants DEF +20% for the rest of the encounter.
+- [Round 1] Siege Turret passive — Braced Emplacement: Its anchored frame grants DEF +15%, but limits its mobility and reduces SPD by 10%.
+- [Round 1] Recon Drone passive — Evasive Array: Predictive movement algorithms grant Evasion +15.
+- [Round 1] Toxic Stalker passive — Virulent Core: A volatile catalyst core increases Mpow by 12% and strengthens its Toxic techniques.
+- [Round 1] The Falcon team seizes the initiative!
+- [Round 1] Zenki activates Ghost Protocol, becoming Untargetable until the start of his next turn. His next attack deals 30% additional damage.
+- [Round 1] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 1] Nano Swarm repairs Zenki, restoring 0 HP.
+- [Round 1]   Elishia takes 105 Toxic damage.
+- [Round 1] Toxic Stalker strikes Elishia with VENOM STRIKE: 105 Toxic damage and lingering venom (2 turns).
+- [Round 1] Training Drone fires PULSE SHOT at Elishia for 85 damage!
+- [Round 1] Zackry designates Recon Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 1] GUARDIAN FIELD! Active allies recover 12% Max HP and gain DEF +15% (2 turns).
+- [Round 1] Jazen activates Reinforced Plating (337 shield and DEF +20% for 3 turns).
+- [Round 1] Rogue Automaton scans Elishia! DEF -15% (2 turns).
+- [Round 1] Recon Drone fires a PRECISION BURST at Elishia for 96 damage!
+- [Round 1]   Recon Drone takes 112 Energy damage.
+- [Round 1]   Recon Drone takes 112 Energy damage.
+- [Round 1]   Recon Drone takes 112 Energy damage.
+- [Round 1] Zenki executes Zero Hour on Recon Drone with 3 rail shots for 336 total Energy damage (+30% next-attack bonus).
+- [Round 1] Elishia suffers 22 Toxic damage from Venom Strike.
+- [Round 1] NANOTECH SINGULARITY! Allies gain ATK +15% and SPD +10% and recover 5% Max HP at the start of their turns. Enemies suffer SPD -10% (3 turns). Meo-9's covering fire increases to 75% of its ATK while deployed.
+- [Round 1] Toxic Stalker attacks Elishia for 67 Physical damage.
+- [Round 1] Training Drone unleashes an OVERCLOCKED SHOT at Zenki for 108 damage!
+- [Round 1] Zackry attacks Toxic Stalker for 60 Physical damage.
+- [Round 1]   Elishia takes 117 Kinetic damage.
+- [Round 1] Recon Drone executes TARGETING CASCADE on Elishia: 117 Kinetic damage and incoming damage +18% (2 turns).
+- [Round 1] Evalete attacks Siege Turret for 39 Physical damage.
+- [Round 1] Zenki applies Cipher Tag to Recon Drone, reducing RES by 15% for 3 turns.
+- [Round 1]   Training Drone takes 87 Kinetic damage.
+- [Round 1]   Rogue Automaton takes 78 Kinetic damage.
+- [Round 1]   Siege Turret takes 90 Kinetic damage.
+- [Round 1]   Recon Drone takes 102 Kinetic damage.
+- [Round 1]   Toxic Stalker takes 82 Kinetic damage.
+- [Round 1] CATACLYSMIC PAYLOAD! All enemies take 1.5x Kinetic mastery damage and suffer DEF -15% (2 turns).
+- [Round 1]   Elishia takes 75 Kinetic damage.
+- [Round 1] Siege Turret fires a SUPPRESSION ROUND at Elishia: 75 Kinetic damage and SPD -15% (2 turns).
+- [Round 2] Elishia suffers 22 Toxic damage from Venom Strike.
+- [Round 2] Elishia deploys Meo-9 for 3 subsequent Elishia turns. It provides covering fire or emergency healing after each turn.
+- [Round 2] Rogue Automaton attacks Elishia for 90 Physical damage.
+- [Round 2]   Elishia takes 202 Toxic damage.
+- [Round 2] Toxic Stalker unleashes BLIGHT SURGE on Elishia: 202 Toxic damage and a 3-turn Toxic effect!
+- [Round 2] FULL SPECTRUM ASSAULT! All living enemies are Tactical Marked and active allies gain MPow +20% and SPD +10% (3 turns).
+- [Round 2] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 2] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 2]   Siege Turret takes 139 Energy damage.
+- [Round 2] Zenki fires Railshot at Siege Turret for 139 Energy damage.
+- [Round 2] Evalete uses Triage Infusion on Evalete, restoring 0 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 2] Elishia suffers 32 Toxic damage from Blight Surge.
+- [Round 2] Nano Swarm repairs Evalete, restoring 0 HP.
+- [Round 2] Meo-9 cover fire hits Training Drone for 33 Physical damage.
+- [Round 2]   Training Drone takes 64 Kinetic damage.
+- [Round 2]   Rogue Automaton takes 57 Kinetic damage.
+- [Round 2]   Siege Turret takes 66 Kinetic damage.
+- [Round 2]   Recon Drone takes 65 Kinetic damage.
+- [Round 2]   Toxic Stalker takes 60 Kinetic damage.
+- [Round 2] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 2] Zenki attacks Rogue Automaton for 53 Physical damage.
+- [Round 2]   Elishia takes 105 Toxic damage.
+- [Round 2] Toxic Stalker strikes Elishia with VENOM STRIKE: 105 Toxic damage and lingering venom (2 turns).
+- [Round 2] Recon Drone attacks Elishia for 64 Physical damage.
+- [Round 2]   Recon Drone takes 93 Electromagnetic damage.
+- [Round 2] Zackry fires EMP Burst at Recon Drone: 93 Electromagnetic damage; SPD -20% (2 turns).
+- [Round 2] Training Drone attacks Zenki for 60 Physical damage.
+- [Round 2] Rogue Automaton unleashes HEAVY STRIKE on Elishia for 132 damage!
+- [Round 2] Elishia suffers 32 Toxic damage from Blight Surge.
+- [Round 2] Elishia suffers 22 Toxic damage from Venom Strike.
+- [Round 2] Elishia attacks Rogue Automaton for 58 Physical damage.
+- [Round 2] Meo-9 cover fire hits Training Drone for 30 Physical damage.
+- [Round 2]   Recon Drone takes 77 Energy damage.
+- [Round 2] Evalete fires Sentinel Pulse at Recon Drone: 77 Energy damage; DEF -15% (2 turns).
+- [Round 2] Zenki attacks Rogue Automaton for 42 Physical damage.
+- [Round 2] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 2]   Elishia takes 157 Toxic damage (CRIT).
+- [Round 2] Toxic Stalker spits CAUSTIC COMPOUND at Elishia: 157 Toxic damage and RES -15% (2 turns).
+- [Round 2] Jazen attacks Training Drone for 90 Physical damage.
+- [Round 2] Siege Turret launches a BALLISTIC SHELL at Elishia for 152 damage!
+- [Round 3] Zackry attacks Siege Turret for 46 Physical damage.
+- [Round 3] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 3] Elishia suffers 32 Toxic damage from Blight Surge.
+- [Round 3] Elishia suffers 22 Toxic damage from Venom Strike.
+- [Round 3] Nano Swarm repairs Elishia, restoring 165 HP.
+- [Round 3] Meo-9 cover fire hits Training Drone for 17 Physical damage.
+- [Round 3] Meo-9's deployment expires.
+- [Round 3] Zenki attacks Rogue Automaton for 42 Physical damage.
+- [Round 3] Rogue Automaton scans Elishia! DEF -15% (2 turns).
+- [Round 3] GUARDIAN FIELD! Active allies recover 12% Max HP and gain DEF +15% (2 turns).
+- [Round 3] Recon Drone designates Elishia with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 3]   Elishia takes 113 Toxic damage.
+- [Round 3] Toxic Stalker strikes Elishia with VENOM STRIKE: 113 Toxic damage and lingering venom (2 turns).
+- [Round 3] Zackry attacks Recon Drone for 58 Physical damage.
+- [Round 3] Jazen attacks Toxic Stalker for 66 Physical damage.
+- [Round 3] Training Drone attacks Zenki for 57 Physical damage.
+- [Round 3] Zenki applies Cipher Tag to Toxic Stalker, reducing RES by 15% for 3 turns.
+- [Round 3] Elishia suffers 24 Toxic damage from Venom Strike.
+- [Round 3] Elishia attacks Toxic Stalker for 50 Physical damage.
+- [Round 3] Recon Drone fires a PRECISION BURST at Elishia for 96 damage!
+- [Round 3] Toxic Stalker attacks Elishia for 75 Physical damage.
+- [Round 3] Evalete attacks Rogue Automaton for 45 Physical damage.
+- [Round 3] Rogue Automaton attacks Elishia for 85 Physical damage.
+- [Round 3] Training Drone fires PULSE SHOT at Zenki for 74 damage!
+- [Round 3] Zackry designates Rogue Automaton with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 3]   Training Drone takes 97 Energy damage.
+- [Round 3] Zenki fires Railshot at Training Drone for 97 Energy damage.
+- [Round 3] Recon Drone attacks Elishia for 64 Physical damage.
+- [Round 3] Elishia suffers 24 Toxic damage from Venom Strike.
+- [Round 3] Elishia gains Adaptive Barrier (275 shield, up to 2 turns).
+- [Round 3] Jazen attacks Siege Turret for 58 Physical damage.
+- [Round 3] Elishia's Adaptive Barrier adapts to Physical damage (+15% resistance).
+- [Round 3] Siege Turret attacks Elishia for 92 Physical damage.
+- [Round 4] Elishia's Adaptive Barrier adapts to Toxic damage (+15% resistance).
+- [Round 4]   Elishia takes 140 Toxic damage (CRIT).
+- [Round 4] Toxic Stalker strikes Elishia with VENOM STRIKE: 140 Toxic damage and lingering venom (2 turns).
+- [Round 4] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 4] Zenki activates Ghost Protocol, becoming Untargetable until the start of his next turn. His next attack deals 30% additional damage.
+- [Round 4] Elishia's Adaptive Barrier adapts to Physical damage (+15% resistance).
+- [Round 4] Training Drone attacks Elishia for 58 Physical damage.
+- [Round 4]   Rogue Automaton takes 56 Energy damage.
+- [Round 4] Evalete fires Sentinel Pulse at Rogue Automaton: 56 Energy damage; DEF -15% (2 turns).
+- [Round 4] Zackry attacks Recon Drone for 58 Physical damage.
+- [Round 4] Elishia suffers 16 Toxic damage from Venom Strike.
+- [Round 4] Nano Swarm repairs Zackry, restoring 0 HP.
+- [Round 4] Rogue Automaton attacks Elishia for 65 Physical damage.
+- [Round 4] Elishia is incapacitated!
+- [Round 4] Toxic Stalker attacks Elishia for 85 Physical damage (CRIT).
+- [Round 4] Jazen attacks Rogue Automaton for 72 Physical damage.
+- [Round 4] Recon Drone attacks Zackry for 53 Physical damage.
+- [Round 4] Zenki attacks Siege Turret for 48 Physical damage.
+- [Round 4] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 4] Zackry designates Training Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 4] Evalete attacks Recon Drone for 49 Physical damage.
+- [Round 4] Recon Drone attacks Zenki for 59 Physical damage.
+- [Round 4]   Zenki takes 81 Toxic damage.
+- [Round 4] Toxic Stalker strikes Zenki with VENOM STRIKE: 81 Toxic damage and lingering venom (2 turns).
+- [Round 4] Rogue Automaton scans Zenki! DEF -15% (2 turns).
+- [Round 4] Zenki suffers 17 Toxic damage from Venom Strike.
+- [Round 4] Zenki attacks Training Drone for 50 Physical damage.
+- [Round 4] Training Drone attacks Zenki for 64 Physical damage.
+- [Round 4]   Zackry takes 57 Kinetic damage.
+- [Round 4] Siege Turret fires a SUPPRESSION ROUND at Zackry: 57 Kinetic damage and SPD -15% (2 turns).
+- [Round 5] Jazen attacks Toxic Stalker for 66 Physical damage.
+- [Round 5] Recon Drone designates Zenki with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 5] Toxic Stalker attacks Zenki for 83 Physical damage.
+- [Round 5] Zackry attacks Training Drone for 63 Physical damage.
+- [Round 5] Zenki suffers 17 Toxic damage from Venom Strike.
+- [Round 5] Zenki attacks Training Drone for 50 Physical damage.
+- [Round 5] Evalete attacks Rogue Automaton for 45 Physical damage.
+- [Round 5] Recon Drone attacks Zenki for 66 Physical damage.
+- [Round 5]   Zenki takes 65 Kinetic damage.
+- [Round 5] Training Drone releases a KINETIC BURST at Zenki for 65 Kinetic damage!
+- [Round 5] Rogue Automaton attacks Zenki for 88 Physical damage.
+- [Round 5]   Zenki takes 91 Toxic damage.
+- [Round 5] Toxic Stalker strikes Zenki with VENOM STRIKE: 91 Toxic damage and lingering venom (2 turns).
+- [Round 5]   Rogue Automaton takes 62 Kinetic damage.
+- [Round 5] Jazen detonates Breach Charge on Rogue Automaton: 62 Kinetic damage, DEF -20% (2 turns).
+- [Round 5] Zenki suffers 19 Toxic damage from Venom Strike.
+- [Round 5] Zenki applies Cipher Tag to Rogue Automaton, reducing RES by 15% for 3 turns.
+- [Round 5] Recon Drone attacks Zenki for 59 Physical damage.
+- [Round 5] Zackry designates Siege Turret with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 5] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 5] Training Drone attacks Zenki for 60 Physical damage.
+- [Round 5] Zenki suffers 19 Toxic damage from Venom Strike.
+- [Round 5] Zenki attacks Siege Turret for 37 Physical damage.
+- [Round 5] Toxic Stalker attacks Zenki for 69 Physical damage.
+- [Round 5] Rogue Automaton attacks Zenki for 78 Physical damage.
+- [Round 5] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 5] Siege Turret launches a BALLISTIC SHELL at Zackry for 140 damage!
+- [Round 6] Jazen attacks Recon Drone for 72 Physical damage.
+- [Round 6] Zackry attacks Recon Drone for 58 Physical damage.
+- [Round 6] Training Drone fires PULSE SHOT at Zenki for 78 damage!
+- [Round 6]   Rogue Automaton takes 95 Energy damage.
+- [Round 6] Zenki fires Railshot at Rogue Automaton for 95 Energy damage.
+- [Round 6] Evalete attacks Training Drone for 46 Physical damage.
+- [Round 6] Recon Drone attacks Zenki for 59 Physical damage.
+- [Round 6] Toxic Stalker attacks Zenki for 69 Physical damage.
+- [Round 6] Rogue Automaton scans Zenki! DEF -15% (2 turns).
+- [Round 6] Training Drone attacks Zenki for 97 Physical damage (CRIT).
+- [Round 6] Zenki attacks Siege Turret for 37 Physical damage.
+- [Round 6] Recon Drone designates Zenki with SPOTTER MARK: incoming damage +12% (2 turns).
+- [Round 6] Zackry attacks Training Drone for 54 Physical damage.
+- [Round 6] Jazen attacks Siege Turret for 58 Physical damage.
+- [Round 6] Zenki is incapacitated!
+- [Round 6]   Zenki takes 91 Toxic damage.
+- [Round 6] Toxic Stalker strikes Zenki with VENOM STRIKE: 91 Toxic damage and lingering venom (2 turns).
+- [Round 6] Evalete attacks Recon Drone for 49 Physical damage.
+- [Round 6] Recon Drone attacks Zackry for 79 Physical damage (CRIT).
+- [Round 6] Training Drone activates EVASIVE THRUSTERS (+18 Evasion for 2 turns).
+- [Round 6] Rogue Automaton attacks Jazen for 67 Physical damage.
+- [Round 6] Zackry attacks Toxic Stalker for 53 Physical damage.
+- [Round 6] Siege Turret attacks Zackry for 85 Physical damage.
+- [Round 7] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 7] Jazen attacks Rogue Automaton for 57 Physical damage.
+- [Round 7] Recon Drone attacks Zackry for 53 Physical damage.
+- [Round 7] Evalete attacks Recon Drone for 49 Physical damage.
+- [Round 7] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 7] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 7] Zackry designates Recon Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 7] Recon Drone activates SPOOFING MANEUVER (+20 Evasion for 2 turns).
+- [Round 7] Rogue Automaton attacks Zackry for 70 Physical damage.
+- [Round 7] Jazen attacks Toxic Stalker for 66 Physical damage.
+- [Round 7] GUARDIAN FIELD! Active allies recover 12% Max HP and gain DEF +15% (2 turns).
+- [Round 7] Training Drone attacks Jazen for 48 Physical damage.
+- [Round 7] Recon Drone attacks Zackry for 49 Physical damage.
+- [Round 7] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 7] Recon Drone is incapacitated!
+- [Round 7] Zackry attacks Recon Drone for 66 Physical damage.
+- [Round 7] Siege Turret launches a BALLISTIC SHELL at Zackry for 131 damage!
+- [Round 8] Rogue Automaton scans Zackry! DEF -15% (2 turns).
+- [Round 8] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 8] Training Drone fires PULSE SHOT at Jazen for 62 damage!
+- [Round 8] Jazen activates Reinforced Plating (337 shield and DEF +20% for 3 turns).
+- [Round 8] Evalete attacks Training Drone for 46 Physical damage.
+- [Round 8] Zackry designates Training Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 8] Toxic Stalker attacks Zackry for 100 Physical damage (CRIT).
+- [Round 8] Training Drone attacks Jazen for 46 Physical damage.
+- [Round 8] Rogue Automaton unleashes HEAVY STRIKE on Zackry for 118 damage!
+- [Round 8] Evalete attacks Siege Turret for 34 Physical damage.
+- [Round 8] Jazen attacks Siege Turret for 50 Physical damage.
+- [Round 8] Zackry attacks Training Drone for 63 Physical damage.
+- [Round 8]   Zackry takes 85 Toxic damage.
+- [Round 8] Toxic Stalker strikes Zackry with VENOM STRIKE: 85 Toxic damage and lingering venom (2 turns).
+- [Round 8] Training Drone attacks Jazen for 46 Physical damage.
+- [Round 8] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 9] Rogue Automaton attacks Zackry for 70 Physical damage.
+- [Round 9] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 9] Zackry suffers 18 Toxic damage from Venom Strike.
+- [Round 9] Zackry attacks Siege Turret for 40 Physical damage.
+- [Round 9]   Toxic Stalker takes 52 Energy damage.
+- [Round 9] Evalete fires Sentinel Pulse at Toxic Stalker: 52 Energy damage; DEF -15% (2 turns).
+- [Round 9] Rogue Automaton's Reactive Plating activates!
+- [Round 9] Jazen attacks Rogue Automaton for 57 Physical damage.
+- [Round 9] Training Drone activates EVASIVE THRUSTERS (+18 Evasion for 2 turns).
+- [Round 9] Toxic Stalker attacks Zackry for 62 Physical damage.
+- [Round 9] Zackry suffers 18 Toxic damage from Venom Strike.
+- [Round 9] Zackry attacks Toxic Stalker for 57 Physical damage.
+- [Round 9] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 9] Training Drone attacks Jazen for 46 Physical damage.
+- [Round 9] Evalete attacks Training Drone for 70 Physical damage (CRIT).
+- [Round 9] Jazen attacks Siege Turret for 50 Physical damage.
+- [Round 9] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 9] Siege Turret attacks Zackry for 85 Physical damage.
+- [Round 10] Zackry designates Training Drone with Tactical Mark: incoming damage +15%, Evasion -10 (3 turns).
+- [Round 10] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 10] Rogue Automaton scans Zackry! DEF -15% (2 turns).
+- [Round 10] Evalete attacks Training Drone for 53 Physical damage.
+- [Round 10] Toxic Stalker attacks Zackry for 67 Physical damage.
+- [Round 10]   Training Drone takes 53 Kinetic damage.
+- [Round 10]   Rogue Automaton takes 62 Kinetic damage (CRIT).
+- [Round 10]   Siege Turret takes 48 Kinetic damage.
+- [Round 10]   Toxic Stalker takes 43 Kinetic damage.
+- [Round 10] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 10] Training Drone fires PULSE SHOT at Jazen for 66 damage!
+- [Round 10] Zackry attacks Training Drone for 63 Physical damage.
+- [Round 10] Toxic Stalker attacks Zackry for 67 Physical damage.
+- [Round 10]   Zackry takes 106 Kinetic damage.
+- [Round 10] Rogue Automaton executes CRUSHER PROTOCOL on Zackry: 106 Kinetic damage and DEF -10% (2 turns).
+- [Round 10] Evalete attacks Training Drone for 53 Physical damage.
+- [Round 10] Jazen attacks Rogue Automaton for 52 Physical damage.
+- [Round 10] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 10] Zackry is incapacitated!
+- [Round 10]   Zackry takes 128 Toxic damage (CRIT).
+- [Round 10] Toxic Stalker strikes Zackry with VENOM STRIKE: 128 Toxic damage and lingering venom (2 turns).
+- [Round 10]   Jazen takes 66 Kinetic damage.
+- [Round 10] Siege Turret fires a SUPPRESSION ROUND at Jazen: 66 Kinetic damage and SPD -15% (2 turns).
+- [Round 11] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 11] Rogue Automaton attacks Jazen for 67 Physical damage.
+- [Round 11] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 11] Toxic Stalker attacks Jazen for 59 Physical damage.
+- [Round 11] Jazen attacks Siege Turret for 50 Physical damage.
+- [Round 11] Training Drone activates EVASIVE THRUSTERS (+18 Evasion for 2 turns).
+- [Round 11] Toxic Stalker attacks Jazen for 59 Physical damage.
+- [Round 11]   Rogue Automaton takes 49 Energy damage.
+- [Round 11] Evalete fires Sentinel Pulse at Rogue Automaton: 49 Energy damage; DEF -15% (2 turns).
+- [Round 11] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 11] Siege Turret attacks Jazen for 81 Physical damage.
+- [Round 12] Toxic Stalker attacks Jazen for 59 Physical damage.
+- [Round 12] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 12] Jazen attacks Rogue Automaton for 56 Physical damage.
+- [Round 12] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 12] Rogue Automaton attacks Jazen for 80 Physical damage.
+- [Round 12] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 12] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 12]   Training Drone takes 46 Kinetic damage.
+- [Round 12]   Rogue Automaton takes 41 Kinetic damage.
+- [Round 12]   Siege Turret takes 72 Kinetic damage (CRIT).
+- [Round 12]   Toxic Stalker takes 43 Kinetic damage.
+- [Round 12] Jazen launches Impact Grenade at all enemies for 0.8x Kinetic mastery damage.
+- [Round 12]   Rogue Automaton takes 49 Energy damage.
+- [Round 12] Evalete fires Sentinel Pulse at Rogue Automaton: 49 Energy damage; DEF -15% (2 turns).
+- [Round 12] Toxic Stalker attacks Jazen for 59 Physical damage.
+- [Round 12] Training Drone attacks Jazen for 51 Physical damage.
+- [Round 12] Rogue Automaton attacks Jazen for 80 Physical damage.
+- [Round 12] Siege Turret attacks Jazen for 81 Physical damage.
+- [Round 13] Toxic Stalker attacks Jazen for 59 Physical damage.
+- [Round 13] Jazen attacks Siege Turret for 50 Physical damage.
+- [Round 13] Evalete attacks Training Drone for 46 Physical damage.
+- [Round 13] Training Drone activates EVASIVE THRUSTERS (+18 Evasion for 2 turns).
+- [Round 13] Rogue Automaton scans Jazen! DEF -15% (2 turns).
+- [Round 13]   Jazen takes 97 Toxic damage.
+- [Round 13] Toxic Stalker strikes Jazen with VENOM STRIKE: 97 Toxic damage and lingering venom (2 turns).
+- [Round 13] Jazen is incapacitated!
+- [Round 13] Training Drone attacks Jazen for 55 Physical damage.
+- [Round 13] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 13] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 13] Rogue Automaton attacks Evalete, but Evalete evades!
+- [Round 13] Training Drone attacks Evalete, but Evalete evades!
+- [Round 13] Siege Turret attacks Evalete for 77 Physical damage.
+- [Round 14] Evalete attacks Training Drone for 46 Physical damage.
+- [Round 14] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 14] Training Drone fires PULSE SHOT at Evalete for 63 damage!
+- [Round 14] Rogue Automaton attacks Evalete for 63 Physical damage.
+- [Round 14] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 14]   Toxic Stalker takes 52 Energy damage.
+- [Round 14] Evalete fires Sentinel Pulse at Toxic Stalker: 52 Energy damage; DEF -15% (2 turns).
+- [Round 14] Training Drone attacks Evalete for 49 Physical damage.
+- [Round 14] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 14] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 14] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 15] Evalete attacks Toxic Stalker for 48 Physical damage.
+- [Round 15] Training Drone attacks Evalete for 49 Physical damage.
+- [Round 15] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 15] Rogue Automaton attacks Evalete for 76 Physical damage.
+- [Round 15] Training Drone activates EVASIVE THRUSTERS (+18 Evasion for 2 turns).
+- [Round 15]   Evalete takes 87 Toxic damage.
+- [Round 15] Toxic Stalker strikes Evalete with VENOM STRIKE: 87 Toxic damage and lingering venom (2 turns).
+- [Round 15] Evalete suffers 18 Toxic damage from Venom Strike.
+- [Round 15] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 15] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 15] Training Drone attacks Evalete, but Evalete evades!
+- [Round 15] Rogue Automaton scans Evalete! DEF -15% (2 turns).
+- [Round 15] Siege Turret attacks Evalete for 83 Physical damage.
+- [Round 16] Evalete suffers 18 Toxic damage from Venom Strike.
+- [Round 16] Training Drone is incapacitated!
+- [Round 16] Evalete attacks Training Drone for 46 Physical damage.
+- [Round 16] Toxic Stalker attacks Evalete, but Evalete evades!
+- [Round 16] Rogue Automaton attacks Evalete for 69 Physical damage.
+- [Round 16] Evalete uses Triage Infusion on Evalete, restoring 319 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 16] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 16] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 16] Siege Turret attacks Evalete for 77 Physical damage.
+- [Round 17] Rogue Automaton attacks Evalete for 63 Physical damage.
+- [Round 17] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 17] Toxic Stalker attacks Evalete for 84 Physical damage (CRIT).
+- [Round 17] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 17] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 17]   Evalete takes 87 Toxic damage.
+- [Round 17] Toxic Stalker strikes Evalete with VENOM STRIKE: 87 Toxic damage and lingering venom (2 turns).
+- [Round 17] Siege Turret attacks Evalete for 77 Physical damage.
+- [Round 18] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 18] Rogue Automaton attacks Evalete for 76 Physical damage.
+- [Round 18] Evalete suffers 18 Toxic damage from Venom Strike.
+- [Round 18] Evalete attacks Siege Turret for 34 Physical damage.
+- [Round 18] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 18] Evalete suffers 18 Toxic damage from Venom Strike.
+- [Round 18] Evalete uses Triage Infusion on Evalete, restoring 319 HP and applying 10% Max HP healing each turn for 3 turns.
+- [Round 18] Rogue Automaton attacks Evalete for 76 Physical damage.
+- [Round 18] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 18] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 19] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 19] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 19] Rogue Automaton scans Evalete! DEF -15% (2 turns).
+- [Round 19] Toxic Stalker attacks Evalete for 61 Physical damage.
+- [Round 19] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 19] Rogue Automaton attacks Evalete for 69 Physical damage.
+- [Round 19] Toxic Stalker attacks Evalete for 91 Physical damage (CRIT).
+- [Round 19] Siege Turret attacks Evalete for 125 Physical damage (CRIT).
+- [Round 20] Evalete attacks Siege Turret for 34 Physical damage.
+- [Round 20] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 20] Rogue Automaton attacks Evalete for 63 Physical damage.
+- [Round 20] Toxic Stalker attacks Evalete for 84 Physical damage (CRIT).
+- [Round 20] Evalete attacks Rogue Automaton for 35 Physical damage.
+- [Round 20] Rogue Automaton scans Evalete! DEF -15% (2 turns).
+- [Round 20] Toxic Stalker attacks Evalete for 61 Physical damage.
+- [Round 20] Siege Turret attacks Evalete for 83 Physical damage.
+- [Round 21]   Siege Turret takes 85 Energy damage (CRIT).
+- [Round 21] Evalete fires Sentinel Pulse at Siege Turret: 85 Energy damage; DEF -15% (2 turns).
+- [Round 21]   Evalete takes 87 Toxic damage.
+- [Round 21] Toxic Stalker strikes Evalete with VENOM STRIKE: 87 Toxic damage and lingering venom (2 turns).
+- [Round 21] Rogue Automaton attacks Evalete for 69 Physical damage.
+- [Round 21] Evalete suffers 18 Toxic damage from Venom Strike.
+- [Round 21] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 21] Toxic Stalker attacks Evalete, but Evalete evades!
+- [Round 21] Rogue Automaton attacks Evalete for 63 Physical damage.
+- [Round 21] Toxic Stalker attacks Evalete for 56 Physical damage.
+- [Round 21] Siege Turret attacks Evalete for 77 Physical damage.
+- [Round 22] Evalete suffers 18 Toxic damage from Venom Strike.
+- [Round 22]   Rogue Automaton takes 49 Energy damage.
+- [Round 22] Evalete fires Sentinel Pulse at Rogue Automaton: 49 Energy damage; DEF -15% (2 turns).
+- [Round 22] Toxic Stalker activates PREDATOR INSTINCT (SPD +15% and Mpow +10% for 2 turns).
+- [Round 22] Rogue Automaton activates OVERLOAD! ATK +20% (2 turns).
+- [Round 22] Evalete attacks Rogue Automaton for 38 Physical damage.
+- [Round 22] Toxic Stalker attacks Evalete for 84 Physical damage (CRIT).
+- [Round 22] Rogue Automaton attacks Evalete for 76 Physical damage.
+- [Round 22] Toxic Stalker attacks Evalete, but Evalete evades!
+- [Round 22] Siege Turret anchors into FORTIFY mode (279 shield and DEF +15% for 2 turns).
+- [Round 23] Evalete attacks Toxic Stalker for 45 Physical damage.
+- [Round 23] Evalete is incapacitated!
+- [Round 23]   Evalete takes 87 Toxic damage.
+- [Round 23] Toxic Stalker strikes Evalete with VENOM STRIKE: 87 Toxic damage and lingering venom (2 turns).

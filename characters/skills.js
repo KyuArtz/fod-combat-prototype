@@ -9,6 +9,10 @@ const skillData = {
   zenki: require("./skillData/zenki"),
   trainingDrone: require("../data/enemySkills/trainingDrone"),
   rogueAutomaton: require("../data/enemySkills/rogueAutomaton"),
+  siegeTurret: require("../data/enemySkills/siegeTurret"),
+  reconDrone: require("../data/enemySkills/reconDrone"),
+  toxicStalker: require("../data/enemySkills/toxicStalker"),
+  blightheartOverseer: require("../data/enemySkills/blightheartOverseer"),
 };
 
 function createSkills(context) {
@@ -22,9 +26,17 @@ function createSkills(context) {
   const enemySkills = {
     trainingDrone: skills.trainingDrone,
     rogueAutomaton: skills.rogueAutomaton,
+    siegeTurret: skills.siegeTurret,
+    reconDrone: skills.reconDrone,
+    toxicStalker: skills.toxicStalker,
+    blightheartOverseer: skills.blightheartOverseer,
   };
   delete skills.trainingDrone;
   delete skills.rogueAutomaton;
+  delete skills.siegeTurret;
+  delete skills.reconDrone;
+  delete skills.toxicStalker;
+  delete skills.blightheartOverseer;
   return {
     skills,
     enemySkills,

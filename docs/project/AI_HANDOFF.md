@@ -11,7 +11,7 @@ Use this document as a concise starting point for future F.O.D. development sess
 - Default encounter: `trainingGround`, five active Falcon agents versus five active enemies.
 - Steps 1–9 and the Falcon shared-runtime/passive audit are complete.
 - The Falcon active-effect reuse review is complete: Tactical Mark, Cipher Tag, Railshot, Zero Hour, and Nanotech Singularity now compose reusable effect and lifecycle contracts.
-- Latest verified snapshot: Nanotech Singularity composition, 227 tests passed, 0 failed; deterministic replay and golden transcripts remain unchanged.
+- Latest verified snapshot: Falcon approved kit v1, global stacking/timing implementation, coordinated Falcon controller, Toxic cleanse decision logic, and three-active/two-reserve formation coverage; 273 tests passed, 0 failed, and 38 superseded legacy assertions skipped. The two-stage Blightheart boss is covered by seeded simulations.
 
 ## Start every work session by
 
@@ -52,7 +52,7 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map and run
 ## Data and reference authority
 
 - Runtime behavior is defined by executable code, data definitions, and tests.
-- Falcon skill data: `data/skills/*.js`.
+- Falcon skill data: `characters/skillData/*.js` (the live roster source consumed by `characters/skills.js`).
 - Enemy skill data: `data/enemySkills/*.js`.
 - Enemy archetypes and policies: `data/enemies/*.js`, `data/enemyAI/*.js`.
 - Encounter data: `data/encounters/*.js`.
@@ -66,7 +66,7 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map and run
 - Default formation and each encounter wave currently require five enemy entries.
 - Reinforcement trigger support is limited to enemy defeat count; reinforcements enter reserve and use normal replacement.
 - Reward metadata and `onEncounterComplete` are hooks only; there is no reward distribution, XP, inventory, persistent stage progression, or save/load.
-- Damage events do not currently identify the source actor, limiting source-attributed simulator metrics.
+- Damage events include source attribution for direct, reflected, and DoT damage, enabling per-actor simulator contribution summaries.
 - Falcon runtime base stats remain prototype values pending a separate stat-sync decision.
 
 ## Documentation rules
@@ -78,4 +78,4 @@ Use the [documentation index](../README.md) to navigate. Keep current state in `
 
 Continue from the latest Zero Hour composition snapshot. The verified archive is the Railshot Composition snapshot plus the Zero Hour generic effect composition increment. `systems/passives/runtime.js` owns lifecycle timing and event emission; `systems/passives/registry.js` dispatches declarative subscriptions; `systems/effects/` and `systems/summons/` provide their respective handler registries. `core/skillLifecycle.js` remains a compatibility facade.
 
-The audit removed the remaining Zackry and Jazen character-ID configuration from shared runtime: Zackry's targeter attribution behavior is declared through `passive.targeting.trackTargeter`, and Recoil Dampeners' status key is declared through `passive.statusId`. The active effect review has since removed the dedicated Zero Hour effect handler: its strict-below-40% target HP check and fixed 3.2 power override are declared as a `masteryHit` modifier; the -25 SPD / 2-turn Cipher Tag follow-up is a `conditionalStatus` gated by successful hit, target survival, and the required tag. Latest verification: 223 tests pass, including deterministic replay/golden transcript coverage. The remaining effect review target is Singularity. No Phantom Rebellion content is in scope. Preserve the established `docs/history/`, `docs/project/`, and `docs/reference/` tree, update docs in place, and keep user-supplied JSON/files out of the project package.
+The latest Falcon pass keeps character-specific behavior in declarative `characters/skillData/*.js` definitions and generic handlers. ADR-017 records the approved kit, global stacking, and effect timing rules. `docs/reference/FALCON_IMPLEMENTATION_GUIDE.md` and `docs/reference/COMBAT_MECHANICS.md` are the current references; earlier Step 9 docs are historical where they conflict. That earlier audit snapshot had 233 tests passing. The current verification is 273 passed, 0 failed, 38 superseded legacy assertions skipped. Tactical/boss playtest results and caveats are recorded in `reports/` and `docs/reference/ENEMY_ARCHETYPES_AND_BALANCE.md`. No Phantom Rebellion content is in scope. Preserve the established `docs/history/`, `docs/project/`, and `docs/reference/` tree, update docs in place, and keep user-supplied JSON/files out of the project package.

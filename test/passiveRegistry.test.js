@@ -7,11 +7,11 @@ test('passive events dispatch through declarative subscriptions, not character I
   const registry = createPassiveRegistry({ state, addStatus: (actor, id, data) => { actor.statuses[id] = data; } });
   const actor = {
     alive: true, stats: { HP: 100 }, statuses: { customRecoil: { stacks: 1 } },
-    passive: { maxStacks: 2, damageThresholdPercent: 10, attackBonusPercent: 10, duration: 2, statusId: 'customRecoil',
+    passive: { maxStacks: 2, damageThresholdPercent: 10, mpowBonusPercent: 10, duration: 2, statusId: 'customRecoil',
       events: { damageTaken: [{ handler: 'recoilDampeners' }] } },
   };
-  registry.dispatch(actor, 'damageTaken', { hpLoss: 11 });
-  assert.deepEqual(actor.statuses.customRecoil, { stat: 'ATK', amount: 20, stacks: 2, turns: 2 });
+  registry.dispatch(actor, 'damageTaken', { amount: 11, kind: 'direct' });
+  assert.deepEqual(actor.statuses.customRecoil, { stat: 'MPow', amount: 20, stacks: 2, stackable: true, turns: 2 });
 });
 
 test('passive registry supports extension handlers without editing runtime dispatch', () => {

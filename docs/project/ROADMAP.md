@@ -16,6 +16,9 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Typed combat event contracts.
 - [x] Headless simulator and scheduler comparison tooling.
 - [x] Data-driven enemy skills, enemy archetypes, AI policies, and encounter definitions.
+- [x] Deterministic tactical and coordinated Falcon controllers for headless playtests, including Toxic counterplay and reserve rotation.
+- [x] Two-stage Blightheart boss encounter with a phase-change passive and shared-interpreter AoE skills.
+- [x] Three-active/two-reserve headless formation coverage and seeded coordinated boss playtests.
 - [x] Multi-wave encounter progression, per-instance stat overrides, defeat-count reinforcements, and completion/reward metadata hooks.
 - [x] Falcon mechanics finalization with owner-approved implementation values documented separately from owner-authored values.
 - [x] Documentation and codebase baseline audit/restructure: modular skill runtime, standard project metadata, ignore/formatting conventions, and reorganized documentation.
@@ -51,9 +54,9 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [ ] Decide whether and when runtime Falcon base stats should be synchronized with the owner-maintained stat sheet.
 - [ ] Decide PvP and ambush opening-initiative policies.
 - [ ] Decide whether to support encounter waves with fewer than five enemy entries.
-- [ ] Expand enemy skill kits and AI policy vocabulary when encounter design requires them.
-- [ ] Add source attribution to damage events if attacker-level damage analytics are required.
-- [ ] Evaluate stage/level scaling and broader combat balance using multiple policies, encounters, and seed ranges.
+- [x] Expand the initial enemy skill kits and AI policy vocabulary for the current six archetypes; future additions remain encounter-driven.
+- [x] Add source attribution to direct, reflected, and DoT damage events for attacker-level damage analytics.
+- [ ] Continue evaluating stage/level scaling and broader combat balance using additional policies, encounters, seed ranges, and human playtests.
 
 ## Next planned feature milestone — not started
 

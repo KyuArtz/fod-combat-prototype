@@ -28,10 +28,10 @@ test("the in-engine Falcon roster carries the matching owner-reference passive d
 
 test("owner-specified active skill costs and cooldowns are not silently substituted", () => {
   const expected = {
-    elishia: [[20, 2], [25, 3], [35, 4], [60, 6]],
-    evalete: [[20, 2], [25, 3], [40, 4], [60, 6]],
+    elishia: [[20, 2], [25, 3], [35, 4], [65, 6]],
+    evalete: [[20, 2], [25, 3], [40, 4], [65, 6]],
     zackry: [[20, 2], [30, 3], [35, 4], [60, 6]],
-    jazen: [[20, 2], [30, 3], [25, 3], [60, 6]],
+    jazen: [[20, 2], [30, 3], [25, 3], [65, 6]],
     zenki: [[20, 2], [25, 3], [35, 4], [60, 6]],
   };
   for (const [id, rows] of Object.entries(expected)) {

@@ -1,5 +1,5 @@
 // Selected in-engine Falcon skill reference. Mechanics are implemented in characters/skillData/*.js.
-// The website-facing characterTerraData.json is maintained separately by the project owner.
+// Synced from the approved Falcon kit update.
 module.exports = {
   "characters": {
     "elishia": {
@@ -17,7 +17,7 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_passive.webp",
         "title": "Biotech Overdrive",
-        "description": "Elishia's nanotech keeps her one step ahead. At battle start, she gains +10% SPD and +10 Evasion for 3 turns. After using a Nanotech skill, her next skill costs 8 less MP. The discount is used on the next skill and cannot stack.",
+        "description": "Nanotechnology improves Elishia's aim stability, reload speed, and evasion. Gains SPD +10% and EVA +10 for 3 turns. After Elishia uses a Nanotech skill, her next active skill costs 8 MP less. The discount is consumed by the next active skill and does not stack. This passive does not increase damage.",
         "type": "passive",
         "effects": [
           "BUFF"
@@ -26,20 +26,21 @@ module.exports = {
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_skill_1.webp",
         "title": "Skill 1: Nano Swarm",
-        "description": "Release a cloud of clever little troublemakers and choose their job: Repair restores 15% Max HP to active allies; Disrupt deals 0.6× Nanotech mastery damage to all enemies and lowers their SPD by 10 for 2 turns; or Decoy grants Elishia +15 Evasion for 2 turns.",
+        "description": "Deploys nanobots and selects one of three modes: Repair restores 15% of one selected ally's Max HP; Disrupt deals 0.6× Nanotech mastery damage to one enemy and reduces its SPD by 10% for 2 turns; Decoy grants Elishia +15 Evasion for 2 turns.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 2,
         "effects": [
           "DMG",
           "HEAL",
-          "DEBUFF"
+          "DEBUFF",
+          "BUFF"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_skill_2.webp",
         "title": "Skill 2: Adaptive Barrier",
-        "description": "Wrap Elishia or one ally in an adaptive nanotech shield worth 25% of their Max HP for up to 2 turns. The barrier learns from the first hit it absorbs, granting +15 resistance against that damage type for the shield's remaining duration.",
+        "description": "Protects Elishia or one selected ally with a nanotech barrier that absorbs damage equal to 25% of the target's Max HP. Lasts 2 turns or until depleted. Adapts to the latest damage type absorbed, granting 15% resistance against that type for the remaining duration.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
@@ -50,25 +51,27 @@ module.exports = {
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_skill_3.webp",
-        "title": "Skill 3: Meo-v9",
-        "description": "Send Meo-v9 into the fray for 3 turns. It scans enemies, making them take 10% more damage from Elishia, then peppers the field with covering fire for 0.5× its own ATK as Physical damage each turn. If an active ally starts its activation below 25% Max HP, Meo-v9 instead heals the lowest-HP-ratio ally for 10% Max HP. When its deployment naturally expires, Meo-v9 fires Final Protocol: 1.0× its own MPow against the priority target and 0.5× its MPow against other enemies, dealing Electromagnetic damage and reducing their SPD by 15 for 1 turn. It does not fire Final Protocol if destroyed early.",
+        "title": "Skill 3: EB's Drone: Meo-9",
+        "description": "Deploys Meo-9 for 3 subsequent Elishia turns; it skips the deployment turn. After each subsequent Elishia turn, Meo-9 checks active living allies below 25% Max HP. If one qualifies, it heals the ally with the lowest HP percentage for 10% Max HP instead of attacking. Otherwise, it fires once for Physical Damage equal to 50% of its own ATK. During Nanotech Singularity, covering fire increases to 75% of its ATK. Meo-9 has no destruction or expiration effect.",
         "type": "active",
         "mpCost": 35,
         "cooldown": 4,
         "effects": [
+          "SUMMON",
           "DMG",
-          "DEBUFF"
+          "HEAL"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_skill_4.webp",
         "title": "Ultimate: Nanotech Singularity",
-        "description": "Turn the battlefield into Elishia's personal nanotech playground for 3 turns. Active allies gain +15 ATK and +10 SPD, and recover 5% Max HP at the start of their turns. Enemies lose 10 SPD and suffer Nanotech damage equal to 0.2× Elishia's MPow at the start of their turns. Meo-v9's covering fire rises to 0.75× its own ATK, while its scans make enemies take another 10% damage from Elishia. The damage-over-time tick cannot critically hit or trigger another damage-over-time effect.",
+        "description": "Deploys a nanotech field for 3 Elishia turns. All active allies gain ATK +15% and SPD +10%, and recover 5% of their Max HP at the start of their turns. Enemies suffer SPD -10%. While Meo-9 is deployed, its covering fire increases to 75% of its own ATK as Physical Damage.",
         "type": "active",
-        "mpCost": 60,
+        "mpCost": 65,
         "cooldown": 6,
         "effects": [
           "DMG",
+          "HEAL",
           "BUFF",
           "DEBUFF"
         ]
@@ -87,19 +90,20 @@ module.exports = {
         "CritRate": 10
       },
       "passiveSkill": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_passive.webp",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_passive.png",
         "title": "Catalyst Protocol",
-        "description": "Evalete's Catalyst Wing watches over the squad for 12 turns. Every 2 turns, it restores 8% Max HP to active allies and refreshes a shield worth 10% Max HP for 2 turns. The shields refresh rather than stack. The Wing can be targeted and destroyed; if it is destroyed before its time is up, Evalete gains a 15% Max HP shield for 4 turns.",
+        "description": "The Catalyst Wing is automatically deployed at battle start as a targetable passive summon and persists for 12 Evalete turns. At the start of every second Evalete turn, beginning with turn 2, it heals all active allies for 8% of their Max HP and grants each a shield equal to 10% of their Max HP for 2 turns. Destroying the Wing disables future pulses and grants no fallback shield.",
         "type": "passive",
         "effects": [
           "HEAL",
-          "SHIELD"
+          "SHIELD",
+          "SUMMON"
         ]
       },
       "skill1": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_1.webp",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_1.jpeg",
         "title": "Skill 1: Sentinel Pulse",
-        "description": "Fire a focused Energy pulse that deals 0.75× Energy mastery damage to one enemy and weakens their DEF by 15 for 2 turns. A clean hit—and a much easier follow-up for the squad.",
+        "description": "Fires an Energy pulse at one enemy for mastery damage at 0.75× Mpow power. The target's DEF is reduced by 15% for 2 turns.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 2,
@@ -109,9 +113,9 @@ module.exports = {
         ]
       },
       "skill2": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_2.webp",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_2.png",
         "title": "Skill 2: Triage Infusion",
-        "description": "No time for a long checkup. Deliver a concentrated bio-catalyst dose to one ally, immediately restoring 22% of their Max HP.",
+        "description": "Administers a concentrated bio-catalyst dose to one selected ally, instantly healing them for 22% of their Max HP and applying healing over time equal to 10% Max HP per turn for 3 turns.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
@@ -120,9 +124,9 @@ module.exports = {
         ]
       },
       "skill3": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_3.webp",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_3.png",
         "title": "Skill 3: Guardian Field",
-        "description": "Raise a protective field around active allies, restoring 12% of their Max HP and granting +15 DEF for 2 turns. A little breathing room can change the whole fight.",
+        "description": "Generates a protective field on all active allies, healing each for 12% of their Max HP and granting DEF +15% for 2 turns.",
         "type": "active",
         "mpCost": 40,
         "cooldown": 4,
@@ -132,16 +136,15 @@ module.exports = {
         ]
       },
       "ultimate": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_4.webp",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_4.png",
         "title": "Ultimate: Catalyst Overdrive",
-        "description": "Bring the Catalyst system to full power. Cleanse removable debuffs from active allies, restore 18% Max HP, and grant +25 DEF and 25% Retaliation for 3 turns. The treatment keeps working too: allies recover another 10% Max HP at the start of each of their turns for 3 turns.",
+        "description": "Activates full Catalyst Protocol on all active allies. First cleanses harmful statuses (debuffs or negative stat effects) from living active non-summon allies, then instantly heals each for 18% of their Max HP, grants DEF +25%, and applies healing over time equal to 10% Max HP per turn for 3 turns. Allies also gain 25% damage reflection for 3 turns, returning 25% of direct incoming damage after mitigation and before shield absorption to its original attacker. Reflected damage cannot trigger reflection again.",
         "type": "active",
-        "mpCost": 60,
+        "mpCost": 65,
         "cooldown": 6,
         "effects": [
           "HEAL",
-          "BUFF",
-          "CLEANSE"
+          "BUFF"
         ]
       }
     },
@@ -160,27 +163,28 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/zackry_passive.webp",
         "title": "Overwatch Protocol",
-        "description": "Zackry is always calling the next shot. When he uses a skill on an ally—or supports an enemy already targeted by an ally—that ally gains +10 Accuracy for their next attack. The bonus is consumed by that attack and does not stack. Tactical Mark also leaves its target with -10 Evasion.",
+        "description": "Enemies affected by Tactical Mark lose 10 Evasion for the duration of the mark. This passive grants no ally accuracy bonus.",
         "type": "passive",
         "effects": [
-          "BUFF"
+          "DEBUFF"
         ]
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/zackry_skill_1.webp",
         "title": "Skill 1: Tactical Mark",
-        "description": "Call out one enemy and make them everyone's problem. Tactical Mark makes the target take 15% more damage and suffer -10 Evasion for 3 turns. If the marked enemy is defeated, each active ally recovers 5% of their own Max MP.",
+        "description": "Designates one enemy as a priority target. The marked enemy receives 15% increased damage from all sources and loses 10 Evasion for 3 turns.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 2,
         "effects": [
-          "DEBUFF"
+          "DEBUFF",
+          "UTILITY"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/zackry_skill_2.webp",
         "title": "Skill 2: Command Uplink",
-        "description": "Broadcast a squad-wide combat order. Active allies gain +15 ATK for 3 turns; anyone above 50% Max HP gets another +5 ATK. That extra boost is checked again at the start of each ally's turn, so keep the team healthy and pressing forward.",
+        "description": "Broadcasts a combat directive to all active allies, granting Mpow +15% for 3 turns.",
         "type": "active",
         "mpCost": 30,
         "cooldown": 3,
@@ -191,7 +195,7 @@ module.exports = {
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/zackry_skill_3.webp",
         "title": "Skill 3: EMP Burst",
-        "description": "Shut down one enemy with an electromagnetic blast, dealing 0.8× Electromagnetic mastery damage and reducing SPD by 20 for 2 turns. If the target is Tactical Marked, the disruption hits harder: SPD drops by 35 instead.",
+        "description": "Deals Electromagnetic mastery damage at 0.8× Mpow power to one enemy and reduces its SPD by 20% for 2 turns, regardless of whether it is Tactical Marked.",
         "type": "active",
         "mpCost": 35,
         "cooldown": 4,
@@ -203,13 +207,14 @@ module.exports = {
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/zackry_skill_4.webp",
         "title": "Ultimate: Full Spectrum Assault",
-        "description": "Zackry calls the entire battlefield into formation. All living enemies receive Tactical Mark for 3 turns, while active allies gain +20 ATK, +15 MPow, and +10 SPD for the same duration. Allies also gain +10 Critical Rate against marked enemies. Every target, every angle—one coordinated assault.",
+        "description": "Marks all living enemies with Tactical Mark and grants all active allies Mpow +20% and SPD +10% for 3 turns.",
         "type": "active",
         "mpCost": 60,
         "cooldown": 6,
         "effects": [
           "BUFF",
-          "DEBUFF"
+          "DEBUFF",
+          "UTILITY"
         ]
       }
     },
@@ -228,7 +233,7 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/jazen_passive.webp",
         "title": "Recoil Dampeners",
-        "description": "The gauntlets turn punishment into momentum. Whenever Jazen loses more than 10% of his Max HP from a hit after shield absorption, he gains +10% ATK for 2 turns, stacking up to 2 times. He is immune to Stagger and action-delay effects.",
+        "description": "After a direct hit deals more than 10% of Jazen's Max HP after mitigation but before shield absorption, he gains Mpow +10% for 2 turns. This effect can stack up to 2 times. Further qualifying hits at maximum stacks refresh the duration. Jazen has no Stagger or action-delay immunity.",
         "type": "passive",
         "effects": [
           "BUFF"
@@ -237,19 +242,18 @@ module.exports = {
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/jazen_skill_1.webp",
         "title": "Skill 1: Impact Grenade",
-        "description": "Lob an Impact Grenade into the enemy line, dealing 0.8× Kinetic mastery damage to all enemies. Each target has a 20% chance to be Staggered for 1 turn, pushing its readiness back by 20 points. Their next action is delayed—not erased.",
+        "description": "Launches an Impact Grenade at all enemies, dealing Kinetic mastery damage at 0.8× Mpow power.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 2,
         "effects": [
-          "DMG",
-          "DEBUFF"
+          "DMG"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/jazen_skill_2.webp",
         "title": "Skill 2: Breach Charge",
-        "description": "Plant a Breach Charge on one enemy for a 1.2× Kinetic mastery blast. The explosion tears down 20 DEF for 2 turns and Staggers the target for 1 turn, pushing its readiness back by 20 points.",
+        "description": "Detonates a Breach Charge on one enemy for Kinetic mastery damage at 1.2× Mpow power. Reduces the target's DEF by 20% for 2 turns.",
         "type": "active",
         "mpCost": 30,
         "cooldown": 3,
@@ -261,7 +265,7 @@ module.exports = {
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/jazen_skill_3.webp",
         "title": "Skill 3: Reinforced Plating",
-        "description": "Lock in the heavy plating: Jazen gains a shield worth 25% of his Max HP and +20 DEF for 3 turns. He also Taunts enemies for 2 turns, daring eligible single-target attacks to come his way.",
+        "description": "Activates Reinforced Plating, granting Jazen a shield equal to 25% of his Max HP for 3 turns and DEF +20% for 3 turns. This skill does not apply Taunt.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
@@ -273,9 +277,9 @@ module.exports = {
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/jazen_skill_4.webp",
         "title": "Ultimate: Cataclysmic Payload",
-        "description": "Make room for the big one. Cataclysmic Payload slams every enemy for 1.5× Kinetic mastery damage and reduces their DEF by 15 for 2 turns. Each enemy hit has a 25% chance to be Staggered for 1 turn, pushing its readiness back by 20 points.",
+        "description": "Unleashes Cataclysmic Payload on all enemies, dealing Kinetic mastery damage at 1.5× Mpow power and reducing their DEF by 15% for 2 turns.",
         "type": "active",
-        "mpCost": 60,
+        "mpCost": 65,
         "cooldown": 6,
         "effects": [
           "DMG",
@@ -298,7 +302,7 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/zenki_passive.webp",
         "title": "Unobserved",
-        "description": "The harder Zenki is to track, the more dangerous he becomes. While no enemy skill has targeted him during the current interval, he gains +12 Evasion. An enemy basic attack against him suffers a 10-point Accuracy penalty. Taking a hit suppresses Unobserved until the start of his next turn.",
+        "description": "At the start of each Zenki turn, if he has not taken damage since the end of his previous turn, he gains EVA +12 until he takes damage. This passive has no attacker accuracy penalty.",
         "type": "passive",
         "effects": [
           "BUFF"
@@ -307,7 +311,7 @@ module.exports = {
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/zenki_skill_1.webp",
         "title": "Skill 1: Railshot",
-        "description": "A quiet breath, a steady sightline, then one supersonic answer. Railshot deals 1.1× Energy mastery damage to one enemy and cannot miss. If Zenki has not been targeted by an enemy since his previous turn, the shot gains 30% bonus damage.",
+        "description": "Charges the Longstrike rail sniper and fires a high-velocity Falconite slug at one enemy for Energy mastery damage at 1.1× Mpow power. This shot cannot miss and has no conditional damage bonus.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 2,
@@ -318,29 +322,31 @@ module.exports = {
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/zenki_skill_2.webp",
         "title": "Skill 2: Cipher Tag",
-        "description": "Slip a tracking exploit onto one enemy. Cipher Tag makes the target take 12% more damage and reduces its RES by 15 for 3 turns. Only one enemy can carry Zenki's tag at a time; tagging another replaces the first.",
+        "description": "Plants a tracking exploit on one enemy, marking it as compromised and reducing its RES by 15% for 3 turns. Only one enemy can be Cipher Tagged at a time; applying a new tag replaces the existing one. It does not increase damage received directly.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
         "effects": [
-          "DEBUFF"
+          "DEBUFF",
+          "UTILITY"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/zenki_skill_3.webp",
         "title": "Skill 3: Ghost Protocol",
-        "description": "Disappear from the enemy's calculations. For 3 turns, Ghost Protocol grants Zenki +25 Evasion, +20 SPD, and +25% damage dealt.",
+        "description": "Zenki breaks line of sight and repositions, becoming Untargetable until the start of his next turn. His next damaging skill gains a one-use +30% damage bonus, applied to that skill's total damage.",
         "type": "active",
         "mpCost": 35,
         "cooldown": 4,
         "effects": [
-          "BUFF"
+          "BUFF",
+          "UTILITY"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/zenki_skill_4.webp",
         "title": "Ultimate: Zero Hour Execution",
-        "description": "The Longstrike locks onto its final coordinate. Zero Hour Execution deals 2.4× Energy mastery damage to one enemy—or 3.2× if the target is below 40% Max HP. If a Cipher Tagged target survives the shot, its SPD is reduced by 25 for 2 turns.",
+        "description": "Zenki locks onto one enemy and fires three rapid rail shots, each dealing Energy mastery damage at 0.9× Mpow power. If the target is below 40% of its Max HP when the Ultimate is activated, the final shot instead deals 1.6× Mpow power. The HP threshold is checked once at activation; the 1.6× final-shot value replaces, rather than adds to, the normal 0.9× value.",
         "type": "active",
         "mpCost": 60,
         "cooldown": 6,

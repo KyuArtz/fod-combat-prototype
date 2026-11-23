@@ -32,7 +32,7 @@ index.js
 | Combat resolution | `core/actionResolver.js`, `systems/damage.js`, `systems/damageApplication.js` | Shared basic attacks, damage calculation/application, HP and incapacitation |
 | Skill runtime | `core/skillInterpreter.js`, `core/skillLifecycle.js` (compatibility facade), `systems/passives/`, `systems/summons/`, `systems/effects/`, `core/skillDataValidation.js`, `core/skillMessages.js` | Skill execution orchestration, passive and summon registries/runtimes, effect handlers, data validation, message formatting |
 | Actor and registry | `characters/actorFactory.js`, `characters/falcon.js`, `characters/skills.js`, `characters/enemies.js` | Runtime actor construction, Falcon roster, skill registry assembly, enemy/encounter resolution |
-| Data definitions | `data/skills/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, `data/encounters/` | Declarative skill, archetype, policy, and encounter content |
+| Data definitions | `characters/skillData/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, `data/encounters/` | Falcon skill/passive definitions plus declarative enemy, policy and encounter content |
 | Reusable systems | `systems/` | Readiness, initiative, formation, cooldowns, shields, statuses, damage, effect handlers, and passive lifecycle runtime |
 | Events and randomness | `core/eventBus.js`, `core/combatEvents.js`, `core/rng.js` | Battle-local deterministic RNG, event delivery, typed event validation |
 | Presentation | `ui/` | Terminal prompts, deployment selection, status display, readable battle log |
@@ -63,7 +63,7 @@ Controllers do not own combat rules. The terminal menu, built-in enemy AI, scrip
 
 ## Skill runtime
 
-- `data/skills/*.js` defines Falcon skills and passive data.
+- `characters/skillData/*.js` defines live Falcon skills and passive data.
 - `data/enemySkills/*.js` defines the current enemy skill sets.
 - `characters/skills.js` builds both registries through `core/skillInterpreter.js`.
 - `core/skillInterpreter.js` checks readiness, pays MP, assigns cooldowns, and runs the selected skill variant.
@@ -126,12 +126,12 @@ Passive definitions subscribe to lifecycle events in their character skill data.
 
 Battle-scoped durations use `state.battleTimers` and the generic helpers in `systems/battleTimers.js`. A registered `setBattleTimer` effect declares the key, round duration, and optional actor turn-start reactions. Reactions are processed after that actor's MP recovery and cooldown tick; all timers decrement once at completed-round timing. Systems such as summon scan and activation power modifiers query the same timer through `isBattleTimerActive`, so consumers do not need a character-specific field check. Nanotech Singularity uses a `healPercentMaxHP` reaction scoped to living non-summon allies; reserve members therefore receive the effect if they enter while the timer remains active.
 
-Summon activation and natural expiry are dispatched through `systems/summons/registry.js`. Meo-v9 declares Emergency Field, cover fire, and Final Protocol as activation/expiry subscriptions in `characters/skillData/elishia.js`. The registry supports additional handlers through battle-scoped registration. Summons may declare owner-event subscriptions for destruction reactions; generic `onDestroyed` effects are independently supported. The runtime owns only summon turn-count/expiry timing and event dispatch; no legacy behavior adapter remains. Timed passive modifiers use `passiveTimers` with a declarative `timerKey` on each modifier. Conditional stat modifiers use `when` conditions against generic actor flags; incoming attack modifiers use typed additive entries (currently `evasion`) that remain independent of conditional stat suppression. Zenki’s Unobserved uses this contract for its Evasion bonus and separate incoming basic-attack penalty, while Railshot reads a generic passive flag established by event subscriptions.
+Summon activation and owner-turn expiry are dispatched through `systems/summons/registry.js` and `systems/passives/runtime.js`. Meo-9 declares Emergency Field and cover fire as owner-turn activation subscriptions; it has no scan, EMP, Final Protocol or expiry effect. Catalyst Wing is a targetable passive summon with no independent scheduled turn. Timed passive modifiers use `passiveTimers`; conditional passive flags and Recoil Dampeners use generic declarative event subscriptions. Zenki’s Unobserved uses a turn-start history check and damageTaken hook for its Evasion bonus.
 
 
 ## Falcon architecture audit follow-up
 
-The final shared-runtime scan found two remaining character-specific configuration leaks and moved both into passive data: Zackry's exclusion from ally targeter attribution is now `passive.targeting.trackTargeter: false`, and Recoil Dampeners supplies its status key through `passive.statusId`. `core/turnRunner.js` and the registered passive handler no longer name Zackry or Jazen. Passive validation now checks event subscription shapes and handler names, boolean initial flags, targeting configuration, status IDs, and conditional modifier flag arrays.
+Historical note: an earlier audit moved targeter attribution and Recoil Dampeners status identity out of character-ID branches. The current approved Falcon passive definitions and tests are authoritative where this historical detail differs.
 
 The architecture is extensible at the registration boundaries: a new skill can compose existing effect records; a new effect operation can be registered in the effect registry; passive event handlers can be registered without changing lifecycle dispatch; and summon lifecycle handlers can be registered without changing summon timing. The generic `statusGroup` effect removes statuses with a matching group key from a configured side before applying the declared status entries to the selected target. Cipher Tag uses this operation to replace its paired mark and RES reduction without a character-specific effect handler. This does not mean every future mechanic is data-only: a mechanic that needs a new operation still needs an appropriately scoped handler, but it should not require a character-ID branch in core action or turn resolution.
 
@@ -143,7 +143,7 @@ The current registered handlers have been reviewed for reuse boundaries. Shared 
 
 ## Generic mastery-hit modifiers and accuracy policy
 
-The generic `masteryHit` effect accepts an optional `accuracy` policy (`standard` by default or `guaranteed`) and an ordered `powerModifiers` list. A modifier may combine actor-flag conditions with a strict target-HP-percent-below condition, and may either scale the current power by `percent` or set an exact `setPower` override; optional `bonusText` carries presentation text. Actor-flag conditions use the same shared flag-matching semantics as passive stat modifiers. Zenki's Railshot declares its 1.1x Energy mastery base, guaranteed accuracy, and conditional +30% power from `unobservedActive`. Zero Hour declares its 2.4x base and exact 3.2x override when the target is below 40% HP; exactly 40% uses normal power. A guaranteed hit still consumes an available next-attack Accuracy token, bypasses the Evasion check without adding an accuracy RNG draw, and retains the ordinary mastery critical roll.
+The generic `masteryHit` effect supports standard or guaranteed accuracy. The reusable `masteryMultiHit` effect resolves a declared hit list and optional strict target-HP threshold override. Zenki’s Railshot uses guaranteed 1.1x Energy mastery damage without a conditional damage bonus. Zero Hour declares three 0.9x shots and replaces the final shot with 1.6x when the target is below 40% HP at activation.
 
 The generic `conditionalStatus` effect may require an existing status and/or a living target before applying its declared status. It also skips execution when the preceding hit in the same skill run marked the target as missed. Zero Hour composes this after `masteryHit` to apply the -25% SPD status for two turns only when the target survives and still has Cipher Tag. This preserves the original hit-before-follow-up ordering and does not add RNG draws.
 

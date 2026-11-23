@@ -14,23 +14,29 @@ Base runtime stats are defined in `characters/falcon.js`. These are prototype va
 | Evalete | Energy | 1450 | 110 | 85 | 120 | 110 | 95 | 75 | 10 | 5 |
 | Zackry | Electromagnetic | 1250 | 120 | 100 | 135 | 90 | 100 | 85 | 10 | 5 |
 | Jazen | Kinetic | 1350 | 100 | 125 | 95 | 100 | 75 | 70 | 10 | 5 |
-| Zenki | Anomaly | 1000 | 150 | 80 | 145 | 70 | 110 | 110 | 10 | 5 |
+| Zenki | Energy | 1000 | 150 | 80 | 145 | 70 | 110 | 110 | 10 | 5 |
 
 ## Training enemy archetypes
 
-Enemy definitions and stats live in `data/enemies/`.
+Enemy definitions and base stats live in `data/enemies/`. Passives can apply additional runtime modifiers, so the table reports the configured base profile before passive modifiers.
 
 | Enemy | HP | MP | ATK | MPow | DEF | RES | SPD | Crit | Evasion | Mastery |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Training Drone | 700 | 0 | 65 | 50 | 45 | 45 | 70 | 5 | 0 | Kinetic |
-| Rogue Automaton | 850 | 0 | 75 | 60 | 55 | 50 | 60 | 5 | 0 | Kinetic |
-| Siege Turret | 900 | 0 | 90 | 45 | 70 | 40 | 35 | 5 | 0 | Kinetic |
-| Recon Drone | 620 | 0 | 58 | 70 | 35 | 65 | 115 | 5 | 12 | Kinetic |
-| Toxic Stalker | 760 | 0 | 72 | 85 | 45 | 60 | 82 | 5 | 0 | Toxic |
+| Training Drone | 1,265 | 120 | 103 | 118 | 82 | 88 | 95 | 9 | 4 | Kinetic |
+| Rogue Automaton | 1,702 | 130 | 134 | 112 | 116 | 110 | 70 | 10 | 0 | Kinetic |
+| Siege Turret | 1,552 | 110 | 162 | 112 | 127 | 82 | 42 | 12 | 0 | Kinetic |
+| Recon Drone | 1,092 | 125 | 101 | 134 | 72 | 99 | 125 | 12 | 18 | Kinetic |
+| Toxic Stalker | 1,322 | 140 | 118 | 157 | 88 | 99 | 100 | 12 | 10 | Toxic |
+
+## Expanded enemy and boss roster
+
+The five standard Training Ground archetypes retain their scaled profiles above. A sixth archetype, **Blightheart Overseer**, is reserved for the two-stage `blightheartSanctum` boss encounter. Its phase-change passive and four Toxic abilities are defined in `data/enemies/blightheartOverseer.js` and `data/enemySkills/blightheartOverseer.js`.
+
+All six enemy archetypes now have declarative passive/skill data and AI policies. The Blightheart encounter is a separate progression/boss benchmark and should not be conflated with the standard five-enemy Training Ground test.
 
 ## Falcon skill registry
 
-All five Falcon skill sets are data-defined in `data/skills/` and assembled by `characters/skills.js`.
+All five Falcon skill sets are data-defined in `characters/skillData/` and assembled by `characters/skills.js` through the shared interpreter.
 
 | Agent | Passive | Skill 1 | Skill 2 | Skill 3 | Ultimate |
 |---|---|---|---|---|---|
@@ -45,15 +51,15 @@ The [Falcon implementation guide](FALCON_IMPLEMENTATION_GUIDE.md) documents exac
 ## Implemented passive overview
 
 - **Elishia — Biotech Overdrive:** battle-start SPD/Evasion bonus for three Elishia turns and a non-stacking 8 MP discount after Nanotech skills.
-- **Evalete — Catalyst Protocol:** targetable Catalyst Wing, periodic team healing/shields, and an early-destruction shield for Evalete.
-- **Zackry — Overwatch Protocol:** next-attack Accuracy tokens for supported targeted ally/enemy support cases; Tactical Mark and marked-defeat MP recovery.
-- **Jazen — Recoil Dampeners:** shield-aware damage threshold for stacking ATK bonuses and immunity to Stagger/action-delay statuses.
-- **Zenki — Unobserved:** conditional Evasion bonus and attacker Accuracy penalty; Railshot has its separate conditional damage bonus.
+- **Evalete — Catalyst Protocol:** targetable, non-turn-taking Catalyst Wing, periodic team healing/shields, and no destruction fallback shield.
+- **Zackry — Overwatch Protocol:** marked enemies lose 10 Evasion; no ally accuracy token or marked-defeat MP reward.
+- **Jazen — Recoil Dampeners:** direct-hit threshold is checked after mitigation but before shield absorption; grants up to two Mpow +10% stacks. No Stagger/action-delay immunity.
+- **Zenki — Unobserved:** +12 Evasion while undamaged since his previous turn; no attacker accuracy penalty or Railshot damage bonus.
 
 ## Enemy skills and AI
 
-Training Drone and Rogue Automaton have declarative skill sets in `data/enemySkills/`. All five enemy archetypes reference declarative AI policies in `data/enemyAI/`; Siege Turret, Recon Drone, and Toxic Stalker currently use the basic-only policy.
+All six enemy archetypes have declarative skill sets in `data/enemySkills/` and dedicated policies in `data/enemyAI/`. The Blightheart Overseer has a dedicated phase-aware boss policy; the five standard archetypes use role-specific ordered rules.
 
 ## Data authority
 
-Runtime skill behavior comes from `data/skills/`, `data/enemySkills/`, the shared skill runtime, combat systems, and tests. `references/characterTerraData.js` is the compact owner-reference extract containing selected skill objects and stat information; it is not a full character roster and is not imported by the engine. The owner maintains the separate website-facing character data.
+Runtime Falcon skill behavior comes from `characters/skillData/`; enemy skill behavior comes from `data/enemySkills/`. Both use the shared skill runtime, combat systems, and tests. `references/characterTerraData.js` is the compact owner-reference extract containing selected skill objects and stat information; it is not a full character roster and is not imported by the engine. The owner maintains the separate website-facing character data.
