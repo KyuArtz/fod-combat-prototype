@@ -12,7 +12,7 @@ A Node.js command-line prototype for experimenting with **Fragments of Decay (F.
 - A coordinated Falcon controller with role-aware target focus, Toxic-counterplay, and three-active/two-reserve rotation.
 - Typed combat events alongside readable battle logs.
 - Headless simulator with table, JSON, and CSV reports.
-- Automated regression suite: **273 tests passing, 0 failing, 38 superseded legacy assertions skipped** in the current development build; run `npm test` locally to verify your checkout.
+- Automated regression suite: **260 tests passing, 0 failing, 0 skipped** in the cleaned development build; run `npm test` locally to verify your checkout.
 
 Reward awarding, XP, inventory, persistent stage progression, and save/load are not implemented. The encounter completion callback exposes reward metadata for a future progression layer.
 
@@ -86,12 +86,12 @@ Start at the [documentation index](docs/README.md). It separates current project
 ai/                 Enemy AI policy evaluator and targeting
 characters/         Actor factory, Falcon party, enemy/encounter loader, skill registry
 core/               Battle composition, state, turns, decisions, events, RNG, skill runtime
-core/skillEffects.js Declarative effect handlers
 core/skillLifecycle.js Passive and summon lifecycle hooks
 core/skillDataValidation.js Skill data validation
 core/skillMessages.js Skill message formatting
-data/               Falcon/enemy skills, enemy archetypes, AI policies, encounter definitions
-systems/             Readiness, initiative, damage, formation, cooldown, shield, status systems
+systems/             Readiness, initiative, damage, formation, cooldown, shield and status systems
+systems/effects/     Shared declarative effect registry and handlers
+data/                Enemy archetypes, enemy skills, AI policies, encounter definitions
 ui/                  Terminal menu, deployment selection, status display, battle log
 test/                Automated tests and deterministic golden fixtures
 tools/                Simulator, scheduler comparison, fixture updater, headless helpers

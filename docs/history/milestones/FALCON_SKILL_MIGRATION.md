@@ -1,6 +1,6 @@
 # Historical Milestone — Falcon Skill Engine Alignment (2026-11-16)
 
-> This is a historical migration report. Step 9 later finalized the mechanics that were initially deferred here. For current behavior, use the [Falcon Implementation Guide](../../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [Falcon Mechanics Finalization](../../reference/FALCON_MECHANICS_FINALIZATION.md).
+> This is a historical migration report. Step 9 later finalized some deferred mechanics, and ADR-017 subsequently superseded several of those choices. For current behavior, use the [Falcon Implementation Guide](../../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [ADR-017](../../project/DECISIONS.md). The superseded Step 9 record is preserved [here](STEP9_SUPERSEDED_FALCON_MECHANICS.md).
 
 ## Canonical design source
 
@@ -53,7 +53,7 @@ Run:
 node --test
 ```
 
-The Falcon finalization intentionally changes combat behavior and logs. Golden transcript fixtures are regenerated after focused tests and full-suite verification. See [Falcon Mechanics Finalization](../../reference/FALCON_MECHANICS_FINALIZATION.md) for the final implementation contract.
+The Falcon finalization intentionally changes combat behavior and logs. Golden transcript fixtures are regenerated after focused tests and full-suite verification. See [ADR-017](../../project/DECISIONS.md) and the [Falcon Implementation Guide](../../reference/FALCON_IMPLEMENTATION_GUIDE.md) for current behavior; the older Step 9 values are preserved as a superseded historical record.
 
 ## Historical follow-up
 

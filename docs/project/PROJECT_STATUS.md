@@ -16,7 +16,7 @@ The five Falcon skill kits have been updated to the owner's approved kit v1. The
 - Jazen's Recoil Dampeners stacks Mpow; no immunity, Stagger or Taunt remains in his Falcon kit.
 - Zenki uses Energy mastery and his simplified stealth/precision/three-shot execution kit.
 - Catalyst Overdrive reflects 25% of direct incoming damage for 3 turns without recursive reflection.
-- Latest regression: 273 pass, 0 fail, 38 superseded legacy assertions skipped (311 total tests reported by Node's test runner).
+- Latest post-cleanup regression: 260 pass, 0 fail, 0 skipped.
 - Added the initial deterministic tactical Falcon controller and the two-stage `blightheartSanctum` boss encounter.
 - Added a coordinated controller with Toxic DoT awareness, cleanse prioritization, adaptive barrier selection, focus-fire rules, and active/reserve rotation.
 - Evalete's live Catalyst Overdrive now cleanses harmful effects from active allies before applying its healing and defensive effects; positive buffs are preserved.
@@ -49,7 +49,7 @@ The interactive entry point is `index.js`. Headless execution and simulation use
 
 ## Verification
 
-The current runtime passes `npm test`: **273 passed, 0 failed, 38 superseded legacy assertions skipped**. Coverage includes approved Falcon kits, all 20 enemy skills, enemy passive stat modifiers and triggers, enemy stat-scaling bounds, source-attributed direct/reflected/DoT damage, shared stacking/timing behavior, and deterministic golden transcripts. Golden fixtures were regenerated for intentional behavior changes. Run `npm test` from the project root to verify the current checkout.
+The cleaned runtime passes `npm test`: **260 passed, 0 failed, 0 skipped**. Coverage includes approved Falcon kits, all enemy skills and passives, enemy stat-scaling bounds, source-attributed direct/reflected/DoT damage, shared stacking/timing behavior, reserve deployment, and deterministic golden transcripts. Obsolete duplicate definitions, unreachable handlers, and superseded assertions were removed; important generic behavior remains covered. Run `npm test` from the project root to verify the current checkout.
 
 The three-active formation and two-reserve rotation are now covered by headless regression tests. The current Node baseline is 18 or newer. The project has no third-party runtime dependencies.
 
@@ -70,7 +70,7 @@ Executable code and automated tests define actual runtime behavior. `references/
 
 ## Development status
 
-Steps 1–9, the shared skill effect-registry pipeline, passive event registry and generic summon lifecycle registry are complete. Falcon skill/passive data is active under `characters/skillData/`; `characters/skills.js` builds the character and enemy registries through `core/skillInterpreter.js`. Passive subscriptions are dispatched through `systems/passives/registry.js`; reusable skill effects are in `systems/effects/`; summon owner-turn activation is in `systems/summons/`. Global Combat Stacking v1 and Effect Timing/Trigger v1 are recorded in ADR-017 and covered by the current approved regression tests. Earlier Step 9 balance details are historical wherever they conflict with ADR-017.
+Steps 1–9, the shared skill effect-registry pipeline, passive event registry and generic summon lifecycle registry are complete. A conservative cleanup removed only superseded/unreachable skill and test paths; historical records remain under `docs/history/`. Falcon skill/passive data is active under `characters/skillData/`; `characters/skills.js` builds the character and enemy registries through `core/skillInterpreter.js`. Passive subscriptions are dispatched through `systems/passives/registry.js`; reusable skill effects are in `systems/effects/`; summon owner-turn activation is in `systems/summons/`. Global Combat Stacking v1 and Effect Timing/Trigger v1 are recorded in ADR-017 and covered by the current approved regression tests. Earlier Step 9 balance details are historical wherever they conflict with ADR-017.
 
 See the [architecture reference](../reference/ARCHITECTURE.md), [testing guide](TESTING_AND_PLAYTESTING.md), and [roadmap](ROADMAP.md) for details.
 

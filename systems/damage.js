@@ -40,8 +40,6 @@ function resistanceMultiplier(target, damageType) {
     : 1;
 }
 
-// bonusMultiplier: extra damage from effects outside the target's own statuses,
-// for example Meo-9's scan (computed by the action resolver).
 function calculatePhysicalDamage(
   attacker,
   target,
@@ -49,7 +47,6 @@ function calculatePhysicalDamage(
   power = 1,
   canCrit = true,
   random = Math.random,
-  bonusMultiplier = 1,
 ) {
   let raw = effectiveStat(attacker, "ATK") * power * damageDealtMultiplier(attacker);
   const crit =
@@ -58,7 +55,6 @@ function calculatePhysicalDamage(
   raw *= 100 / (100 + effectiveStat(target, "DEF"));
   raw *= resistanceMultiplier(target, "Physical");
   raw *= markMultiplier(target);
-  raw *= bonusMultiplier;
   return { damage: Math.max(1, Math.floor(raw)), crit };
 }
 
@@ -70,7 +66,6 @@ function calculateMasteryDamage(
   power = 1,
   canCrit = true,
   random = Math.random,
-  bonusMultiplier = 1,
 ) {
   let raw =
     effectiveStat(attacker, "MPow") *
@@ -86,7 +81,6 @@ function calculateMasteryDamage(
     clamp(target.stats.masteryResistance?.[type] || 0, 0, 100) / 100;
   raw *= resistanceMultiplier(target, type);
   raw *= markMultiplier(target);
-  raw *= bonusMultiplier;
   return { damage: Math.max(1, Math.floor(raw)), crit };
 }
 

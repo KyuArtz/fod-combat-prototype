@@ -45,7 +45,7 @@ index.js
 - UI controllers present a view and return a decision; they do not directly mutate combat state.
 - Enemy AI chooses actions from data-defined policies. Enemy skill definitions describe effects; the shared interpreter executes them.
 - Character/enemy data modules should remain declarative. Runtime actor objects are created through `characters/actorFactory.js`.
-- Keep the skill runtime boundaries explicit: execution orchestration in `skillInterpreter`, passive/summon lifecycle in `skillLifecycle`, effect handlers in `skillEffects`, validation in `skillDataValidation`, and formatting in `skillMessages`.
+- Keep the skill runtime boundaries explicit: execution orchestration in `core/skillInterpreter.js`, passive/summon lifecycle behind the `core/skillLifecycle.js` compatibility facade and `systems/passives/` / `systems/summons/`, effect handlers in `systems/effects/`, validation in `core/skillDataValidation.js`, and formatting in `core/skillMessages.js`.
 - Avoid introducing new module-level mutable battle state. State that differs per battle belongs on the battle state or in a battle-scoped context.
 
 ## Turns, controllers, and decisions
@@ -97,7 +97,7 @@ Combat randomness is stored as plain data in `state.rng` and exposed to battle-s
 
 The vocabulary includes battle, round, turn, action, skill, basic attack, damage, healing, shield, status, incapacitation, summon, formation, reserve deployment, encounter, wave, reinforcement, and completion events. See the [Step 4 report](../history/milestones/STEP4_TYPED_COMBAT_EVENTS.md) and [Step 8 report](../history/milestones/STEP8_ENCOUNTER_PROGRESSION.md) for milestone-specific catalogs.
 
-Known analytics limit: `DamageApplied` does not currently identify the source actor, so the simulator reports damage received by targets rather than damage dealt by source actor.
+`DamageApplied` includes `sourceId`, `sourceSide`, and `kind` (`direct`, `reflected`, or `dot`). The simulator can therefore report per-actor damage contributions as well as damage received by targets. Periodic damage without a retained source is attributed to a null source.
 
 ## Data authority
 
@@ -122,9 +122,9 @@ Current migrated subscriptions include Zenki's Unobserved turn/damage triggers, 
 
 ## Passive event dispatch
 
-Passive definitions subscribe to lifecycle events in their character skill data. `systems/passives/runtime.js` emits lifecycle events; `systems/passives/registry.js` resolves each subscription to a registered handler. The runtime does not select behavior by character ID for migrated passives. Current registered lifecycle handlers cover Catalyst Wing setup/pulse/destruction protection and Biotech Overdrive duration, alongside the previously migrated Unobserved, Recoil Dampeners, and Overwatch reactions.
+Passive definitions subscribe to lifecycle events in their character skill data. `systems/passives/runtime.js` emits lifecycle events; `systems/passives/registry.js` resolves each subscription to a registered handler. The runtime does not select behavior by character ID for migrated passives. Current registered lifecycle handlers cover Catalyst Wing setup, periodic pulses, and shutdown when the Wing is destroyed or expires (there is no destruction fallback shield), alongside Biotech Overdrive, Unobserved, and Recoil Dampeners.
 
-Battle-scoped durations use `state.battleTimers` and the generic helpers in `systems/battleTimers.js`. A registered `setBattleTimer` effect declares the key, round duration, and optional actor turn-start reactions. Reactions are processed after that actor's MP recovery and cooldown tick; all timers decrement once at completed-round timing. Systems such as summon scan and activation power modifiers query the same timer through `isBattleTimerActive`, so consumers do not need a character-specific field check. Nanotech Singularity uses a `healPercentMaxHP` reaction scoped to living non-summon allies; reserve members therefore receive the effect if they enter while the timer remains active.
+Battle-scoped durations use `state.battleTimers` and the generic helpers in `systems/battleTimers.js`. A registered `setBattleTimer` effect declares its key, duration, optional owner clock, and actor turn-start reactions. Reactions are processed after that actor's MP recovery and cooldown tick. Unowned timers decrement once when a battle round completes; owner-scoped timers decrement only when their owner completes a turn, never on both clocks. Nanotech Singularity uses an owner-scoped timer with a `healPercentMaxHP` reaction for living non-summon allies and a conditional Meo-9 cover-fire power modifier; reserve allies receive the healing reaction if they enter while the timer remains active.
 
 Summon activation and owner-turn expiry are dispatched through `systems/summons/registry.js` and `systems/passives/runtime.js`. Meo-9 declares Emergency Field and cover fire as owner-turn activation subscriptions; it has no scan, EMP, Final Protocol or expiry effect. Catalyst Wing is a targetable passive summon with no independent scheduled turn. Timed passive modifiers use `passiveTimers`; conditional passive flags and Recoil Dampeners use generic declarative event subscriptions. Zenki’s Unobserved uses a turn-start history check and damageTaken hook for its Evasion bonus.
 
@@ -138,18 +138,18 @@ The architecture is extensible at the registration boundaries: a new skill can c
 
 ## Specialized handler reuse audit
 
-The current registered handlers have been reviewed for reuse boundaries. Shared heal/damage/status/shield operations, `statusGroup`, battle timers, and conditional hit modifiers are reusable. The passive lifecycle runtime no longer contains named-status branches for `singularityDot`, `commandUplink`, or `tacticalMark`; defeat reactions are consumed generically from status metadata. Cipher Tag declares its paired statuses through `statusGroup`; Railshot and Zero Hour compose the generic `masteryHit` operation, and Zero Hour's Cipher Tag slow is a follow-up `conditionalStatus`. Nanotech Singularity now composes generic battle-timer, status, area-DoT, and summon conditional-power/announcement operations; no Singularity-specific active-skill handler remains. See [Handler Reuse Audit](HANDLER_REUSE_AUDIT.md) for the handler-by-handler classification and migration order.
+The current registered handlers have been reviewed for reuse boundaries. Shared heal/damage/status/shield operations, `statusGroup`, battle timers, and conditional hit modifiers are reusable. The passive lifecycle runtime no longer contains named-status branches for `singularityDot`, `commandUplink`, or `tacticalMark`; the `commandUplink` label remains only as a status ID applied through the generic `statusAllies` handler. Defeat reactions are consumed generically from status metadata. Cipher Tag uses `statusGroup` to apply/replace its RES-reduction mark. Railshot uses the generic guaranteed-hit `masteryHit` operation; Zero Hour uses `masteryMultiHit` with a below-40%-HP final-hit override and no follow-up slow. Nanotech Singularity composes a generic owner-clocked battle timer, team/foe statuses, turn-start healing, and a conditional Meo-9 cover-fire power modifier; it has no area DoT or scan vulnerability. See [Handler Reuse Audit](HANDLER_REUSE_AUDIT.md) for current handler reuse boundaries.
 
 
 ## Generic mastery-hit modifiers and accuracy policy
 
-The generic `masteryHit` effect supports standard or guaranteed accuracy. The reusable `masteryMultiHit` effect resolves a declared hit list and optional strict target-HP threshold override. Zenki’s Railshot uses guaranteed 1.1x Energy mastery damage without a conditional damage bonus. Zero Hour declares three 0.9x shots and replaces the final shot with 1.6x when the target is below 40% HP at activation.
+The generic `masteryHit` effect supports standard or guaranteed accuracy. The reusable `masteryMultiHit` effect resolves a declared hit list and optional target-HP threshold override. Zenki’s Railshot uses guaranteed 1.1x Energy mastery damage without a conditional damage bonus. Zero Hour declares three 0.9x shots and replaces the final shot with 1.6x when the target is below 40% HP at activation.
 
-The generic `conditionalStatus` effect may require an existing status and/or a living target before applying its declared status. It also skips execution when the preceding hit in the same skill run marked the target as missed. Zero Hour composes this after `masteryHit` to apply the -25% SPD status for two turns only when the target survives and still has Cipher Tag. This preserves the original hit-before-follow-up ordering and does not add RNG draws.
+The generic `conditionalStatus` effect remains available for future gated status applications: it can require an existing status and/or a living target and skips when the preceding hit in the same skill run marked the target as missed. No current Falcon skill uses it as a Zero Hour follow-up; Zero Hour is now the three-hit `masteryMultiHit` attack only.
 
 ## Declarative status turn-start behavior
 
-Statuses may declare a `turnStart` contract describing which stored damage and damage-type fields to use and an optional message template. `systems/statusEffects.js` processes these contracts at actor turn start; the passive lifecycle runtime delegates to this generic consumer rather than checking a character-specific status identifier. Nanotech Singularity's DoT uses the generic `damageOverTime` effect with `side: "enemy"`; the effect calculates and stores one non-critical damage amount per living enemy at application time. Its contract preserves status duration ticking in the normal end-of-turn status pass; it does not move or shorten the effect's duration.
+Statuses may declare a `turnStart` contract describing which stored damage and damage-type fields to use and an optional message template. `systems/statusEffects.js` processes these contracts at actor turn start; the passive lifecycle runtime delegates to this generic consumer rather than checking a character-specific status identifier. Nanotech Singularity has no DoT. It uses the generic timer contract for its turn-start ally healing and Meo-9 cover-fire modifier; the active skill applies its ATK/SPD buffs and enemy SPD reduction through generic status handlers.
 
 
 ## Declarative conditional status refresh

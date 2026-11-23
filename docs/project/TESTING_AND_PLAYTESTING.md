@@ -10,7 +10,7 @@ npm test
 
 This runs Node's built-in test runner (`node --test`). No third-party test framework or install step is required.
 
-The uploaded baseline contains **202 tests**. Always use the result from the current checkout rather than relying on a count copied into a previous handoff.
+The pre-cleanup Iteration 3 snapshot contained 311 discovered tests, including 38 skipped superseded assertions. The cleaned checkout now reports **260 tests passing, 0 failing, 0 skipped**. Always use the result from the current checkout rather than relying on a historical count.
 
 ## Test suite map
 
@@ -20,11 +20,14 @@ The uploaded baseline contains **202 tests**. Always use the result from the cur
 | `controllers.test.js` | Controller injection, headless battles, decision recording/replay, rejected decisions |
 | `determinism.test.js`, `rng.test.js` | Seed validation, RNG state, deterministic battle replay |
 | `eventBus.test.js` | Event delivery, subscriptions, typed event contracts, payload behavior |
+| `battleTimers.test.js`, `effectRegistry.test.js`, `effectTiming.test.js` | Battle-scoped timers, pluggable effect handlers, and status/shield duration timing |
+| `passiveModifiers.test.js`, `passiveRegistry.test.js`, `summonRegistry.test.js` | Generic passive modifiers, passive event dispatch, and reusable summon lifecycle handlers |
+| `damageAttribution.test.js` | Direct, reflected, and DoT source attribution and simulator damage contribution metrics |
 | `openingInitiative.test.js` | Player-first and speed opening policies, ties, scheduler compatibility |
 | `thresholdCombatReadiness.test.js` | Continuous readiness, tie ordering, CR adjustments, reserves, cloned state |
 | `turnViewAndDecisions.test.js` | Turn views, legal action shapes, target validation, terminal decisions |
-| `skillData.test.js`, `falconSkillData.test.js`, `enemySkillData.test.js` | Declarative skill validation, registry construction, shared interpreter execution |
-| `elishiaMechanics.test.js`, `ownerFalconMechanics.test.js`, `falconFinalizedMechanics.test.js` | Falcon skill/passive behavior and Step 9 implementation choices |
+| `falconApprovedSkillData.test.js`, `falconSkillData.test.js`, `enemySkillData.test.js` | Approved Falcon definitions, generic data validation, registry construction and shared interpreter execution |
+| `elishiaMechanics.test.js`, `falconApprovedElishia.test.js`, `falconApprovedLifecycle.test.js`, `falconApprovedRoster.test.js`, `falconFinalizedMechanics.test.js`, `effectTiming.test.js` | Adaptive Barrier, approved Falcon passives/skills, cross-kit generic mechanics, and status/shield duration timing |
 | `fullBattleRegression.test.js` | Full-battle skill use, AI interactions, battle outcomes, status timing, switching, reserves |
 | `goldenTranscripts.test.js`, `goldenElishia.test.js` | Deterministic full-battle logs and final-state fixtures |
 | `enemyDataAndEncounter.test.js` | Enemy archetype, policy, boss passive, and encounter data validation |
@@ -32,7 +35,6 @@ The uploaded baseline contains **202 tests**. Always use the result from the cur
 | `encounterProgression.test.js` | Waves, stat overrides, reinforcement triggers, lifecycle and completion callback |
 | `simulator.test.js` | CLI validation, deterministic batch metrics, output formats, encounter reporting |
 | `referencePackaging.test.js` | Ensures the compact owner-reference package contains only the intended reference file |
-| `referencePackaging.test.js` | Required compact reference file packaging |
 
 Golden fixtures are stored in `test/fixtures/golden/` as compressed files.
 

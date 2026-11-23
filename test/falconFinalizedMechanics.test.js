@@ -34,73 +34,6 @@ function world(randomValue = 0.99) {
 }
 const skill = (w, id, key) => w.skillSet.skills[id].find((entry) => entry.key === key);
 
-test.skip("Meo-v9 Final Protocol fires once on natural expiry, prioritizes its selected enemy and applies the 50% secondary EMP (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const w = world();
-  const elishia = w.byId.elishia;
-  const [primary, ...secondary] = w.enemies;
-  w.state.lastAllyTargetedEnemyId = primary.id;
-  skill(w, "elishia", "meo").run(elishia, {});
-  const meo = w.state.actors.find((actor) => actor.id === "meo-9");
-  assert.equal(meo.finalProtocolTargetId, primary.id);
-  for (let i = 0; i < 3; i++) w.skillSet.summonTurn(meo);
-  assert.equal(meo.finalProtocolUsed, true);
-  assert.ok(primary.hp < primary.stats.HP);
-  assert.ok(secondary.every((enemy) => enemy.hp < enemy.stats.HP));
-  assert.ok(w.enemies.every((enemy) => enemy.statuses.meoFinalProtocolSpdDown?.amount === -15));
-  const after = w.enemies.map((enemy) => enemy.hp);
-  w.skillSet.summonTurn(meo);
-  assert.deepEqual(w.enemies.map((enemy) => enemy.hp), after, "Final Protocol cannot fire twice");
-});
-
-test("Meo-v9 destroyed before expiry does not trigger Final Protocol", () => {
-  const w = world();
-  skill(w, "elishia", "meo").run(w.byId.elishia, {});
-  const meo = w.state.actors.find((actor) => actor.id === "meo-9");
-  const hp = w.enemies.map((enemy) => enemy.hp);
-  meo.alive = false;
-  w.skillSet.summonDestroyed(meo);
-  assert.deepEqual(w.enemies.map((enemy) => enemy.hp), hp);
-  assert.equal(meo.finalProtocolUsed, undefined);
-});
-
-test.skip("Nanotech Singularity applies a non-critical Nanotech DoT at the start of each enemy turn (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const w = world();
-  const elishia = w.byId.elishia;
-  skill(w, "elishia", "ultimate").run(elishia, {});
-  const target = w.enemies[0];
-  const dot = target.statuses.singularityDot;
-  assert.ok(dot.dotDamage > 0);
-  assert.equal(dot.turns, 3);
-  assert.ok(w.enemies.every((enemy) => enemy.statuses.singularityDot?.turns === 3), "the reusable area DoT is assigned to every living enemy");
-  assert.deepEqual(dot.turnStart, {
-    damageField: "dotDamage", damageTypeField: "damageType",
-    message: "{actor} takes {damage} Nanotech damage from Nanotech Singularity.",
-  });
-  const before = target.hp;
-  w.skillSet.onTurnStart(target);
-  assert.equal(target.hp, before - dot.dotDamage);
-  assert.ok(w.logs.some((line) => line.includes("Nanotech Singularity")));
-});
-
-test.skip("Catalyst Wing is a targetable, non-turn-taking passive summon and grants Evalete's emergency shield if destroyed (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const w = world();
-  const evalete = w.byId.evalete;
-  w.skillSet.onBattleStart(w.allies);
-  const wing = w.state.actors.find((actor) => actor.id === evalete.catalystWingId);
-  assert.ok(wing);
-  assert.equal(wing.targetableByEnemy, true);
-  assert.equal(wing.passiveSummon, true);
-  assert.equal(wing.stats.HP, Math.floor(evalete.stats.HP * 0.25));
-  assert.equal(wing.stats.DEF, Math.floor(evalete.stats.DEF * 0.5));
-  const { enemyTarget } = require("../ai/targeting");
-  wing.hp = Math.floor(wing.stats.HP * 0.1);
-  assert.equal(enemyTarget(w.state, w.enemies[1], formation.alive), wing, "enemy single-target selection can hit the damaged Wing");
-  wing.alive = false;
-  w.skillSet.summonDestroyed(wing);
-  assert.equal(evalete.shields[0].value, Math.floor(evalete.stats.HP * 0.15));
-  assert.equal(evalete.shields[0].turns, 4);
-});
-
 test("Catalyst Wing natural expiry does not grant the destruction shield", () => {
   const w = world();
   const evalete = w.byId.evalete;
@@ -117,8 +50,7 @@ test("Zackry Overwatch does not grant a team-wide Accuracy bonus from untargeted
   assert.ok(w.allies.every((ally) => ally.nextAttackAccuracy === 0));
 });
 
-
-test("Zackry's Overwatch Accuracy token applies to the next skill attack and is consumed", () => {
+test("Generic next-attack Accuracy token reduces Evasion for the next eligible skill attack and is consumed", () => {
   const w = world(0.45);
   const zackry = w.byId.zackry;
   const target = w.enemies[0];
@@ -130,7 +62,6 @@ test("Zackry's Overwatch Accuracy token applies to the next skill attack and is 
   assert.equal(zackry.nextAttackAccuracy, 0);
 });
 
-
 test("Stagger delays a unit that is at zero readiness as well as one already partway to its turn", () => {
   const w = world();
   const target = w.enemies[0];
@@ -139,18 +70,7 @@ test("Stagger delays a unit that is at zero readiness as well as one already par
   assert.equal(target.cr, -20);
 });
 
-
-test.skip("Jazen's Recoil Dampeners threshold uses HP loss after shield absorption (legacy assertion superseded by approved Falcon regression coverage)", () => {
-  const w = world();
-  const jazen = w.byId.jazen;
-  addShield(jazen, 1000, 2);
-  w.skillSet.onDamageTaken(jazen, 500, "Physical", 0);
-  assert.equal(jazen.statuses.jazenRecoil, undefined, "fully shielded damage does not count as a hit to HP");
-  w.skillSet.onDamageTaken(jazen, 500, "Physical", Math.floor(jazen.stats.HP * 0.11));
-  assert.equal(jazen.statuses.jazenRecoil.amount, 10);
-});
-
-test("Zenki's guaranteed-hit Railshot consumes, but is not blocked by, an Accuracy token", () => {
+test("Guaranteed-hit mastery attacks consume but are not blocked by a pending Accuracy token", () => {
   const w = world(0);
   const zenki = w.byId.zenki;
   const target = w.enemies[0];

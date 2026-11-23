@@ -4,7 +4,7 @@ const { isBattleTimerActive } = require("../battleTimers");
 const pct = (value, percent) => Math.floor((value * percent) / 100);
 
 function createSummonRegistry(context) {
-  const { addStatus, alive, heal, hitMastery, hitPhysical, say, state } = context;
+  const { alive, heal, hitPhysical, say, state } = context;
   const handlers = {
     emergencyField(summon, rule) {
       const candidates = alive(state, rule.side || summon.side).filter((unit) =>
@@ -23,28 +23,6 @@ function createSummonRegistry(context) {
       const power = modifier?.power ?? rule.power;
       const outcome = hitPhysical(summon, target, power, rule.canCrit);
       say(formatMessage(rule.message || "{actor} attacks {target} for {damage} Physical damage.", { actor: summon.name, target: target.name, damage: outcome.damage }));
-    },
-    finalProtocol(summon, protocol) {
-      if (summon.finalProtocolUsed) return;
-      summon.finalProtocolUsed = true;
-      const enemies = alive(state, protocol.targetSide || "enemy");
-      if (!enemies.length) return;
-      const primary = enemies.find((enemy) => enemy.id === summon.finalProtocolTargetId) || enemies[0];
-      for (const enemy of enemies) {
-        const power = enemy === primary ? protocol.power : protocol.power * protocol.secondaryMultiplier;
-        const outcome = hitMastery(summon, enemy, protocol.element, power, false);
-        if (enemy.alive && protocol.status) {
-          addStatus(enemy, protocol.status.id, {
-            stat: protocol.status.stat, amount: protocol.status.amount,
-            turns: protocol.status.turns, debuff: protocol.status.debuff !== false,
-          });
-        }
-        const message = protocol.message || "{target} is struck by {actor}'s protocol for {damage} {element} damage{priority}.";
-        say(formatMessage(message, {
-          actor: summon.name, target: enemy.name, damage: outcome.damage,
-          element: protocol.element, priority: enemy === primary ? " (primary)" : " (secondary)",
-        }));
-      }
     },
   };
 

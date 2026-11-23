@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-11-22 — Obsolete runtime and test cleanup
+
+- Removed the retired duplicate `data/skills/` Falcon definitions; the active definitions remain in `characters/skillData/`.
+- Removed the unreachable legacy `core/skillEffects.js` implementation; shared effects remain in `systems/effects/` behind the current registry.
+- Removed Meo-9 scan damage-bonus calculation, scan-template plumbing, Final Protocol summon handler, and their obsolete validation. The current Meo-9 lifecycle remains covering fire plus Emergency Field healing.
+- Removed the retired dedicated `commandUplink` effect-type validator; Zackry's Mpow buff continues through the generic `statusAllies` handler.
+- Removed obsolete scan/Final Protocol test assertions and 38 skipped legacy assertions; moved the still-useful global status/shield duration regression into `effectTiming.test.js`.
+- Kept the legacy scheduler, initial Falcon tactical controller, `core/skillLifecycle.js` compatibility facade, reusable Accuracy-token and Stagger systems, generic conditional-status and multi-hit handlers, deterministic golden fixtures, and historical milestone records.
+- Archived the superseded Step 9 Falcon mechanics note under `docs/history/milestones/` and repaired current documentation links and ownership descriptions.
+- **Verification:** `npm test` reports 260 passed, 0 failed, 0 skipped.
+
 ## 2026-11-21 — Falcon approved kit v1, global stacking/timing and playtest
 
 - Updated the active Falcon skill definitions in `characters/skillData/` to the five owner-approved kits. The shared interpreter and effect registries remain character-agnostic.

@@ -11,7 +11,7 @@ Use this document as a concise starting point for future F.O.D. development sess
 - Default encounter: `trainingGround`, five active Falcon agents versus five active enemies.
 - Steps 1–9 and the Falcon shared-runtime/passive audit are complete.
 - The Falcon active-effect reuse review is complete: Tactical Mark, Cipher Tag, Railshot, Zero Hour, and Nanotech Singularity now compose reusable effect and lifecycle contracts.
-- Latest verified snapshot: Falcon approved kit v1, global stacking/timing implementation, coordinated Falcon controller, Toxic cleanse decision logic, and three-active/two-reserve formation coverage; 273 tests passed, 0 failed, and 38 superseded legacy assertions skipped. The two-stage Blightheart boss is covered by seeded simulations.
+- Latest verified snapshot before this cleanup: Falcon approved kit v1, global stacking/timing implementation, coordinated Falcon controller, Toxic cleanse decision logic, and three-active/two-reserve formation coverage. This cleanup removes obsolete duplicate runtime/test sources while preserving comparison and compatibility paths. Current post-cleanup verification is 260 passed, 0 failed, 0 skipped.
 
 ## Start every work session by
 
@@ -59,7 +59,7 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map and run
 - `references/characterTerraData.js` is a compact owner-reference extract containing selected skill objects and stat information. It is not a full roster and is not imported by the engine.
 - The owner maintains the separate website-facing character data. Do not move files into a new `ref/` directory, do not create a duplicate `ref/` folder, and do not package the full original JSON. Keep `references/characterTerraData.js` as the single in-project reference file.
 - When that reference JS changes, the owner personally applies the latest relevant content to the separate website-facing data.
-- Read [Falcon implementation](../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [Step 9 decisions](../reference/FALCON_MECHANICS_FINALIZATION.md) before changing Falcon mechanics.
+- Read [Falcon implementation](../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [ADR-017](DECISIONS.md) before changing Falcon mechanics. The earlier Step 9 choices are preserved as a superseded [historical milestone](../history/milestones/STEP9_SUPERSEDED_FALCON_MECHANICS.md).
 
 ## Known limitations
 
@@ -74,8 +74,10 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map and run
 Use the [documentation index](../README.md) to navigate. Keep current state in `PROJECT_STATUS.md`, plans in `ROADMAP.md`, design decisions in `DECISIONS.md`, implementation history in `CHANGELOG.md`, and detailed historical scope in milestone reports. Avoid copying full feature descriptions into multiple documents.
 
 
-## Current architecture handoff — Falcon shared-runtime audit complete
+## Current cleanup baseline — 2026-11-22
 
-Continue from the latest Zero Hour composition snapshot. The verified archive is the Railshot Composition snapshot plus the Zero Hour generic effect composition increment. `systems/passives/runtime.js` owns lifecycle timing and event emission; `systems/passives/registry.js` dispatches declarative subscriptions; `systems/effects/` and `systems/summons/` provide their respective handler registries. `core/skillLifecycle.js` remains a compatibility facade.
+The latest source snapshot is the conservative cleanup of the Iteration 3 prototype. The obsolete duplicate `data/skills/` source, unreachable `core/skillEffects.js` implementation, Meo-9 scan/Final Protocol plumbing, and superseded skipped/scan tests have been removed. Current Falcon definitions live in `characters/skillData/`; shared effect handlers live in `systems/effects/`.
 
-The latest Falcon pass keeps character-specific behavior in declarative `characters/skillData/*.js` definitions and generic handlers. ADR-017 records the approved kit, global stacking, and effect timing rules. `docs/reference/FALCON_IMPLEMENTATION_GUIDE.md` and `docs/reference/COMBAT_MECHANICS.md` are the current references; earlier Step 9 docs are historical where they conflict. That earlier audit snapshot had 233 tests passing. The current verification is 273 passed, 0 failed, 38 superseded legacy assertions skipped. Tactical/boss playtest results and caveats are recorded in `reports/` and `docs/reference/ENEMY_ARCHETYPES_AND_BALANCE.md`. No Phantom Rebellion content is in scope. Preserve the established `docs/history/`, `docs/project/`, and `docs/reference/` tree, update docs in place, and keep user-supplied JSON/files out of the project package.
+Keep the legacy fixed-step scheduler for comparison, `ai/falconTactics.js` as the initial deterministic controller, `ai/falconTacticsV2.js` as the coordinated controller, `core/skillLifecycle.js` as a compatibility facade, generic Accuracy-token and Stagger mechanics, generic conditional-status/multi-hit handlers, and deterministic golden fixtures. Historical Step 9 decisions and earlier playtest records remain under `docs/history/` and are not current behavior where ADR-017 differs.
+
+Current verification after cleanup: `npm test` — 260 passed, 0 failed, 0 skipped. Do not commit, push, or merge unless explicitly requested. Keep user-supplied source JSON and previous archives untouched.

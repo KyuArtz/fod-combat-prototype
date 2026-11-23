@@ -1,5 +1,4 @@
 const { nextFloat } = require("./rng");
-const { isBattleTimerActive } = require("../systems/battleTimers");
 const {
   calculateMasteryDamage,
   calculatePhysicalDamage,
@@ -14,20 +13,6 @@ function createActionResolver({
   random = () => nextFloat(state.rng),
   incomingAttackModifier = () => 0,
 }) {
-  // Summon scan bonuses: while an owned summon is alive, the owner's damage
-  // to enemies is increased (more during Singularity). Several summons do not stack.
-  function damageBonus(attacker, target) {
-    if (attacker.side === target.side) return 1;
-    let best = 0;
-    for (const unit of state.actors) {
-      if (!unit.alive || !unit.summon || unit.ownerId !== attacker.id || !unit.scan) continue;
-      const conditionalBonus = (unit.scan.conditionalBonuses || []).reduce((total, modifier) =>
-        total + (isBattleTimerActive(state, modifier.battleTimer) ? modifier.damageBonus || 0 : 0), 0);
-      const bonus = unit.scan.damageBonus + conditionalBonus;
-      best = Math.max(best, bonus);
-    }
-    return 1 + best / 100;
-  }
 
   const calculatePhysical = (attacker, target, power = 1, canCrit = true) =>
     calculatePhysicalDamage(
@@ -37,7 +22,6 @@ function createActionResolver({
       power,
       canCrit,
       random,
-      damageBonus(attacker, target),
     );
 
   const calculateMastery = (
@@ -55,7 +39,6 @@ function createActionResolver({
       power,
       canCrit,
       random,
-      damageBonus(attacker, target),
     );
 
   function accuracyMiss(attacker, target, ignoreAccuracy = false) {

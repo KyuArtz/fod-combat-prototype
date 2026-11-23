@@ -1,6 +1,8 @@
-# Falcon Mechanics Finalization — Step 9
+# Historical Milestone — Falcon Mechanics Finalization (Step 9)
 
-The executable skill definitions in `data/skills/*.js`, shared runtime in `core/skillInterpreter.js` and `core/skillEffects.js`, runtime stats in `characters/falcon.js`, and automated tests define current combat behavior. See the [Falcon Implementation Guide](FALCON_IMPLEMENTATION_GUIDE.md) for the complete value-by-value behavior reference.
+> **Superseded historical record.** This document preserves the implementation decisions made during the original Step 9 pass. Several listed mechanics were later removed or revised by ADR-017. Do not use the values below as current combat instructions. For current behavior, see the [Falcon Implementation Guide](../../reference/FALCON_IMPLEMENTATION_GUIDE.md) and [ADR-017](../../project/DECISIONS.md).
+
+At the time of this milestone, the executable skill definitions in `data/skills/*.js`, shared runtime in `core/skillInterpreter.js` and `core/skillEffects.js`, runtime stats in `characters/falcon.js`, and automated tests define current combat behavior. See the [Falcon Implementation Guide](../../reference/FALCON_IMPLEMENTATION_GUIDE.md) for the complete value-by-value behavior reference.
 
 No character-specific combat loop was added. Falcon skills remain declarative and execute through the shared skill runtime and combat systems.
 
@@ -17,3 +19,8 @@ The following values fill details omitted from the original owner reference. The
 ## Regression coverage
 
 `test/falconFinalizedMechanics.test.js` and `test/ownerFalconMechanics.test.js` cover Final Protocol expiry, Singularity DoT, Catalyst Wing lifecycle, Accuracy-token behavior, Stagger readiness delay, Recoil Dampeners, and Railshot. Run `npm test` from the project root.
+
+
+## Historical cleanup note
+
+The duplicate `data/skills/` definitions, the old `core/skillEffects.js` implementation, and the superseded test files named above were later retired after the active Falcon skill data moved to `characters/skillData/` and the effect registry moved to `systems/effects/`. Current coverage is listed in [Testing and Playtesting](../../project/TESTING_AND_PLAYTESTING.md).
