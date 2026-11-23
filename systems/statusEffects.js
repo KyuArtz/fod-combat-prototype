@@ -79,8 +79,13 @@ function processTurnStartStatuses(actor, { applyDamage, say, state }) {
     const amount = status[tick.damageField];
     const damageType = status[tick.damageTypeField];
     if (!Number.isFinite(amount) || amount <= 0 || typeof damageType !== "string") continue;
+    const sourceActors = [
+      ...(state?.actors || []),
+      ...(state?.party?.roster || []),
+      ...(state?.enemyParty?.roster || []),
+    ];
     const sourceActor = status.sourceId
-      ? state?.actors?.find((unit) => unit.id === status.sourceId) || null
+      ? sourceActors.find((unit) => unit.id === status.sourceId && (!status.sourceSide || unit.side === status.sourceSide)) || null
       : null;
     applyDamage(actor, amount, damageType, sourceActor, { kind: "dot" });
     if (tick.message) {
@@ -89,6 +94,9 @@ function processTurnStartStatuses(actor, { applyDamage, say, state }) {
         .replaceAll("{damage}", String(amount))
         .replaceAll("{damageType}", damageType));
     }
+    // Once a DoT incapacitates its target, later simultaneous ticks cannot
+    // deal additional damage to an already-defeated unit.
+    if (!actor.alive) break;
   }
 }
 
@@ -160,8 +168,23 @@ function consumeNextAttackDamageModifier(actor) {
   return status.nextAttackDamagePercent;
 }
 
+
+function consumeNextSkillDamageModifier(actor, skillKey, damageType) {
+  const candidates = Object.entries(actor?.statuses || {})
+    .filter(([, status]) => Number.isFinite(status.nextSkillDamagePercent) && status.nextSkillDamagePercent > 0 &&
+      (!status.skillKey || status.skillKey === skillKey) &&
+      (!status.damageType || status.damageType === damageType))
+    .sort((left, right) => right[1].nextSkillDamagePercent - left[1].nextSkillDamagePercent);
+  if (!candidates.length) return 0;
+  // Multiple one-use bonuses that qualify for this skill obey the global
+  // strongest-modifier rule. All triggered one-use tokens are consumed together.
+  const strongest = candidates[0][1].nextSkillDamagePercent;
+  for (const [statusId] of candidates) delete actor.statuses[statusId];
+  return strongest;
+}
+
 function incomingAttackModifier(target, type) {
   return (target.passive?.incomingAttackMods || []).reduce((total, mod) => total + (mod.type === type ? mod.points || 0 : 0), 0);
 }
 
-module.exports = { addStatus, matchesModifierCondition, effectiveStat, incomingAttackModifier, processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, expireTurnStartStatuses, tickStatuses, consumeNextAttackDamageModifier };
+module.exports = { addStatus, matchesModifierCondition, effectiveStat, incomingAttackModifier, processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, expireTurnStartStatuses, tickStatuses, consumeNextAttackDamageModifier, consumeNextSkillDamageModifier };

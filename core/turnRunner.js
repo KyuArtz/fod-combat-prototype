@@ -49,12 +49,12 @@ function createTurnRunner({
           state.lastAllyTargetedEnemyId = target.id;
           if (actor.passive?.targeting?.trackTargeter !== false) target.targetedByAllyId = actor.id;
         }
-        if (actor.side === "enemy" && target.side === "ally") target.targetedByEnemySinceLastTurn = true;
+        if (actor.side !== target.side) target.targetedByEnemySinceLastTurn = true;
         return basicAttack(actor, target);
       }
 
       case "skill": {
-        const skill = (skills[actor.id] || []).find((candidate) => candidate.key === decision.skillKey);
+        const skill = (skills[actor.skillSet || actor.id] || []).find((candidate) => candidate.key === decision.skillKey);
         if (!skill) return false;
         const target = decision.targetId === undefined ? undefined : findByViewId(state, decision.targetId);
         if (actor.side === "ally" && target?.side === "enemy") {
@@ -66,19 +66,20 @@ function createTurnRunner({
 
       case "enemySkill": {
         const target = decision.targetId === undefined ? undefined : findByViewId(state, decision.targetId);
-        if (target?.side === "ally") onEnemySkillTargeted(actor, target);
-        return enemyAI.useSkill(actor, decision.skillKey, target) !== false;
+        if (target && target.side !== actor.side) onEnemySkillTargeted(actor, target);
+        return enemyAI.useSkill(actor, decision.skillKey, target, decision.mode) !== false;
       }
 
       case "switch": {
-        formation.removeIncapacitatedReserves(state.party);
-        const reserveIndex = state.party.reserve.findIndex((member) => member.id === decision.reserveId);
-        const activeIndex = state.party.active.findIndex((member) => member.id === decision.activeId);
-        const switched = formation.switchPartyMember(state, reserveIndex, activeIndex);
+        const sideParty = actor.side === "enemy" ? state.enemyParty : state.party;
+        formation.removeIncapacitatedReserves(sideParty);
+        const reserveIndex = sideParty.reserve.findIndex((member) => member.id === decision.reserveId);
+        const activeIndex = sideParty.active.findIndex((member) => member.id === decision.activeId);
+        const switched = formation.switchPartyMember(state, reserveIndex, activeIndex, actor.side);
         if (!switched.changed) return false;
         say(`${switched.incoming.name} joins the active formation!`);
         say(`${switched.outgoing.name} moves to reserve.`);
-        emitCombatEvent(events, "PartySwitched", { incomingId: switched.incoming.id, outgoingId: switched.outgoing.id, round: state.round });
+        emitCombatEvent(events, "PartySwitched", { incomingId: switched.incoming.id, outgoingId: switched.outgoing.id, side: actor.side, round: state.round });
         return true;
       }
 

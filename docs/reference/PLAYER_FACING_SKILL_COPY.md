@@ -1,6 +1,6 @@
-# Falcon Skill Descriptions — approved kit v1
+# Character Skill Descriptions — current migrated kits
 
-This file is a short player-facing companion to the executable data in `characters/skillData/*.js`. Exact values, target rules, trigger timing and implementation details are documented in the [Falcon Implementation Guide](FALCON_IMPLEMENTATION_GUIDE.md). The owner's website-facing JSON is provided separately; it is not loaded by the engine.
+This file is a short player-facing companion to the executable data in `characters/skillData/*.js`. Exact Falcon values and implementation details are in the [Falcon Implementation Guide](FALCON_IMPLEMENTATION_GUIDE.md); Phantom values and mechanics are in the [Phantom Implementation Guide](PHANTOM_IMPLEMENTATION_GUIDE.md). The owner's website-facing JSON is provided separately; it is not loaded by the engine.
 
 ## Elishia Bluestein
 
@@ -41,3 +41,50 @@ This file is a short player-facing companion to the executable data in `characte
 - **Cipher Tag:** Single-target RES reduction; applying a new tag replaces the old one.
 - **Ghost Protocol:** Temporary untargetability followed by a one-use damage bonus.
 - **Zero Hour Execution:** Three Energy rail shots, with a stronger final shot against a target that was already below 40% HP when the Ultimate began.
+
+
+## Phantom Rebellion
+
+### Mirazhel Veyra
+
+- **Phantom Mark:** Successful Anomaly hits mark enemies for 2 turns; the mark increases damage from Phantom-faction attackers by 10%.
+- **Wraithfang Pursuit:** A focused Anomaly strike that grants Evasion after a successful hit.
+- **Veil of the Unseen:** Enhances another Phantom ally's Speed and critical rate.
+- **Requiem of the Vanishing Blade:** A powerful strike that deals additional damage to Phantom Marked targets.
+- **Nocturne of the Phantom Queen:** An Anomaly wave that marks targets hit and strengthens active allies' ATK.
+
+### Unknown operative
+
+The following descriptions intentionally avoid revealing the character's identity or faction affiliation.
+
+- **Sovereign Authority:** Successful Anomaly attacks reduce a target's DEF and RES for 2 turns.
+- **Scarlet Severance:** A focused Anomaly blade strike against one enemy.
+- **Aegis of the Scarlet Veil:** A replaceable nanite barrier for the operative or one selected ally.
+- **Crimson Phalanx:** A rapid three-strike sequence resolved as one damage instance, with Bleeding.
+- **Scarlet Eclipse:** A sweeping Anomaly wave followed by a temporary increase to the operative's damage dealt.
+
+### Lucaz Durn
+
+- **Colossus Frame:** Reduces incoming damage and builds Reinforcement stacks when he takes qualifying hits; two stacks empower his next Kinetic damaging skill.
+- **Ironwake Impact:** A heavy Kinetic strike with a bonus against Staggered targets.
+- **Bastion of the Unyielding:** Raises DEF and RES, Taunts enemies, and reduces Lucaz's Speed.
+- **Faultline Breaker:** Kinetic area damage and Stagger.
+- **Cataclysm of the Iron Titan:** A stronger Kinetic area attack, Stagger, and team damage reduction.
+
+### Clarke Voss
+
+- **Phase Stride:** Successful evasion primes the next offensive skill for additional damage.
+- **Riftpiercer:** An Electromagnetic strike that can reduce the target's DEF while Phase Advantage is active.
+- **Aegis Reversal:** Raises Evasion and can prime a stronger Riftpiercer.
+- **Thousandfold Pursuit:** A powerful Electromagnetic strike with a critical-rate bonus while Phase Advantage is active.
+- **Eventide Impalement:** A high-damage Electromagnetic finisher with a conditional execute bonus.
+
+### Liezli Noct
+
+- **Mirage Synchronization:** Successful evasion grants a one-use critical-rate bonus.
+- **Ghostlight Volley:** A paired-construct Anomaly attack that applies Bleeding.
+- **Phantom Refraction:** Raises Evasion and empowers the next offensive skill.
+- **Silverpoint Barrage:** An Anomaly area attack that applies Bleeding and reduces eligible enemy basic-attack accuracy.
+- **Last Light, No Witnesses:** A high-damage Anomaly shot with a conditional execute bonus.
+
+**Bleeding baseline:** Bleeding deals Anomaly damage based on 0.15× the applier's ATK, calculated when applied and ticked at the start of the affected unit's turns for 2 turns. It does not stack; reapplication refreshes its duration.

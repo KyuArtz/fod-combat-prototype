@@ -1,5 +1,5 @@
-// Selected in-engine Falcon skill reference. Mechanics are implemented in characters/skillData/*.js.
-// Synced from the approved Falcon kit update.
+// Selected in-engine Falcon and Phantom skill reference. Mechanics are implemented in characters/skillData/*.js.
+// The hidden operative retains neutral player-facing skill descriptions.
 module.exports = {
   "characters": {
     "elishia": {
@@ -369,42 +369,43 @@ module.exports = {
       },
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/mirazhel_passive.webp",
-        "title": "Unpredictable",
-        "description": "Mirazhel's tactics shift every turn. At the start of each of her turns, she randomly selects one of three stances: Phantom (EVA +15), Anomaly (Mpow +15%), or Tactician (ATK +15%). She cannot change stances during the turn. After using a skill, she gains +10% CritRate for that turn.",
+        "title": "Phantom Mark",
+        "description": "Whenever Mirazhel hits an enemy with an attack, she applies Phantom Mark to that enemy for 2 turns. Marked enemies receive 10% increased damage from Phantom allies. Phantom Mark does not stack; reapplication refreshes its duration.",
         "type": "passive",
         "effects": [
-          "BUFF"
+          "DEBUFF",
+          "UTILITY"
         ]
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/mirazhel_skill_1.webp",
-        "title": "Skill 1: Phantom Lunge",
-        "description": "Dash through a target enemy with the Phantom Scythe, dealing Anomaly mastery damage at 1.2× Mpow power. If the target has less than 50% HP, hits them again for 0.6× Mpow damage. After striking, Mirazhel gains EVA +20 for 1 turn.",
+        "title": "Skill 1: Wraithfang Pursuit",
+        "description": "Mirazhel dashes through one enemy, dealing Anomaly mastery damage at 1.25× Mpow power. After a successful hit, she gains EVA +15 for 1 turn.",
         "type": "active",
         "mpCost": 20,
-        "cooldown": 2,
+        "cooldown": 1,
         "effects": [
-          "DMG"
+          "DMG",
+          "BUFF"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/mirazhel_skill_2.webp",
-        "title": "Skill 2: Spectral Command",
-        "description": "Overlays a spectral command on the battlefield, granting one ally or enemy a debuff: allies gain SPD +15% for 2 turns, enemies have their DEF reduced by 20% for 2 turns. Mirazhel can only maintain one Spectral Command target at a time; retagging replaces the existing one.",
+        "title": "Skill 2: Veil of the Unseen",
+        "description": "Mirazhel cloaks one other Phantom ally in Anomaly energy, increasing their SPD by 15% and CritRate by 10% for 2 turns. This skill cannot target Mirazhel herself or a non-Phantom ally. Recasting refreshes the duration instead of stacking the bonuses.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
         "effects": [
-          "DEBUFF",
           "BUFF"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/mirazhel_skill_3.webp",
-        "title": "Skill 3: Phantom Gambit",
-        "description": "Mirazhel sacrifices 10% of her current HP to become Untargetable for 1 turn. At the end of the turn, she reappears and deals Anomaly mastery damage at 1.5× Mpow power to the marked enemy. If the target is below 50% HP, the damage is increased by 50%.",
+        "title": "Skill 3: Requiem of the Vanishing Blade",
+        "description": "Mirazhel strikes one enemy with a concentrated blade attack, dealing Anomaly mastery damage at 2.0× Mpow power. If the target is Phantom Marked, this attack deals 25% additional damage.",
         "type": "active",
-        "mpCost": 35,
+        "mpCost": 40,
         "cooldown": 4,
         "effects": [
           "DMG"
@@ -412,13 +413,15 @@ module.exports = {
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/mirazhel_skill_4.webp",
-        "title": "Ultimate: Phantom Dominion",
-        "description": "Mirazhel dissolves into phantom energy and strikes all living enemies for Anomaly mastery damage at 0.8× Mpow power each. Enemies hit below 40% HP are executed (instantly defeated). After the barrage, Mirazhel gains Anomaly Mastery +30 for 2 turns and her next skill costs 20 MP less.",
+        "title": "Ultimate: Nocturne of the Phantom Queen",
+        "description": "Mirazhel releases a sweeping Anomaly wave against all enemies, dealing 1.0× Mpow damage to each. All enemies hit receive Phantom Mark. After the attack, all active Phantom allies gain ATK +15% for 2 turns. The ATK bonus does not stack; reapplication refreshes its duration.",
         "type": "active",
         "mpCost": 60,
         "cooldown": 6,
         "effects": [
-          "DMG"
+          "DMG",
+          "DEBUFF",
+          "BUFF"
         ]
       }
     },
@@ -437,31 +440,29 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_p_passive.webp",
         "title": "Sovereign Authority",
-        "description": "The Sovereign's Anomaly attacks inflict Suppression on the target, reducing their ATK by 15% for 2 turns. Reapplying Suppression refreshes its duration but does not stack. Additionally, the Sovereign gains +10% CritRate when facing enemies with lower DEF than their own Mpow.",
+        "description": "Successful Anomaly attacks reduce the target's DEF and RES by 10% for 2 turns. Each reduction is maintained independently; reapplication refreshes its duration instead of stacking.",
         "type": "passive",
         "effects": [
-          "DEBUFF",
-          "BUFF"
+          "DEBUFF"
         ]
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_p_skill_1.webp",
-        "title": "Skill 1: Phantom Rend",
-        "description": "Unleashes a concentrated Phantom Blade slash against a single enemy, dealing 160% Mpow as Anomaly damage. Applies Suppression through Sovereign Authority.",
+        "title": "Skill 1: Scarlet Severance",
+        "description": "Delivers a focused blade strike against one enemy, dealing Anomaly mastery damage at 1.5× Mpow power.",
         "type": "active",
-        "mpCost": 25,
-        "cooldown": 2,
+        "mpCost": 20,
+        "cooldown": 1,
         "effects": [
-          "DMG",
-          "DEBUFF"
+          "DMG"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_p_skill_2.webp",
-        "title": "Skill 2: Sovereign Veil",
-        "description": "The Sovereign commands their nanites to construct a protective veil, manifesting their defensive capabilities through Anomaly. The barrier absorbs damage equal to 150% Mpow (247.5 at base Mpow 165) for 2 turns or until broken. Recasting replaces the existing barrier.",
+        "title": "Skill 2: Aegis of the Scarlet Veil",
+        "description": "Deploys a nanite barrier on the user or one selected ally. The barrier absorbs damage equal to 120% of the user's Mpow for 2 turns or until depleted. Reapplication replaces this barrier rather than adding another.",
         "type": "active",
-        "mpCost": 35,
+        "mpCost": 30,
         "cooldown": 3,
         "effects": [
           "SHIELD",
@@ -470,26 +471,27 @@ module.exports = {
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_p_skill_3.webp",
-        "title": "Skill 3: Phantom Legion",
-        "description": "The Sovereign deploys their nanites to construct a temporary Phantom Legion formation that performs 3 coordinated Anomaly strikes against a single enemy, each dealing 60% Mpow (99 Anomaly damage at base Mpow 165), for a total of 180% Mpow (297 Anomaly damage). Applies Suppression through Sovereign Authority.",
+        "title": "Skill 3: Crimson Phalanx",
+        "description": "Resolves a rapid three-strike sequence as one damage instance, dealing Anomaly mastery damage at 2.0× Mpow power to one enemy and applying Bleeding for 2 turns. Bleeding deals Anomaly damage based on 0.15× the applier's ATK, calculated on application and ticked at the start of the affected unit's turns. It does not stack; reapplication refreshes its duration.",
         "type": "active",
-        "mpCost": 45,
-        "cooldown": 5,
+        "mpCost": 40,
+        "cooldown": 4,
         "effects": [
           "DMG",
-          "DEBUFF"
+          "DOT"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/elishia_p_skill_4.webp",
-        "title": "Ultimate: Phantom Dominion",
-        "description": "The Sovereign commands their nanites to converge around the Scarlet Blade, amplifying its Anomaly manifestation. She unleashes a devastating sweeping strike against all enemies, dealing 300% Mpow as Anomaly damage. Applies Suppression through Sovereign Authority.",
+        "title": "Ultimate: Scarlet Eclipse",
+        "description": "Releases a sweeping Anomaly wave against all enemies, dealing 1.1× Mpow damage to each. Successful hits apply the user's DEF and RES reductions. The user then gains 15% increased damage dealt for 2 turns; reapplication refreshes the duration instead of stacking.",
         "type": "active",
         "mpCost": 60,
         "cooldown": 6,
         "effects": [
           "DMG",
-          "DEBUFF"
+          "DEBUFF",
+          "BUFF"
         ]
       }
     },
@@ -508,7 +510,7 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/lucaz_passive.webp",
         "title": "Colossus Frame",
-        "description": "Lucaz's Colossus Frame converts kinetic impact into structural reinforcement. Each time he uses a skill, he gains DEF +8 for 2 turns (stacks up to 3 times). When at full stacks, his ATK is also increased by 10%. This effect persists even if he is unable to act.",
+        "description": "Lucaz takes 10% reduced damage from all attacks. Whenever he is hit, he gains Reinforcement, increasing DEF by 8% for 2 turns, stacking up to 2 times. At 2 stacks, his next damaging skill deals 20% additional Kinetic damage and consumes both stacks. Reinforcement cannot stack beyond 2, and reaching maximum stacks refreshes its duration.",
         "type": "passive",
         "effects": [
           "BUFF"
@@ -516,8 +518,8 @@ module.exports = {
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/lucaz_skill_1.webp",
-        "title": "Skill 1: Siege Fist",
-        "description": "Delivers a devastating punch to a single enemy for Kinetic damage at 1.4× ATK power. If the target is already Staggered, deals 20% more damage and extends their Stagger duration by 1 turn.",
+        "title": "Skill 1: Ironwake Impact",
+        "description": "Lucaz strikes one enemy with his Impact Maul, dealing 150% ATK as Kinetic damage. If the target is Staggered, the attack deals 20% additional damage.",
         "type": "active",
         "mpCost": 15,
         "cooldown": 1,
@@ -527,37 +529,39 @@ module.exports = {
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/lucaz_skill_2.webp",
-        "title": "Skill 2: Anchor Protocol",
-        "description": "Plants his Impact Maul into the ground, rooting himself in place. Lucaz gains DEF +25% and RES +15% for 3 turns. While active, he cannot move or be displaced by effects, and gains the ability to Taunt nearby enemies, forcing them to target him for 2 turns.",
+        "title": "Skill 2: Bastion of the Unyielding",
+        "description": "Lucaz braces himself, increasing DEF by 25% and RES by 15% for 2 turns while Taunting all enemies for 2 turns. His SPD decreases by 15% while this stance is active.",
         "type": "active",
-        "mpCost": 20,
+        "mpCost": 25,
         "cooldown": 3,
         "effects": [
-          "BUFF"
+          "BUFF",
+          "CONTROL"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/lucaz_skill_3.webp",
-        "title": "Skill 3: Phantom Quake",
-        "description": "Slams his Impact Maul into the ground, dealing Kinetic damage at 1.1× ATK power to all enemies and applying Stagger for 1 turn. Staggered enemies suffer 15% reduced SPD.",
+        "title": "Skill 3: Faultline Breaker",
+        "description": "Lucaz slams the ground with overwhelming force, dealing 90% ATK as Kinetic damage to all enemies and Staggering them for 1 turn.",
         "type": "active",
-        "mpCost": 30,
+        "mpCost": 35,
         "cooldown": 4,
         "effects": [
           "DMG",
-          "DEBUFF"
+          "CONTROL"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/lucaz_skill_4.webp",
-        "title": "Ultimate: Tectonic Collapse",
-        "description": "Channels all kinetic energy into his Impact Maul and slams it into the ground in a devastating arc, dealing Kinetic damage at 2.0× ATK power to all enemies in a wide area. Enemies hit are Staggered for 2 turns and have their DEF reduced by 20% for 2 turns. After use, Lucaz's SPD is reduced by 10% for 2 turns as the Colossus Frame cools down.",
+        "title": "Ultimate: Cataclysm of the Iron Titan",
+        "description": "Lucaz unleashes a devastating shockwave, dealing 180% ATK as Kinetic damage to all enemies and Staggering them for 1 turn. All active allies gain 10% damage reduction for 2 turns.",
         "type": "active",
-        "mpCost": 45,
+        "mpCost": 55,
         "cooldown": 6,
         "effects": [
           "DMG",
-          "DEBUFF"
+          "CONTROL",
+          "BUFF"
         ]
       }
     },
@@ -576,7 +580,7 @@ module.exports = {
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/clarke_passive.webp",
         "title": "Phase Stride",
-        "description": "Clarke's Phase-Lancer allows him to slip between attacks. When he successfully evades an attack, his next Kinetic skill deals +20% damage and gains +10 CritRate for that turn. This effect does not stack.",
+        "description": "Whenever Clarke successfully evades an enemy attack, he gains Phase Advantage for 2 turns. His next offensive skill consumes Phase Advantage to deal 20% additional damage. Phase Advantage cannot stack or refresh while active.",
         "type": "passive",
         "effects": [
           "BUFF"
@@ -584,8 +588,8 @@ module.exports = {
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/clarke_skill_1.webp",
-        "title": "Skill 1: Phase Strike",
-        "description": "Dashes forward with the Phase-Lancer, dealing Kinetic damage at 1.2× ATK power to a single enemy. If Clarke evaded an attack since his last turn, this strike also reduces the target's DEF by 10% for 2 turns.",
+        "title": "Skill 1: Riftpiercer",
+        "description": "Clarke lunges at a single enemy, dealing 150% ATK as Electromagnetic damage. If Phase Advantage is active, the attack additionally reduces the target's DEF by 10% for 2 turns.",
         "type": "active",
         "mpCost": 15,
         "cooldown": 1,
@@ -596,37 +600,37 @@ module.exports = {
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/clarke_skill_2.webp",
-        "title": "Skill 2: Shield Bash",
-        "description": "Slams the Phantom Shield into a single enemy, dealing Kinetic damage at 0.9× ATK power and reducing their SPD by 15% for 2 turns. If the target is already Staggered, the SPD reduction is increased to 30%.",
+        "title": "Skill 2: Aegis Reversal",
+        "description": "Clarke raises his Phantom Shield, increasing EVA by 20% for 2 turns. If he evades an attack while this buff is active, his next Skill 1 deals an additional 15% damage.",
         "type": "active",
         "mpCost": 20,
-        "cooldown": 2,
+        "cooldown": 3,
         "effects": [
-          "DMG",
-          "DEBUFF"
+          "BUFF"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/clarke_skill_3.webp",
-        "title": "Skill 3: Lance Barrage",
-        "description": "Performs a rapid sequence of three lance thrusts against a single enemy, each dealing 0.7× ATK Kinetic damage (total 2.1× ATK). Each hit has a chance to apply Bleed: 5% max HP physical damage over 2 turns.",
+        "title": "Skill 3: Thousandfold Pursuit",
+        "description": "Clarke performs a rapid sequence of Phantom-Lancer strikes against one enemy, dealing 220% ATK as Electromagnetic damage in a single damage instance. If Phase Advantage is active, he gains 10% CritRate for this attack.",
         "type": "active",
-        "mpCost": 30,
-        "cooldown": 3,
+        "mpCost": 35,
+        "cooldown": 4,
         "effects": [
           "DMG",
-          "DEBUFF"
+          "BUFF"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/clarke_skill_4.webp",
-        "title": "Ultimate: Shadow Execution",
-        "description": "Clarke vanishes into shadow and reappears behind the target enemy, delivering a devastating lance strike for 2.5× ATK Kinetic damage. If the target is below 40% max HP, this damage is increased to 3.5× ATK. After use, Clarke's EVA is reduced by 10 for 2 turns as his phase tech recalibrates.",
+        "title": "Ultimate: Eventide Impalement",
+        "description": "Clarke pierces a single enemy with a devastating Phase-Lancer strike, dealing 300% ATK as Electromagnetic damage. If the target is below 40% HP, damage increases by 20%. Clarke gains 15% EVA for 2 turns after the attack.",
         "type": "active",
         "mpCost": 50,
         "cooldown": 6,
         "effects": [
-          "DMG"
+          "DMG",
+          "BUFF"
         ]
       }
     },
@@ -644,56 +648,55 @@ module.exports = {
       },
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/liezli_passive.webp",
-        "title": "Mirage Reservoir",
-        "description": "Liezli maintains up to 3 Mirage Charges. She gains 1 Charge if no enemy has targeted her since her last turn, and 1 Charge whenever an attack against her misses or is evaded. Charges never exceed 3. Spending a Charge on a skill empowers that skill; empowered effects are noted in each skill.",
+        "title": "Mirage Synchronization",
+        "description": "Whenever Liezli successfully evades an enemy attack, she gains 10% CritRate for her next offensive skill. This effect cannot stack and expires after 2 turns or upon triggering.",
         "type": "passive",
         "effects": [
-          "UTILITY",
           "BUFF"
         ]
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/liezli_skill_1.webp",
-        "title": "Skill 1: Mirage Cloak",
-        "description": "Liezli activates Phantom stealth tech, becoming Hidden until the start of her next turn and gaining 100% Evasion against targeted attacks. Stealth breaks early if she attacks, is hit by an area, unavoidable, or detection-capable attack, or uses another skill. While Hidden, her next offensive action deals +20% damage with +15% additional CritRate. If Liezli spends 1 Mirage Charge, she instead remains visible and manifests a Mirror Duplicate that intercepts the first single-target attack aimed at her before dissipating.",
+        "title": "Skill 1: Ghostlight Volley",
+        "description": "Silhouette and Afterimage fire simultaneously at a single enemy, dealing 1.6× ATK as Anomaly damage and inflicting Bleeding for 2 turns. Bleeding deals Anomaly damage based on 0.15× the applier's ATK, calculated on application and ticked at the start of the affected unit's turns. It does not stack; reapplication refreshes its duration.",
         "type": "active",
-        "mpCost": 20,
-        "cooldown": 3,
+        "mpCost": 15,
+        "cooldown": 1,
         "effects": [
-          "BUFF",
-          "UTILITY"
+          "DMG",
+          "DOT"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/liezli_skill_2.webp",
-        "title": "Skill 2: Executor's Step",
-        "description": "Liezli fires a precision shot dealing 160% ATK as Anomaly damage with 15% additional CritRate. If Liezli spends 1 Mirage Charge, the shot also ignores 25% of the target's DEF and applies Marked, causing Liezli to deal +12% damage to that target for 2 turns.",
+        "title": "Skill 2: Phantom Refraction",
+        "description": "Liezli disperses her constructs into a defensive mirage, increasing her EVA by 20% for 2 turns. Her next offensive skill deals 20% additional damage.",
         "type": "active",
-        "mpCost": 25,
-        "cooldown": 2,
+        "mpCost": 20,
+        "cooldown": 3,
         "effects": [
-          "DMG",
-          "DEBUFF"
+          "BUFF"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/liezli_skill_3.webp",
-        "title": "Skill 3: Final Reflection",
-        "description": "Liezli locks her Phantom rifle onto a single enemy, applying a Delayed Shot status that resolves automatically at the start of her next turn, dealing 240% ATK as Anomaly damage with 20% additional CritRate and 30% DEF penetration. While the lock is active, Liezli gains +25 Evasion and any active Mirror Duplicate is consumed to absorb the first incoming hit. If Liezli is defeated before the shot resolves, the status expires without firing.",
+        "title": "Skill 3: Silverpoint Barrage",
+        "description": "Her two constructs sweep across the battlefield, firing at all enemies hit and dealing 1.0× ATK as Anomaly damage. Enemies hit suffer Bleeding for 2 turns and have their Accuracy reduced by 15% for 2 turns. Bleeding deals Anomaly damage based on 0.15× the applier's ATK, calculated on application and ticked at the start of the affected unit's turns. It does not stack; reapplication refreshes its duration.",
         "type": "active",
-        "mpCost": 40,
+        "mpCost": 35,
         "cooldown": 4,
         "effects": [
           "DMG",
-          "UTILITY"
+          "DOT",
+          "DEBUFF"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/liezli_skill_4.webp",
-        "title": "Ultimate: Mirage Execution",
-        "description": "Liezli projects overlapping holographic targeting signatures, revealing all Hidden or cloaked enemies, then concentrates every projected firing trajectory into one devastating precision shot at a single target, dealing 300% ATK as Anomaly damage with 30% additional CritRate and ignoring 40% of the target's DEF. Enemies below 30% max HP take an additional 20% damage. This skill consumes all remaining Mirage Charges; each Charge beyond the first increases the damage by 25%, up to a maximum of +50%.",
+        "title": "Ultimate: Last Light, No Witnesses",
+        "description": "Both constructs lock onto a single enemy and unleash a converging shot, dealing 300% ATK as Anomaly damage. If the target is below 30% HP, the attack deals 25% additional damage.",
         "type": "active",
-        "mpCost": 60,
+        "mpCost": 55,
         "cooldown": 6,
         "effects": [
           "DMG"

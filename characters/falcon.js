@@ -27,12 +27,14 @@ const ROLES = Object.freeze({
   zenki: "stalker",
 });
 
-function falconMember(id, name, mastery, stats) {
+function falconMember(id, name, mastery, stats, side = "ally") {
   return makeActor({
     id,
     name,
-    side: "ally",
+    side,
     role: ROLES[id],
+    faction: "falcon",
+    skillSet: id,
     mastery,
     passive: structuredClone(skillData[id].passive),
     stats: {
@@ -47,13 +49,16 @@ function falconMember(id, name, mastery, stats) {
   });
 }
 
-function createFalconParty() {
+function createFalconParty({ side = "ally" } = {}) {
+  if (!["ally", "enemy"].includes(side)) throw new TypeError('Falcon party side must be "ally" or "enemy".');
   return [
     makeActor({
       id: "elishia",
       name: "Elishia",
-      side: "ally",
+      side,
+      faction: "falcon",
       role: ROLES.elishia,
+      skillSet: "elishia",
       mastery: "Nanotech",
       // Biotech Overdrive: its stat modifiers are read by effectiveStat.
       passive: structuredClone(elishiaSkills.passive),
@@ -81,7 +86,7 @@ function createFalconParty() {
       DEF: 110,
       RES: 95,
       SPD: 75,
-    }),
+    }, side),
     falconMember("zackry", "Zackry", "Electromagnetic", {
       HP: 1250,
       MP: 120,
@@ -90,7 +95,7 @@ function createFalconParty() {
       DEF: 90,
       RES: 100,
       SPD: 85,
-    }),
+    }, side),
     falconMember("jazen", "Jazen", "Kinetic", {
       HP: 1350,
       MP: 100,
@@ -99,7 +104,7 @@ function createFalconParty() {
       DEF: 100,
       RES: 75,
       SPD: 70,
-    }),
+    }, side),
     falconMember("zenki", "Zenki", "Energy", {
       HP: 1000,
       MP: 150,
@@ -108,7 +113,7 @@ function createFalconParty() {
       DEF: 70,
       RES: 110,
       SPD: 110,
-    }),
+    }, side),
   ];
 }
 

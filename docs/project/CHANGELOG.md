@@ -1,5 +1,41 @@
 # Changelog
 
+## 2026-11-22 — Iteration 5: Combat effect coverage and mixed-faction validation
+
+- Added live passive and summon registry introspection (`has`/`entries`) and load-time validation that every declared lifecycle event and handler resolves before battle execution.
+- Extended `validateSkillData` to verify supported passive lifecycle events, registered passive/summon handlers, and supported declarative passive skill-use hooks across playable and enemy skill data.
+- Re-enforced `targetFaction` and `excludeSelf` at shared skill-interpreter execution time for ally-targeting modes, not only in terminal legal-action filtering.
+- Preserved DoT source attribution when an applier leaves the deployed actor list or moves into reserve by resolving its stable ID/side against both party rosters.
+- Stopped processing further simultaneous turn-start DoT ticks once a tick incapacitates its target.
+- Defined owner-linked summon behavior on owner incapacitation: dismiss the owner's active summons without treating dismissal as destruction or triggering destruction bursts/reactions. Owner-turn summon clocks and affected-unit status durations pause while the owner is in reserve and resume when redeployed.
+- Added `test/engineCoverageAudit.test.js` to validate all ten playable and six enemy skill sets against live registries and cover invalid handlers, mode target restrictions, DoT attribution/death ordering, summon owner cleanup, and reserve lifecycle behavior.
+- Regenerated only the golden fixtures affected by the intentional new summon-dismissal and DoT-defeat-order log changes; reviewed the divergence before updating the fixtures.
+- **Verification:** 313 tests passed, 0 failed, 0 skipped. The audit scope and open Serpent migration handoff are documented in `docs/project/ENGINE_COVERAGE_AUDIT.md`.
+
+## 2026-11-22 — Iteration 4: Unified Character Selection
+
+- Added `characters/roster.js` as the central registry for selectable factions; the current combined catalog contains Falcon Company and Phantom Rebellion operatives.
+- Replaced the default single-faction terminal flow in `index.js` with mixed-faction selection while preserving the legacy `selectPartyFaction` option for compatibility.
+- Added roster filtering by faction, mastery, and role, plus public-profile search and individual previews for combat stats, passive descriptions, skill details, MP costs, and cooldowns.
+- Players can select three to five unique operatives, order three active slots, then arrange any remaining selections into the reserve queue.
+- Kept hidden operative `elishia_p` player-facing copy neutral; the selection UI uses the display name **Unknown** and does not expose internal actor IDs in public roster/search output.
+- Added selector validation, roster, preview, hidden-ID neutrality, and real `createBattle` mixed-formation integration tests.
+- Updated project documentation and extension guidance for adding future factions through the roster registry.
+- **Verification:** 306 tests passed, 0 failed, 0 skipped.
+
+## 2026-11-22 — Initial Phantom Rebellion skill migration
+
+- Added runtime actor creation for Mirazhel, the Unknown operative (`elishia_p`), Lucaz, Clarke, and Liezli through `characters/phantom.js`, preserving source stat values and assigning Phantom faction metadata.
+- Migrated all 20 Phantom active skills and five passives into `characters/skillData/`, using the same shared skill interpreter, effect registry, passive registry, damage pipeline, and status lifecycle used by Falcon.
+- Added reusable support for faction-filtered damage vulnerability, faction-restricted ally targeting, ATK-scaled mastery damage, evasion-triggered passives, skill-specific one-use damage modifiers, replacement shield groups, and hit-filtered AoE follow-up effects.
+- Added Lucaz's data-driven damage reduction/Reinforcement stack-and-consume behavior, Clarke and Liezli evasion passives, Mirazhel's Phantom-only mark benefit, and the hidden operative's DEF/RES passive reductions.
+- Kept all five player-facing skill descriptions for `elishia_p` neutral; the runtime display name remains `Unknown` and no identity-bearing exposition was added.
+- Added a real `createBattle` integration test proving all five Phantom units use skills through the shared runtime with zero rejected decisions.
+- The source roster does not define Bleeding's damage magnitude. Initial executable Bleeding uses a **provisional** 0.15× ATK Anomaly tick for 2 turns; this remains open for owner approval and later tuning.
+- Added the Phantom implementation guide, roster/reference entries, neutral player-facing copy, and synchronized separate website-facing JSON copy. The original uploaded roster remains untouched.
+- **Verification:** `npm test` reports 283 passed, 0 failed, 0 skipped. One deterministic full-battle smoke run reached a valid result; this is integration verification, not a faction balance benchmark.
+- **Scope at this historical migration snapshot:** Phantom tactical AI, Phantom enemy-side control, and Falcon-versus-Phantom playtesting had not yet been added. These were completed in later milestones; see the current [Phantom Implementation Guide](../reference/PHANTOM_IMPLEMENTATION_GUIDE.md).
+
 ## 2026-11-22 — Obsolete runtime and test cleanup
 
 - Removed the retired duplicate `data/skills/` Falcon definitions; the active definitions remain in `characters/skillData/`.

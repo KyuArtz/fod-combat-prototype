@@ -9,7 +9,7 @@ index.js
   └─ selects scheduler and opening policy from environment
      └─ core/battle.js (composition root)
         ├─ creates battle state, seeded RNG, and event bus
-        ├─ resolves enemy encounter data and creates Falcon/enemy actors
+        ├─ resolves enemy encounter data and creates the configured player roster/enemy actors
         ├─ sets up active/reserve formations
         ├─ applies opening initiative
         ├─ wires combat systems, skill registries, AI, controllers, and terminal UI
@@ -31,8 +31,8 @@ index.js
 | Controllers | `core/controllers.js`, `ui/battleMenu.js`, `ai/enemyAI.js` | Player, scripted, random, summon, and enemy decision policies |
 | Combat resolution | `core/actionResolver.js`, `systems/damage.js`, `systems/damageApplication.js` | Shared basic attacks, damage calculation/application, HP and incapacitation |
 | Skill runtime | `core/skillInterpreter.js`, `core/skillLifecycle.js` (compatibility facade), `systems/passives/`, `systems/summons/`, `systems/effects/`, `core/skillDataValidation.js`, `core/skillMessages.js` | Skill execution orchestration, passive and summon registries/runtimes, effect handlers, data validation, message formatting |
-| Actor and registry | `characters/actorFactory.js`, `characters/falcon.js`, `characters/skills.js`, `characters/enemies.js` | Runtime actor construction, Falcon roster, skill registry assembly, enemy/encounter resolution |
-| Data definitions | `characters/skillData/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, `data/encounters/` | Falcon skill/passive definitions plus declarative enemy, policy and encounter content |
+| Actor and registry | `characters/actorFactory.js`, `characters/falcon.js`, `characters/phantom.js`, `characters/roster.js`, `characters/skills.js`, `characters/enemies.js` | Runtime actor construction, Falcon/Phantom rosters, skill registry assembly, enemy/encounter resolution |
+| Data definitions | `characters/skillData/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, `data/encounters/` | Falcon and Phantom skill/passive definitions plus declarative enemy, policy and encounter content |
 | Reusable systems | `systems/` | Readiness, initiative, formation, cooldowns, shields, statuses, damage, effect handlers, and passive lifecycle runtime |
 | Events and randomness | `core/eventBus.js`, `core/combatEvents.js`, `core/rng.js` | Battle-local deterministic RNG, event delivery, typed event validation |
 | Presentation | `ui/` | Terminal prompts, deployment selection, status display, readable battle log |
@@ -63,16 +63,18 @@ Controllers do not own combat rules. The terminal menu, built-in enemy AI, scrip
 
 ## Skill runtime
 
-- `characters/skillData/*.js` defines live Falcon skills and passive data.
+- `characters/skillData/*.js` defines live Falcon and Phantom skills and passive data.
 - `data/enemySkills/*.js` defines the current enemy skill sets.
 - `characters/skills.js` builds both registries through `core/skillInterpreter.js`.
 - `core/skillInterpreter.js` checks readiness, pays MP, assigns cooldowns, and runs the selected skill variant.
 - `core/skillLifecycle.js` is now a compatibility facade; passive, summon, and actor lifecycle implementation is located in `systems/passives/runtime.js`.
 - `systems/effects/registry.js` and `systems/effects/defaultHandlers.js` own pluggable effect registration and shared effect implementations.
-- `core/skillDataValidation.js` rejects invalid definitions, unsupported effect types, malformed targeting, missing message placeholders, and invalid effect values.
+- `core/skillDataValidation.js` rejects invalid definitions, unsupported effect types/events, malformed targeting, missing message placeholders, invalid effect values, and passive/summon subscriptions that reference unregistered handlers.
 - `core/skillMessages.js` formats messages using named placeholders.
 
 When adding an effect, update its handler and validation rules together, add focused tests, and verify full-battle/golden behavior. Do not put prompts or terminal I/O in skill data or effect handlers.
+
+The initial Phantom roster is created by `characters/phantom.js` and registered through the same shared character skill registry. `characters/roster.js` owns the selectable faction registry and creates a merged actor catalog for interactive play; the deployment selector filters and previews that catalog without containing faction-specific branches. The interactive entry point orders three active operatives and up to two reserves from the selected mixed roster. The hidden operative uses the internal key `elishia_p` but displays as `Unknown`; ability descriptions remain neutral in `references/characterTerraData.js` and the owner-facing website JSON.
 
 ## Enemy AI and encounters
 
@@ -97,16 +99,16 @@ Combat randomness is stored as plain data in `state.rng` and exposed to battle-s
 
 The vocabulary includes battle, round, turn, action, skill, basic attack, damage, healing, shield, status, incapacitation, summon, formation, reserve deployment, encounter, wave, reinforcement, and completion events. See the [Step 4 report](../history/milestones/STEP4_TYPED_COMBAT_EVENTS.md) and [Step 8 report](../history/milestones/STEP8_ENCOUNTER_PROGRESSION.md) for milestone-specific catalogs.
 
-`DamageApplied` includes `sourceId`, `sourceSide`, and `kind` (`direct`, `reflected`, or `dot`). The simulator can therefore report per-actor damage contributions as well as damage received by targets. Periodic damage without a retained source is attributed to a null source.
+`DamageApplied` includes `sourceId`, `sourceSide`, and `kind` (`direct`, `reflected`, or `dot`). The simulator can therefore report per-actor damage contributions as well as damage received by targets. Periodic damage resolves its applier from deployed actors and both roster lists, preserving attribution when that source is in reserve or incapacitated; truly missing sources remain null.
 
 ## Data authority
 
 Runtime behavior is defined by executable code, data definitions, and automated tests. `references/characterTerraData.js` is a compact owner-reference extract of selected skill objects and stat information; it is not a full roster and is not imported by the engine. The owner maintains the separate website-facing data. Do not create a duplicate `ref/` directory or include the full original JSON in project packages.
 
 
-## Extensible effect and passive lifecycle work (current development)
+## Extensible effect and passive lifecycle architecture
 
-The action-pipeline update moved default skill effect implementations into `systems/effects/` and introduced a registry that supports additional handlers at composition time. The current follow-up extracts passive/summon lifecycle runtime ownership from `core/` into `systems/passives/runtime.js`; `core/skillLifecycle.js` remains as a compatibility facade so existing callers and tests do not need to change.
+The action-pipeline update moved default skill effect implementations into `systems/effects/` and introduced a registry that supports additional handlers at composition time. Passive/summon lifecycle runtime ownership is in `systems/passives/runtime.js`; `core/skillLifecycle.js` remains as a compatibility facade so existing callers and tests do not need to change.
 
 Passive behavior is split into declarative event subscriptions and reusable modifier records. `systems/passives/registry.js` dispatches lifecycle subscriptions to registered handlers. `systems/statusEffects.js` evaluates conditional `statMods`, exposes generic `incomingAttackMods`, and exports the shared actor-flag condition matcher used by conditional hit modifiers; `core/actionResolver.js` consumes incoming attack modifiers through dependency injection. Modifier conditions read actor `passiveFlags` and ordinary actor state. New passive modifiers can therefore use existing shared consumers without adding character-specific branches to combat resolution.
 
@@ -126,7 +128,7 @@ Passive definitions subscribe to lifecycle events in their character skill data.
 
 Battle-scoped durations use `state.battleTimers` and the generic helpers in `systems/battleTimers.js`. A registered `setBattleTimer` effect declares its key, duration, optional owner clock, and actor turn-start reactions. Reactions are processed after that actor's MP recovery and cooldown tick. Unowned timers decrement once when a battle round completes; owner-scoped timers decrement only when their owner completes a turn, never on both clocks. Nanotech Singularity uses an owner-scoped timer with a `healPercentMaxHP` reaction for living non-summon allies and a conditional Meo-9 cover-fire power modifier; reserve allies receive the healing reaction if they enter while the timer remains active.
 
-Summon activation and owner-turn expiry are dispatched through `systems/summons/registry.js` and `systems/passives/runtime.js`. Meo-9 declares Emergency Field and cover fire as owner-turn activation subscriptions; it has no scan, EMP, Final Protocol or expiry effect. Catalyst Wing is a targetable passive summon with no independent scheduled turn. Timed passive modifiers use `passiveTimers`; conditional passive flags and Recoil Dampeners use generic declarative event subscriptions. Zenki’s Unobserved uses a turn-start history check and damageTaken hook for its Evasion bonus.
+Summon activation and owner-turn expiry are dispatched through `systems/summons/registry.js` and `systems/passives/runtime.js`. Meo-9 declares Emergency Field and cover fire as owner-turn activation subscriptions; it has no scan, EMP, Final Protocol or expiry effect. Catalyst Wing is a targetable passive summon with no independent scheduled turn. When an owner is incapacitated, active summons linked by `ownerId` are dismissed without destruction bursts or destruction callbacks. Owner-clocked summon actions and actor-turn statuses pause while the owner is in reserve. Timed passive modifiers use `passiveTimers`; conditional passive flags and Recoil Dampeners use generic declarative event subscriptions. Zenki’s Unobserved uses a turn-start history check and damageTaken hook for its Evasion bonus.
 
 
 ## Falcon architecture audit follow-up
@@ -160,3 +162,10 @@ Statuses may declare a `turnStartRefresh` contract that maps their base amount, 
 ## Declarative unit-defeated status reactions
 
 A status may declare an `onUnitDefeated` reaction with a registered generic handler. `systems/statusEffects.js` dispatches the reaction from the defeated unit's status snapshot, and the passive lifecycle runtime only forwards the defeat event. Tactical Mark declares a `restoreMpToLivingAllies` reaction for 5% of each living non-summon ally's Max MP; both Zackry's single-target Mark and Full Spectrum Assault's party-wide status application carry the same reaction data. The single-target application uses the generic `status` effect handler; no dedicated Tactical Mark application handler remains. The reaction is once-only for the supplied defeat snapshot, and skill-data validation checks the handler and configured percentage range.
+
+
+## Iteration 5 runtime coverage audit
+
+The runtime validates passive event names and passive/summon handler references against the live battle-scoped registries when skill data is built. This covers all ten selectable character skill sets and all six enemy skill sets. `targetFaction` and `excludeSelf` restrictions are enforced again by `core/skillInterpreter.js` at execution time for ally-targeting mode variants, so a controller cannot bypass them by invoking the interpreter directly.
+
+Turn-start DoT resolves its source against deployed actors and both party rosters, preserving attribution across reserve/deployment changes. If a DoT tick incapacitates its target, later simultaneous ticks are skipped. Owner-linked summons are dismissed when their owner is incapacitated. The details and seven focused audit tests are recorded in [Engine Coverage Audit](../project/ENGINE_COVERAGE_AUDIT.md).

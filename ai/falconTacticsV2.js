@@ -70,12 +70,13 @@ function selectLowestAlly(view, ids, predicate = () => true) {
 }
 
 function action(view, key) {
-  return view.actions.find((item) => item.type === "skill" && item.key === key && item.usable) || null;
+  const type = view.kind === "enemy" ? "enemySkill" : "skill";
+  return view.actions.find((item) => item.type === type && item.key === key && item.usable) || null;
 }
 
 function decisionForSkill(item, targetId, mode) {
   if (!item) return null;
-  return { type: "skill", skillKey: item.key, ...(mode ? { mode } : {}), ...(targetId ? { targetId } : {}) };
+  return { type: item.type, skillKey: item.key, ...(mode ? { mode } : {}), ...(targetId ? { targetId } : {}) };
 }
 
 function modeFor(item, modeId) {
@@ -140,11 +141,17 @@ function reserveSwitchDecision(view) {
 
 function createCoordinatedFalconController() {
   return {
-    chooseAction(view) {
+    chooseAction(rawView) {
+      // The same controller can command Falcon from either battle side. Keep the
+      // older all-versus-allies aliases for existing player-side rules, but expose
+      // the acting faction as `allies` and its opponents as `enemies` here.
+      const view = rawView.kind === "enemy"
+        ? { ...rawView, allies: rawView.friendlies, enemies: rawView.opponents }
+        : rawView;
       const swap = reserveSwitchDecision(view);
       if (swap) return swap;
 
-      const actorId = view.actor.id;
+      const actorId = view.actor.skillSet || view.actor.id;
       const allies = view.allies.filter((unit) => !unit.summon);
       const enemies = view.enemies;
       const injured = allies.filter((unit) => ratio(unit) <= 0.78);
@@ -191,7 +198,8 @@ function createCoordinatedFalconController() {
       }
 
       if (actorId === "evalete") {
-        const catalystOption = view.actions.find((item) => item.type === "skill" && item.key === "catalyst");
+        const catalystType = view.kind === "enemy" ? "enemySkill" : "skill";
+        const catalystOption = view.actions.find((item) => item.type === catalystType && item.key === "catalyst");
         const catalyst = catalystOption?.usable ? catalystOption : null;
         const hasCleanseablePressure = severeToxicPressure || (toxicAffected.length >= 1 && (criticalAlly || injured.length >= 3));
         if (hasCleanseablePressure) {

@@ -1,7 +1,7 @@
 # Handler Reuse Audit
 
 **Updated:** 2026-11-22  
-**Scope:** Active effect, passive and summon registries; their current consumers in Falcon/enemy skill data and shared combat systems.  
+**Scope:** Active effect, passive and summon registries; their current consumers in Falcon, Phantom, and enemy skill data and shared combat systems.  
 **Cleanup result:** Retired Meo-9 scan/Final Protocol plumbing and the old dedicated `commandUplink` validator were removed. No character-specific skill engine was introduced.
 
 ## Active skill-effect handlers
@@ -9,7 +9,7 @@
 | Handler or family | Classification | Current use / guidance |
 |---|---|---|
 | `heal`, `healAllies`, `hotAllies`, `shield`, `shieldSelf`, `shieldAllies` | Reusable primitives | Shared healing-over-time and independent shield operations. |
-| `physicalHit`, `damage`, `masteryHit`, `masteryMultiHit`, `damageOverTime` | Reusable damage operations | `masteryHit` is used by Falcon and enemy skills; `masteryMultiHit` handles Zenki's three-shot Zero Hour. Keep the multi-hit sequence and per-skill override declarative. |
+| `physicalHit`, `damage`, `masteryHit`, `masteryMultiHit`, `damageOverTime` | Reusable damage operations | `masteryHit` is used by Falcon, Phantom, and enemy skills; `masteryMultiHit` handles multi-hit sequences such as Zenki's three-shot Zero Hour. Keep the multi-hit sequence and per-skill override declarative. |
 | `status`, `statusSelf`, `statusAllies`, `statusEnemies`, `buff`, `debuff`, `conditionalStatus` | Reusable status operations | Prefer composition of these generic operations before adding a new handler. `conditionalStatus` remains available but has no current Falcon Zero Hour follow-up consumer. |
 | `cleanseAllies` | Reusable group operation | Removes harmful statuses from active allies; Evalete's Catalyst Overdrive uses it before its healing and defensive effects. Positive statuses are preserved. |
 | `statusGroup` | Reusable group operation | Replaces a target's existing statuses carrying the configured group key before applying the selected target's declared entries. Zenki uses this for Cipher Tag replacement. |
@@ -47,4 +47,13 @@ The retired `finalProtocol` summon handler has no current callers and was remove
 
 ## Cleanup verification
 
-The duplicate `data/skills/` directory and obsolete `core/skillEffects.js` file are removed. Current skill execution uses `characters/skillData/`, `core/skillInterpreter.js`, and the registry under `systems/effects/`. The cleaned suite reports **260 passed, 0 failed, 0 skipped**. Historical Step 9 decisions and prior migration reports remain under `docs/history/` and are not current behavior references.
+The duplicate `data/skills/` directory and obsolete `core/skillEffects.js` file are removed. Current skill execution uses `characters/skillData/`, `core/skillInterpreter.js`, and the registry under `systems/effects/`. The current suite after the initial Phantom migration reports **283 passed, 0 failed, 0 skipped**. Historical Step 9 decisions and prior migration reports remain under `docs/history/` and are not current behavior references.
+
+## Iteration 5 runtime coverage verification
+
+- `validateSkillData` receives the live effect, passive, and summon registries from the skill interpreter. It validates that each referenced passive and summon handler is registered and that passive event names are in the supported lifecycle contract.
+- The seven tests in `test/engineCoverageAudit.test.js` compile all ten selectable character skill sets and all six enemy skill sets against the runtime registries, and exercise invalid handler rejection.
+- Ally-targeting mode restrictions are enforced in `core/skillInterpreter.js` as an execution-time precondition, including `targetFaction` and `excludeSelf`; the terminal decision view remains a separate earlier filter.
+- DoT source attribution survives when the source moves to reserve or is no longer in the deployed actor list. Later simultaneous DoT ticks are skipped after the target is incapacitated by an earlier tick.
+- Active owner-linked summons are dismissed when their owner is incapacitated. This does not invoke destruction-only handlers. Actor-turn statuses and owner-clocked summon activity/duration pause while their owner is in reserve.
+- Full suite after these changes: **313 passed, 0 failed, 0 skipped**. See [Iteration 5 Engine Coverage Audit](../project/ENGINE_COVERAGE_AUDIT.md).

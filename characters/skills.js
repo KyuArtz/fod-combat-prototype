@@ -7,6 +7,11 @@ const skillData = {
   zackry: require("./skillData/zackry"),
   jazen: require("./skillData/jazen"),
   zenki: require("./skillData/zenki"),
+  mirazhel: require("./skillData/mirazhel"),
+  elishia_p: require("./skillData/elishia_p"),
+  lucaz: require("./skillData/lucaz"),
+  clarke: require("./skillData/clarke"),
+  liezli: require("./skillData/liezli"),
   trainingDrone: require("../data/enemySkills/trainingDrone"),
   rogueAutomaton: require("../data/enemySkills/rogueAutomaton"),
   siegeTurret: require("../data/enemySkills/siegeTurret"),
@@ -14,6 +19,19 @@ const skillData = {
   toxicStalker: require("../data/enemySkills/toxicStalker"),
   blightheartOverseer: require("../data/enemySkills/blightheartOverseer"),
 };
+
+function getCharacterSkillData(characterId) {
+  const definition = skillData[characterId];
+  if (!definition || characterId in {
+    trainingDrone: true,
+    rogueAutomaton: true,
+    siegeTurret: true,
+    reconDrone: true,
+    toxicStalker: true,
+    blightheartOverseer: true,
+  }) return null;
+  return structuredClone(definition);
+}
 
 function createSkills(context) {
   const interpreter = createSkillInterpreter(context);
@@ -46,10 +64,12 @@ function createSkills(context) {
     onTurnStart: interpreter.onTurnStart,
     onTurnEnd: interpreter.onTurnEnd,
     onDamageTaken: interpreter.onDamageTaken,
+    onDamageDealt: interpreter.onDamageDealt,
+    onEvade: interpreter.onEvade,
     onEnemySkillTargeted: interpreter.onEnemySkillTargeted,
     onRoundStart: interpreter.onRoundStart,
     onUnitDefeated: interpreter.onUnitDefeated,
   };
 }
 
-module.exports = { createSkills };
+module.exports = { createSkills, getCharacterSkillData };

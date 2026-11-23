@@ -2,6 +2,7 @@ const readline = require("node:readline");
 const { createEnemyAI } = require("../ai/enemyAI");
 const { createEncounterWaveEnemies, createEncounterReinforcements, validateEncounterData, encounters } = require("../characters/enemies");
 const { createFalconParty } = require("../characters/falcon");
+const { PLAYABLE_FACTIONS, createPlayableRoster } = require("../characters/roster");
 const { createSkills } = require("../characters/skills");
 const { makeActor } = require("../characters/actorFactory");
 const { createActionResolver } = require("./actionResolver");
@@ -58,9 +59,19 @@ function createBattle({
   // built-in AI for enemies, automatic behaviour for summons. Each is a function or
   // an object with chooseAction(view). See core/controllers.js for headless ones.
   controllers = {},
-  // Optional party order by actor id (a permutation of the Falcon roster). When
+  // Optional party order by actor id (a permutation of the selected faction roster). When
   // given, the interactive formation prompts are skipped.
   partyOrder,
+  partyFactory = createFalconParty,
+  // Backwards-compatible single-faction picker.
+  selectPartyFaction = false,
+  // Unified mixed-faction roster selector for interactive play.
+  selectPartyCharacters = false,
+  // A faction-versus-faction match uses a complete opponent roster instead of PvE waves.
+  opponentFactory = null,
+  maxActive,
+  enemyMaxActive,
+  symmetricEvasion = false,
   encounter = "trainingGround",
   onEncounterComplete = () => {},
   // Optional additional effect handlers; registered once alongside the built-in systems handlers.
@@ -83,7 +94,23 @@ function createBattle({
   if (partyOrder !== undefined && !(Array.isArray(partyOrder) && partyOrder.every((id) => typeof id === "string"))) {
     throw new TypeError("partyOrder must be an array of actor id strings.");
   }
+  if (typeof partyFactory !== "function") throw new TypeError("partyFactory must be a function returning a combat roster.");
+  if (typeof selectPartyFaction !== "boolean") throw new TypeError("selectPartyFaction must be a boolean.");
+  if (typeof selectPartyCharacters !== "boolean") throw new TypeError("selectPartyCharacters must be a boolean.");
+  if (selectPartyFaction && selectPartyCharacters) throw new TypeError("selectPartyFaction and selectPartyCharacters cannot both be enabled.");
+  if ((selectPartyFaction || selectPartyCharacters) && partyOrder !== undefined) throw new TypeError("Interactive party selection cannot be combined with partyOrder.");
+  if (opponentFactory !== null && typeof opponentFactory !== "function") throw new TypeError("opponentFactory must be a function returning an opponent roster.");
+  for (const [key, value] of [["maxActive", maxActive], ["enemyMaxActive", enemyMaxActive]]) {
+    if (value !== undefined && (!Number.isInteger(value) || value < 1 || value > 5)) {
+      throw new RangeError(`${key} must be an integer from 1 to 5.`);
+    }
+  }
+  if (typeof symmetricEvasion !== "boolean") throw new TypeError("symmetricEvasion must be a boolean.");
   const state = createBattleState({ seed });
+  if (maxActive !== undefined) state.party.maxActive = maxActive;
+  if (enemyMaxActive !== undefined) state.enemyParty.maxActive = enemyMaxActive;
+  else if (opponentFactory && maxActive !== undefined) state.enemyParty.maxActive = maxActive;
+  const standaloneMatch = Boolean(opponentFactory);
   const random = () => nextFloat(state.rng);
   // The readline interface is created on first use, so fully headless battles
   // (scripted controllers plus partyOrder) never touch stdin.
@@ -99,7 +126,7 @@ function createBattle({
   function queueTriggeredReinforcements(downedActor) {
     const runtime = state.encounter;
     const definition = encounters[encounter];
-    if (!runtime || downedActor.side !== "enemy" || downedActor.summon) return;
+    if (!runtime || runtime.standalone || downedActor.side !== "enemy" || downedActor.summon) return;
     runtime.enemyDefeatedCount++;
     for (const reinforcement of definition.reinforcements || []) {
       if (runtime.triggeredReinforcements.includes(reinforcement.id)) continue;
@@ -122,6 +149,13 @@ function createBattle({
     const result = formation.result(state);
     if (result !== "VICTORY" || !state.encounter) return result;
     if (encounterCompleted) return result;
+    if (standaloneMatch) {
+      encounterCompleted = true;
+      const rewards = {};
+      emitCombatEvent(events, "EncounterCompleted", { encounterId: "factionDuel", result, round: state.round, rewards });
+      onEncounterComplete({ encounterId: "factionDuel", result, round: state.round, rewards });
+      return result;
+    }
     const runtime = state.encounter;
     const definition = encounters[encounter];
     const waves = Array.isArray(definition.waves)
@@ -212,13 +246,16 @@ function createBattle({
         kind: metadata.kind || "direct", sourceId: sourceActor?.id || null,
       });
     }
+    if (passiveHooks.onDamageDealt && sourceActor && (metadata.kind || "direct") === "direct") {
+      passiveHooks.onDamageDealt(sourceActor, target, amount, damageType, { kind: "direct" });
+    }
 
     // Reflection is based on post-mitigation damage before the recipient's shields.
     // Reflected damage is mitigated by the original attacker's defenses, and cannot reflect again.
     if (reflectionPercent > 0 && sourceActor?.alive && amount > 0) {
       const reflectedBase = Math.floor(amount * reflectionPercent / 100);
       if (reflectedBase <= 0) return hpLoss;
-      const reflectedDamage = mitigateReflectedDamage(sourceActor, reflectedBase, damageType || "Physical", effectiveStat);
+      const reflectedDamage = mitigateReflectedDamage(sourceActor, reflectedBase, damageType || "Physical", effectiveStat, target);
       say(`${target.name} reflects ${reflectedDamage} damage back to ${sourceActor.name}!`);
       applyTargetDamage(sourceActor, reflectedDamage, damageType || "Physical", target, {
         kind: "reflected", allowReflection: false,
@@ -259,6 +296,8 @@ function createBattle({
     say,
     random,
     incomingAttackModifier,
+    onEvade: (target, attacker) => passiveHooks.onEvade?.(target, attacker),
+    symmetricEvasion,
   });
 
   const context = {
@@ -294,7 +333,7 @@ function createBattle({
   summonDestroyed = skillSet.summonDestroyed;
   passiveHooks = skillSet;
   const battleMenu = createBattleMenu(context);
-  const enemyAI = createEnemyAI({ ...context, skills: enemySkills, policies: enemyPolicies, ready: cooldowns.ready });
+  const enemyAI = createEnemyAI({ ...context, skills: { ...skills, ...enemySkills }, policies: enemyPolicies, ready: cooldowns.ready });
   const turnRunner = createTurnRunner({
     state,
     events,
@@ -331,28 +370,64 @@ function createBattle({
       "=== F.O.D. COMBAT SIMULATOR: =======================================================",
     );
     output.log(`Seed: ${state.rng.seed}`);
-    const allyRoster = createFalconParty();
-    const selectedParty = partyOrder
-      ? orderRoster(allyRoster, partyOrder)
-      : await deploymentSelector.selectFormation(allyRoster, state.party.maxActive);
+    let allyRoster;
+    let selectedParty;
+    if (selectPartyCharacters) {
+      const availableRoster = createPlayableRoster({ side: "ally" });
+      selectedParty = await deploymentSelector.selectMixedFormation(availableRoster, {
+        activeCount: state.party.maxActive,
+        maxPartySize: 5,
+      });
+      // Only selected members are initialized and receive battle-start passives.
+      allyRoster = selectedParty;
+      say(`Formation assembled from ${[...new Set(selectedParty.map((actor) => actor.faction))].join(" + ")}.`);
+    } else {
+      let selectedPartyFactory = partyFactory;
+      if (selectPartyFaction) {
+        const faction = await deploymentSelector.selectFaction(
+          PLAYABLE_FACTIONS.map(({ id, label }) => ({ id, label })),
+        );
+        selectedPartyFactory = PLAYABLE_FACTIONS.find((entry) => entry.id === faction)?.factory;
+        if (!selectedPartyFactory) throw new Error(`Selected faction "${faction}" is not registered.`);
+        say(`Selected faction: ${PLAYABLE_FACTIONS.find((entry) => entry.id === faction).label}.`);
+      }
+      allyRoster = selectedPartyFactory({ side: "ally" });
+      if (!Array.isArray(allyRoster) || allyRoster.length < state.party.maxActive) {
+        throw new TypeError(`partyFactory must return at least ${state.party.maxActive} combatants.`);
+      }
+      selectedParty = partyOrder
+        ? orderRoster(allyRoster, partyOrder)
+        : await deploymentSelector.selectFormation(allyRoster, state.party.maxActive);
+    }
     emitCombatEvent(events, "FormationSelected", { ids: selectedParty.map((actor) => actor.id) });
     formation.setupParty(state, selectedParty);
-    const encounterDefinition = encounters[encounter];
-    if (!encounterDefinition) throw new Error(`Unknown encounter "${encounter}".`);
-    const enemyRoster = createEncounterWaveEnemies(encounter, 0);
+    const encounterDefinition = standaloneMatch ? null : encounters[encounter];
+    if (!standaloneMatch && !encounterDefinition) throw new Error(`Unknown encounter "${encounter}".`);
+    const enemyRoster = standaloneMatch
+      ? opponentFactory({ side: "enemy" })
+      : createEncounterWaveEnemies(encounter, 0);
+    if (!Array.isArray(enemyRoster) || enemyRoster.length < state.enemyParty.maxActive) {
+      throw new TypeError(`opponentFactory must return at least ${state.enemyParty.maxActive} combatants.`);
+    }
     formation.setupEnemyParty(state, enemyRoster);
     const actorsBeforeBattleStart = new Set(state.actors);
-    // Battle-start passives are global: both Falcon and enemy units receive them.
+    // Battle-start passives are global: both factions and all enemy archetypes receive them.
     skillSet.onBattleStart([...allyRoster, ...enemyRoster]);
     const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
-    const waves = Array.isArray(encounterDefinition.waves)
-      ? encounterDefinition.waves
-      : [{ id: "main", name: encounterDefinition.name || "Main Wave", enemies: encounterDefinition.enemies }];
-    state.encounter = { id: encounter, waveIndex: 0, enemyDefeatedCount: 0, triggeredReinforcements: [] };
+    const waves = standaloneMatch
+      ? [{ id: "faction-duel", name: "Faction Duel", enemies: [] }]
+      : Array.isArray(encounterDefinition.waves)
+        ? encounterDefinition.waves
+        : [{ id: "main", name: encounterDefinition.name || "Main Wave", enemies: encounterDefinition.enemies }];
+    const encounterId = standaloneMatch ? "factionDuel" : encounter;
+    state.encounter = {
+      id: encounterId, waveIndex: 0, enemyDefeatedCount: 0, triggeredReinforcements: [],
+      ...(standaloneMatch ? { standalone: true } : {}),
+    };
     emitCombatEvent(events, "BattleStarted", { seed: state.rng.seed });
-    emitCombatEvent(events, "EncounterStarted", { encounterId: encounter, waveCount: waves.length });
+    emitCombatEvent(events, "EncounterStarted", { encounterId, waveCount: waves.length });
     emitCombatEvent(events, "EncounterWaveStarted", {
-      encounterId: encounter, waveIndex: 1, waveId: waves[0].id || "main", name: waves[0].name || "Main Wave",
+      encounterId, waveIndex: 1, waveId: waves[0].id || "main", name: waves[0].name || "Main Wave",
     });
     for (const unit of initialSummons) {
       emitCombatEvent(events, "ActorSummoned", { actorId: unit.id, ownerId: unit.ownerId || "unknown", side: unit.side, round: state.round });
@@ -363,7 +438,8 @@ function createBattle({
     if (openingInitiative === "player-first") {
       const opening = applyOpeningInitiative(state, effectiveStat, { firstSide: "ally" });
       if (opening.applied) {
-        say("The Falcon team seizes the initiative!");
+        const teamName = String(allyRoster[0]?.faction || "ally");
+        say(`The ${teamName.charAt(0).toUpperCase()}${teamName.slice(1)} team seizes the initiative!`);
         emitCombatEvent(events, "OpeningInitiative", opening);
       }
     }

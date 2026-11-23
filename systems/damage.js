@@ -2,10 +2,12 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function priorityPercentMultiplier(statuses, field) {
+function priorityPercentMultiplier(statuses, field, attackerFaction = null, passiveValue = 0) {
   const values = Object.values(statuses || {})
+    .filter((status) => !status.damageTakenFaction || status.damageTakenFaction === attackerFaction)
     .map((status) => status[field])
     .filter(Number.isFinite);
+  if (Number.isFinite(passiveValue) && passiveValue !== 0) values.push(passiveValue);
   const positive = values.filter((value) => value > 0);
   const negative = values.filter((value) => value < 0);
   const strongestPositive = positive.length ? Math.max(...positive) : 0;
@@ -13,22 +15,27 @@ function priorityPercentMultiplier(statuses, field) {
   return Math.max(0, 1 + (strongestPositive + strongestNegative) / 100);
 }
 
-function markMultiplier(target) {
-  return priorityPercentMultiplier(target.statuses, "damageTakenPercent");
+function markMultiplier(target, attacker) {
+  return priorityPercentMultiplier(
+    target.statuses,
+    "damageTakenPercent",
+    attacker?.faction || null,
+    target.passive?.damageTakenPercent || 0,
+  );
 }
 
 function damageDealtMultiplier(attacker) {
   return priorityPercentMultiplier(attacker.statuses, "damageDealtPercent");
 }
 
-function mitigateReflectedDamage(target, amount, damageType, effectiveStat) {
+function mitigateReflectedDamage(target, amount, damageType, effectiveStat, attacker = null) {
   const defenseStat = damageType === "Physical" ? "DEF" : "RES";
   let damage = amount * 100 / (100 + effectiveStat(target, defenseStat));
   if (damageType !== "Physical") {
     damage *= 1 - clamp(target.stats.masteryResistance?.[damageType] || 0, 0, 100) / 100;
   }
   damage *= resistanceMultiplier(target, damageType);
-  damage *= markMultiplier(target);
+  damage *= markMultiplier(target, attacker);
   return Math.max(1, Math.floor(damage));
 }
 
@@ -54,7 +61,7 @@ function calculatePhysicalDamage(
   if (crit) raw *= 1.5;
   raw *= 100 / (100 + effectiveStat(target, "DEF"));
   raw *= resistanceMultiplier(target, "Physical");
-  raw *= markMultiplier(target);
+  raw *= markMultiplier(target, attacker);
   return { damage: Math.max(1, Math.floor(raw)), crit };
 }
 
@@ -66,21 +73,23 @@ function calculateMasteryDamage(
   power = 1,
   canCrit = true,
   random = Math.random,
+  scalingStat = "MPow",
+  critRateBonus = 0,
 ) {
   let raw =
-    effectiveStat(attacker, "MPow") *
+    effectiveStat(attacker, scalingStat) *
     power *
     damageDealtMultiplier(attacker) *
     (1 + (attacker.stats.masteryBonus?.[type] || 0) / 100);
   const crit =
-    canCrit && random() * 100 < (effectiveStat(attacker, "CritRate") + (target.statuses?.tacticalMark ? (attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0) : 0));
+    canCrit && random() * 100 < (effectiveStat(attacker, "CritRate") + critRateBonus + (target.statuses?.tacticalMark ? (attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0) : 0));
   if (crit) raw *= 1.5;
   raw *= 100 / (100 + effectiveStat(target, "RES"));
   raw *=
     1 -
     clamp(target.stats.masteryResistance?.[type] || 0, 0, 100) / 100;
   raw *= resistanceMultiplier(target, type);
-  raw *= markMultiplier(target);
+  raw *= markMultiplier(target, attacker);
   return { damage: Math.max(1, Math.floor(raw)), crit };
 }
 

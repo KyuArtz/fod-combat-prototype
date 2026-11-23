@@ -1,8 +1,12 @@
 # Roster and Skills
 
+## Unified selectable roster
+
+The current interactive roster is assembled by `characters/roster.js`, which registers Falcon Company and Phantom Rebellion and merges their actor factories into one catalog. The selector supports faction/mastery/role filters, public-profile search, character previews, selecting three to five unique operatives, and ordering three active slots plus up to two reserves. The hidden operative is displayed as **Unknown** and is not searchable by its internal actor key. See [Unified Character Selection](UNIFIED_ROSTER_SELECTION.md) for terminal commands, battle integration, and the extension contract for future factions.
+
 ## Mastery types
 
-The prototype defines eight mastery types: Energy, Kinetic, Electromagnetic, Toxic, Nuclear, Nanotech, Cryogenic, and Anomaly. Falcon agents receive a +15 mastery bonus for their assigned mastery in the current runtime data. Mastery resistance defaults to zero unless configured.
+The prototype defines eight mastery types: Energy, Kinetic, Electromagnetic, Toxic, Nuclear, Nanotech, Cryogenic, and Anomaly. Falcon and Phantom agents receive a +15 mastery bonus for their assigned mastery in the current runtime data. Mastery resistance defaults to zero unless configured.
 
 ## Falcon runtime roster
 
@@ -56,10 +60,28 @@ The [Falcon implementation guide](FALCON_IMPLEMENTATION_GUIDE.md) documents curr
 - **Jazen — Recoil Dampeners:** direct-hit threshold is checked after mitigation but before shield absorption; grants up to two Mpow +10% stacks. No Stagger/action-delay immunity.
 - **Zenki — Unobserved:** +12 Evasion while undamaged since his previous turn; no attacker accuracy penalty or Railshot damage bonus.
 
+## Phantom runtime roster
+
+The Phantom party factory is `characters/phantom.js`. It creates the five migrated units with source stat values, normalized `MPow`/`Evasion` keys, faction metadata (`phantom`), and a +15 bonus to each unit's primary mastery.
+
+| Character | Mastery | Role | HP | MP | ATK | MPow | DEF | RES | SPD | Crit | Evasion |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Mirazhel Veyra | Anomaly | Tactician / Vanguard | 1300 | 145 | 90 | 135 | 80 | 100 | 100 | 18 | 10 |
+| Unknown operative | Anomaly | Stalker | 1100 | 160 | 120 | 165 | 65 | 80 | 115 | 25 | 18 |
+| Lucaz Durn | Kinetic | Juggernaut | 1950 | 100 | 118 | 20 | 120 | 100 | 42 | 8 | 10 |
+| Clarke Voss | Electromagnetic | Vanguard | 1325 | 110 | 112 | 60 | 82 | 82 | 105 | 18 | 20 |
+| Liezli Noct | Anomaly | Stalker | 1020 | 130 | 118 | 0 | 62 | 84 | 104 | 22 | 14 |
+
+The source roster uses the internal key `elishia_p` for the Unknown operative. Her player-facing skill descriptions are intentionally neutral and do not reveal her identity. See the [Phantom Implementation Guide](PHANTOM_IMPLEMENTATION_GUIDE.md) for mechanics and the provisional Bleeding value.
+
+## Phantom skill registry
+
+All 20 Phantom active skills and their passive subscriptions are data-defined in `characters/skillData/` and assembled by `characters/skills.js` through the same interpreter used by Falcon. Mirazhel's mark applies its damage-taken bonus only to Phantom-faction attackers. Veil of the Unseen is restricted to another Phantom ally. Evasion passives, ATK/MPow scaling, one-use modifiers, Bleeding, Stagger, and shield replacement use shared registries/handlers.
+
 ## Enemy skills and AI
 
 All six enemy archetypes have declarative skill sets in `data/enemySkills/` and dedicated policies in `data/enemyAI/`. The Blightheart Overseer has a dedicated phase-aware boss policy; the five standard archetypes use role-specific ordered rules.
 
 ## Data authority
 
-Runtime Falcon skill behavior comes from `characters/skillData/`; enemy skill behavior comes from `data/enemySkills/`. Both use the shared skill runtime, combat systems, and tests. `references/characterTerraData.js` is the compact owner-reference extract containing selected skill objects and stat information; it is not a full character roster and is not imported by the engine. The owner maintains the separate website-facing character data.
+Runtime Falcon and Phantom skill behavior comes from `characters/skillData/`; enemy skill behavior comes from `data/enemySkills/`. Both factions use the shared skill runtime, combat systems, and tests. `references/characterTerraData.js` is the compact owner-reference extract containing selected skill objects and stat information; it is not a full character roster and is not imported by the engine. The owner maintains the separate website-facing character data.

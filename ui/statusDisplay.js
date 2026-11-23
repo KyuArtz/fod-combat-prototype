@@ -32,8 +32,10 @@ function statusLabel(key, effect) {
 }
 
 function statusCategory(key, effect) {
-  if (key === "tacticalMark") return "debuffs";
-  if (key === "retaliation") return "buffs";
+  if (effect.debuff || key === "tacticalMark" || Number.isFinite(effect.damageTakenPercent) ||
+      Number.isFinite(effect.accuracyPenalty) || Number.isFinite(effect.evasionPenalty)) return "debuffs";
+  if (key === "retaliation" || Number.isFinite(effect.damageDealtPercent) ||
+      Number.isFinite(effect.damageReflectionPercent) || Number.isFinite(effect.hotPercentMaxHP)) return "buffs";
   if (!Number.isFinite(effect.amount)) return "other";
   if (effect.amount < 0) return "debuffs";
   if (effect.amount > 0) return "buffs";
@@ -47,19 +49,31 @@ function formatDuration(turns) {
 
 function formatStatus(key, effect) {
   const label = statusLabel(key, effect);
-  if (key === "tacticalMark") {
-    return `Incoming damage +${effect.amount}% (${formatDuration(effect.turns)})`;
-  }
+  const duration = formatDuration(effect.turns);
   if (key === "adaptiveResistance") {
-    return `${effect.damageType} resistance +${effect.amount}% (${formatDuration(effect.turns)})`;
+    return `${effect.damageType} resistance +${effect.amount}% (${duration})`;
   }
-  if (!Number.isFinite(effect.amount)) {
-    return `${label} (${formatDuration(effect.turns)})`;
+
+  const details = [];
+  if (Number.isFinite(effect.damageTakenPercent)) {
+    const value = effect.damageTakenPercent;
+    details.push(`Incoming damage ${value > 0 ? "+" : ""}${value}%`);
   }
+  if (Number.isFinite(effect.evasionPenalty)) details.push(`Evasion -${Math.abs(effect.evasionPenalty)} pts`);
+  if (Number.isFinite(effect.accuracyPenalty)) details.push(`Accuracy -${Math.abs(effect.accuracyPenalty)} pts`);
+  if (Number.isFinite(effect.damageDealtPercent)) {
+    const value = effect.damageDealtPercent;
+    details.push(`Damage dealt ${value > 0 ? "+" : ""}${value}%`);
+  }
+  if (Number.isFinite(effect.damageReflectionPercent)) details.push(`Damage reflection ${effect.damageReflectionPercent}%`);
+  if (Number.isFinite(effect.dotDamage)) details.push(`${effect.dotDamage} ${effect.damageType || ""} damage per turn`.trim());
+  if (Number.isFinite(effect.hotPercentMaxHP)) details.push(`Healing +${effect.hotPercentMaxHP}% Max HP per turn`);
+  if (details.length) return `${details.join("; ")} (${duration})`;
+  if (!Number.isFinite(effect.amount)) return `${label} (${duration})`;
 
   const unit = effect.stat === "Evasion" ? " pts" : "%";
   const amount = `${effect.amount > 0 ? "+" : ""}${effect.amount}${unit}`;
-  return `${label} ${amount} (${formatDuration(effect.turns)})`;
+  return `${label} ${amount} (${duration})`;
 }
 
 function formatStatuses(statuses) {
@@ -163,4 +177,4 @@ function showParty(party, output = console, title = "PARTY") {
   });
 }
 
-module.exports = { showStatus, showParty };
+module.exports = { statusCategory, formatStatus, formatStatuses, showStatus, showParty };

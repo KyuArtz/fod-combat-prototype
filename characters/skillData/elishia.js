@@ -4,6 +4,7 @@ module.exports = {
   passive: {
     id: "biotechOverdrive",
     name: "Biotech Overdrive",
+    description: "At battle start, gains SPD +10% and Evasion +10 for 3 turns. After using a Nanotech skill, her next active skill costs 8 MP less. This passive does not increase damage.",
     events: {
       battleStart: [{ handler: "startTimedPassive", timerKey: "overdrive", turns: 3 }],
       turnEnd: [{ handler: "tickTimedPassive", timerKey: "overdrive" }],
@@ -87,7 +88,7 @@ module.exports = {
       effects: [
         {
           type: "setBattleTimer", key: "singularity", turns: 3, ownerTurnClock: true,
-          turnStart: [{ handler: "healPercentMaxHP", percentMaxHP: 5, side: "ally", excludeSummons: true }],
+          turnStart: [{ handler: "healPercentMaxHP", percentMaxHP: 5, side: "owner", excludeSummons: true }],
         },
         { type: "statusAllies", id: "singularityAtk", stat: "ATK", amount: 15, turns: 3 },
         { type: "statusAllies", id: "singularitySpd", stat: "SPD", amount: 10, turns: 3 },
