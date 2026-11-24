@@ -152,11 +152,11 @@ test("conservative policy lowers poison-triggered rotation threshold while basel
   assert.notEqual(conservative.chooseAction(poisonedView).type, "switch");
 });
 
-function makeVerraEmergencySwitchView({ allyHp = 135, treatmentAvailable = true, targetable = true } = {}) {
-  const verra = { id: "verra", skillSet: "verra", hp: 800, maxHp: 1000, statuses: {} };
+function makeVerraEmergencySwitchView({ allyHp = 135, actorHp = 800, treatmentAvailable = true, targetable = true, reserveHp = 900 } = {}) {
+  const verra = { id: "verra", skillSet: "verra", hp: actorHp, maxHp: 1000, alive: true, statuses: {} };
   const kane = { id: "kane", role: "stalker", hp: allyHp, maxHp: 1000, alive: true, statuses: {} };
   const galloz = { id: "galloz", role: "juggernaut", hp: 800, maxHp: 1000, alive: true, statuses: {} };
-  const reserve = { id: "claude", role: "tactician", hp: 900, maxHp: 1000, alive: true, statuses: {} };
+  const reserve = { id: "claude", role: "tactician", hp: reserveHp, maxHp: 1000, alive: true, statuses: {} };
   const targets = targetable ? ["verra", "kane", "galloz"] : ["verra", "galloz"];
   return {
     kind: "player",
@@ -187,6 +187,25 @@ test("Verra does not defer rotation when emergency treatment is unavailable", ()
 test("Verra does not defer rotation when the critical ally cannot be treated by available modes", () => {
   assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView({ targetable: false })), {
     type: "switch", reserveId: "claude", activeId: "kane",
+  });
+});
+
+
+test("Verra rotates when she is critical but no teammate has an emergency treatment need", () => {
+  assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView({ actorHp: 135, allyHp: 900 })), {
+    type: "switch", reserveId: "claude", activeId: "verra",
+  });
+});
+
+test("when Verra and a teammate are both critical, she treats the teammate before rotation", () => {
+  assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView({ actorHp: 135, allyHp: 135 })), {
+    type: "skill", skillKey: "unstableRemedy", mode: "remedy", targetId: "kane",
+  });
+});
+
+test("emergency treatment still wins when reserve health is too low for a safe rotation", () => {
+  assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView({ allyHp: 135, reserveHp: 400 })), {
+    type: "skill", skillKey: "unstableRemedy", mode: "remedy", targetId: "kane",
   });
 });
 
