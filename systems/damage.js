@@ -28,6 +28,19 @@ function damageDealtMultiplier(attacker) {
   return priorityPercentMultiplier(attacker.statuses, "damageDealtPercent");
 }
 
+function conditionalDamageDealtMultiplier(attacker, target, damageType) {
+  const values = (attacker?.passive?.conditionalDamageMods || [])
+    .filter((modifier) => modifier.damageType === damageType && target?.statuses?.[modifier.targetStatus])
+    .map((modifier) => modifier.percent)
+    .filter(Number.isFinite);
+  if (!values.length) return 1;
+  const positive = values.filter((value) => value > 0);
+  const negative = values.filter((value) => value < 0);
+  const strongestPositive = positive.length ? Math.max(...positive) : 0;
+  const strongestNegative = negative.length ? Math.min(...negative) : 0;
+  return Math.max(0, 1 + (strongestPositive + strongestNegative) / 100);
+}
+
 function mitigateReflectedDamage(target, amount, damageType, effectiveStat, attacker = null) {
   const defenseStat = damageType === "Physical" ? "DEF" : "RES";
   let damage = amount * 100 / (100 + effectiveStat(target, defenseStat));
@@ -42,9 +55,12 @@ function mitigateReflectedDamage(target, amount, damageType, effectiveStat, atta
 // Adaptive Barrier: resistance to the one damage type the shield last absorbed.
 function resistanceMultiplier(target, damageType) {
   const resistance = target.statuses.adaptiveResistance;
-  return resistance && resistance.damageType === damageType
-    ? 1 - resistance.amount / 100
-    : 1;
+  const resistances = Object.values(target.statuses || {})
+    .filter((status) => (status.resistanceType === damageType && Number.isFinite(status.resistancePercent)) ||
+      (status === resistance && resistance?.damageType === damageType))
+    .map((status) => status === resistance ? resistance.amount : status.resistancePercent);
+  const strongest = resistances.length ? Math.max(...resistances) : 0;
+  return Math.max(0, 1 - clamp(strongest, 0, 100) / 100);
 }
 
 function calculatePhysicalDamage(
@@ -55,7 +71,7 @@ function calculatePhysicalDamage(
   canCrit = true,
   random = Math.random,
 ) {
-  let raw = effectiveStat(attacker, "ATK") * power * damageDealtMultiplier(attacker);
+  let raw = effectiveStat(attacker, "ATK") * power * damageDealtMultiplier(attacker) * conditionalDamageDealtMultiplier(attacker, target, "Physical");
   const crit =
     canCrit && random() * 100 < (effectiveStat(attacker, "CritRate") + (target.statuses?.tacticalMark ? (attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0) : 0));
   if (crit) raw *= 1.5;
@@ -80,6 +96,7 @@ function calculateMasteryDamage(
     effectiveStat(attacker, scalingStat) *
     power *
     damageDealtMultiplier(attacker) *
+    conditionalDamageDealtMultiplier(attacker, target, type) *
     (1 + (attacker.stats.masteryBonus?.[type] || 0) / 100);
   const crit =
     canCrit && random() * 100 < (effectiveStat(attacker, "CritRate") + critRateBonus + (target.statuses?.tacticalMark ? (attacker.statuses?.fullSpectrumCrit?.critVsMarked || 0) : 0));
@@ -93,4 +110,4 @@ function calculateMasteryDamage(
   return { damage: Math.max(1, Math.floor(raw)), crit };
 }
 
-module.exports = { calculatePhysicalDamage, calculateMasteryDamage, mitigateReflectedDamage };
+module.exports = { calculatePhysicalDamage, calculateMasteryDamage, mitigateReflectedDamage, conditionalDamageDealtMultiplier };

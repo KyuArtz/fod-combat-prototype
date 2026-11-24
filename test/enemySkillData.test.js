@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const { playHeadless } = require("../tools/lib/headless");
 const { createEventBus } = require("../core/eventBus");
 const { validateSkillData } = require("../core/skillInterpreter");
+const { createEnemyAI } = require("../ai/enemyAI");
 
 const ENEMY_DATA = [
   require("../data/enemySkills/trainingDrone"),
@@ -77,3 +78,10 @@ for (const [actorId, skillKey] of ENEMY_SKILLS) {
     assert.ok(["VICTORY", "DEFEAT"].includes(battle.result));
   });
 }
+
+test("faction enemy skill descriptions expose MP cost and cooldown metadata to tactical controllers", () => {
+  const skill = { key: "triage", name: "Triage Infusion", category: "Skill 2", cost: 25, cooldown: 3, targeting: "ally", run() {} };
+  const actor = { id: "evalete", skillSet: "evalete", alive: true, mp: 40, cooldowns: { triage: 1 } };
+  const ai = createEnemyAI({ skills: { evalete: [skill] }, ready: (unit, key, cost) => unit.alive && unit.mp >= cost && !(unit.cooldowns[key] > 0) });
+  assert.deepEqual(ai.describeSkills(actor), [{ key: "triage", name: "Triage Infusion", targeting: "ally", category: "Skill 2", cost: 25, cooldown: 1, targetFaction: undefined, excludeSelf: undefined, usable: false }]);
+});

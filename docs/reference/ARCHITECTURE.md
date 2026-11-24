@@ -31,8 +31,8 @@ index.js
 | Controllers | `core/controllers.js`, `ui/battleMenu.js`, `ai/enemyAI.js` | Player, scripted, random, summon, and enemy decision policies |
 | Combat resolution | `core/actionResolver.js`, `systems/damage.js`, `systems/damageApplication.js` | Shared basic attacks, damage calculation/application, HP and incapacitation |
 | Skill runtime | `core/skillInterpreter.js`, `core/skillLifecycle.js` (compatibility facade), `systems/passives/`, `systems/summons/`, `systems/effects/`, `core/skillDataValidation.js`, `core/skillMessages.js` | Skill execution orchestration, passive and summon registries/runtimes, effect handlers, data validation, message formatting |
-| Actor and registry | `characters/actorFactory.js`, `characters/falcon.js`, `characters/phantom.js`, `characters/roster.js`, `characters/skills.js`, `characters/enemies.js` | Runtime actor construction, Falcon/Phantom rosters, skill registry assembly, enemy/encounter resolution |
-| Data definitions | `characters/skillData/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, `data/encounters/` | Falcon and Phantom skill/passive definitions plus declarative enemy, policy and encounter content |
+| Actor and registry | `characters/actorFactory.js`, `characters/falcon.js`, `characters/phantom.js`, `characters/serpent.js`, `characters/roster.js`, `characters/skills.js`, `characters/enemies.js` | Runtime actor construction, Falcon/Phantom/Serpent rosters, skill registry assembly, enemy/encounter resolution |
+| Data definitions | `characters/skillData/`, `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, `data/encounters/` | Falcon, Phantom, and Serpent skill/passive definitions plus declarative enemy, policy and encounter content |
 | Reusable systems | `systems/` | Readiness, initiative, formation, cooldowns, shields, statuses, damage, effect handlers, and passive lifecycle runtime |
 | Events and randomness | `core/eventBus.js`, `core/combatEvents.js`, `core/rng.js` | Battle-local deterministic RNG, event delivery, typed event validation |
 | Presentation | `ui/` | Terminal prompts, deployment selection, status display, readable battle log |
@@ -63,7 +63,7 @@ Controllers do not own combat rules. The terminal menu, built-in enemy AI, scrip
 
 ## Skill runtime
 
-- `characters/skillData/*.js` defines live Falcon and Phantom skills and passive data.
+- `characters/skillData/*.js` defines live Falcon, Phantom, and Serpent skills and passive data.
 - `data/enemySkills/*.js` defines the current enemy skill sets.
 - `characters/skills.js` builds both registries through `core/skillInterpreter.js`.
 - `core/skillInterpreter.js` checks readiness, pays MP, assigns cooldowns, and runs the selected skill variant.
@@ -74,7 +74,7 @@ Controllers do not own combat rules. The terminal menu, built-in enemy AI, scrip
 
 When adding an effect, update its handler and validation rules together, add focused tests, and verify full-battle/golden behavior. Do not put prompts or terminal I/O in skill data or effect handlers.
 
-The initial Phantom roster is created by `characters/phantom.js` and registered through the same shared character skill registry. `characters/roster.js` owns the selectable faction registry and creates a merged actor catalog for interactive play; the deployment selector filters and previews that catalog without containing faction-specific branches. The interactive entry point orders three active operatives and up to two reserves from the selected mixed roster. The hidden operative uses the internal key `elishia_p` but displays as `Unknown`; ability descriptions remain neutral in `references/characterTerraData.js` and the owner-facing website JSON.
+The Phantom and Serpent rosters are created by `characters/phantom.js` and `characters/serpent.js` and registered through the same shared character skill registry. `characters/roster.js` owns the selectable faction registry and creates a merged actor catalog for interactive play; the deployment selector filters and previews that catalog without containing faction-specific branches. The interactive entry point orders three active operatives and up to two reserves from the selected mixed roster. The hidden operative uses the internal key `elishia_p` but displays as `Unknown`; ability descriptions remain neutral in `references/characterTerraData.js` and the owner-facing website JSON.
 
 ## Enemy AI and encounters
 
@@ -119,7 +119,7 @@ This is a reusable contract, not a claim that every possible passive effect is e
 
 Falcon passive triggers have been migrated from character-ID conditionals into `systems/passives/registry.js`. Passive data may declare `events` subscriptions keyed by lifecycle event (for example `turnStart`, `damageTaken`, and `skillUsed`); each subscription names a registered handler. The lifecycle runtime emits events and the registry dispatches matching handlers. New handler behavior can be registered through the passive registry without adding character branches to the runtime.
 
-Current migrated subscriptions include Zenki's Unobserved turn/damage triggers, Jazen's Recoil Dampeners damage trigger, Zackry's Overwatch Protocol skill-use trigger, Evalete's Catalyst Protocol lifecycle, and Elishia's Biotech Overdrive timer lifecycle.
+Current migrated subscriptions include Falcon's Unobserved, Recoil Dampeners, Overwatch Protocol, Catalyst Protocol, and Biotech Overdrive; Serpent's Toxicology Prodigy, Catalyst Husk, Unstable Formulation, and Tether Snare; and reusable combat-effect hooks for Poison, Fracture, Reinforcement, and Tether Marks.
 
 
 ## Passive event dispatch

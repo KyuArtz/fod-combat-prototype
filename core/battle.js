@@ -216,6 +216,8 @@ function createBattle({
         if (passiveHooks.onUnitDefeated) passiveHooks.onUnitDefeated(downedActor, defeatStatuses);
         const replacement = formation.deployFirstReserve(state, downedActor.side, downedActor);
         if (replacement) {
+          // A reserve passive becomes active only when its owner is deployed.
+          skillSet.onBattleStart([replacement.incoming]);
           say(`${replacement.incoming.name} deploys to ${downedActor.side} formation slot ${replacement.slot + 1}!`);
           emitCombatEvent(events, "ReserveDeployed", {
             incomingId: replacement.incoming.id, defeatedId: downedActor.id,
@@ -244,10 +246,13 @@ function createBattle({
     if (passiveHooks.onDamageTaken) {
       passiveHooks.onDamageTaken(target, amount, damageType, hpLoss, {
         kind: metadata.kind || "direct", sourceId: sourceActor?.id || null,
+        actionType: metadata.actionType || null, skillKey: metadata.skillKey || null,
       });
     }
     if (passiveHooks.onDamageDealt && sourceActor && (metadata.kind || "direct") === "direct") {
-      passiveHooks.onDamageDealt(sourceActor, target, amount, damageType, { kind: "direct" });
+      passiveHooks.onDamageDealt(sourceActor, target, amount, damageType, {
+        kind: "direct", actionType: metadata.actionType || null, skillKey: metadata.skillKey || null,
+      });
     }
 
     // Reflection is based on post-mitigation damage before the recipient's shields.
@@ -346,6 +351,13 @@ function createBattle({
     say,
     formation,
     onEnemySkillTargeted: skillSet.onEnemySkillTargeted,
+    onPassiveDeploy: (actor) => skillSet.onBattleStart([actor]),
+    onPassiveUndeploy: (actor) => {
+      for (const summon of state.actors.filter((unit) => unit.summon && unit.ownerId === actor.id)) {
+        summon.alive = false;
+        summon.summonTurns = 0;
+      }
+    },
     controllers: {
       player: battleMenu,
       enemy: enemyAI.controller,
@@ -412,7 +424,9 @@ function createBattle({
     formation.setupEnemyParty(state, enemyRoster);
     const actorsBeforeBattleStart = new Set(state.actors);
     // Battle-start passives are global: both factions and all enemy archetypes receive them.
-    skillSet.onBattleStart([...allyRoster, ...enemyRoster]);
+    // Only deployed combatants activate battle-start passives. Reserve members
+    // activate their passives when they enter the field.
+    skillSet.onBattleStart([...state.party.active, ...state.enemyParty.active]);
     const initialSummons = state.actors.filter((unit) => !actorsBeforeBattleStart.has(unit) && unit.summon);
     const waves = standaloneMatch
       ? [{ id: "faction-duel", name: "Faction Duel", enemies: [] }]

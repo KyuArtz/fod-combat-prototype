@@ -26,6 +26,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Unified roster selection](reference/UNIFIED_ROSTER_SELECTION.md) | Mixed-faction selection, filters, character previews, formation ordering, and extension guidance |
 | [Falcon implementation guide](reference/FALCON_IMPLEMENTATION_GUIDE.md) | Executable Falcon skill/passive behavior and exact values |
 | [Phantom implementation guide](reference/PHANTOM_IMPLEMENTATION_GUIDE.md) | Executable Phantom skill/passive behavior, neutral hidden-operative copy, and migration notes |
+| [Serpent implementation guide](reference/SERPENT_IMPLEMENTATION_GUIDE.md) | Serpent skill/passive behavior, Poison values, Tekushiki canon note, tactical AI, and faction matchup commands |
 | [Falcon approved-kit history](history/milestones/STEP9_SUPERSEDED_FALCON_MECHANICS.md) | Historical Step 9 decisions, superseded where they conflict with ADR-017 |
 | [Enemy archetypes and balance](reference/ENEMY_ARCHETYPES_AND_BALANCE.md) | Six enemy passive/skill kits, the Blightheart boss, tactical Falcon policy, and seeded playtest results |
 | [Owner skill reference](reference/OWNER_SKILL_REFERENCE.md) | Authority and handling of the compact owner-reference extract |

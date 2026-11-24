@@ -7,14 +7,14 @@ A Node.js command-line prototype for experimenting with **Fragments of Decay (F.
 - Controller-driven combat with terminal, AI, scripted, random, and headless controllers.
 - Seeded randomness and deterministic decision replay.
 - Threshold-based continuous readiness scheduler (preferred) and legacy scheduler (comparison).
-- Data-driven Falcon and Phantom skills and passives, plus six enemy archetypes (including the Blightheart boss) with a passive, three skills, an Ultimate, and dedicated AI policies.
-- Unified mixed-faction character selection: choose three to five unique Falcon/Phantom operatives, inspect their combat profiles, filter by faction/mastery/role, and arrange three active slots plus an optional two-member reserve queue.
-- Runtime coverage audit for all ten playable and six enemy skill sets, including passive/summon handler registration, mode-target validation, DoT attribution, DoT defeat ordering, and owner-linked summon cleanup.
+- Data-driven Falcon, Phantom, and Serpent skills and passives, plus six enemy archetypes (including the Blightheart boss) with a passive, three skills, an Ultimate, and dedicated AI policies.
+- Unified mixed-faction character selection: choose three to five unique Falcon/Phantom/Serpent operatives, inspect their combat profiles, filter by faction/mastery/role, and arrange three active slots plus an optional two-member reserve queue.
+- Runtime coverage audit for all fifteen playable and six enemy skill sets, including passive/summon handler registration, mode-target validation, DoT attribution, DoT defeat ordering, and owner-linked summon cleanup.
 - Data-driven enemy archetypes, AI policies, encounter compositions, waves, and defeat-count reinforcements.
-- Coordinated Falcon and Phantom controllers with role-aware target focus, faction-specific tactics, Toxic-counterplay, and three-active/two-reserve rotation.
+- Coordinated Falcon, Phantom, and Serpent controllers with role-aware target focus, faction-specific tactics, Toxic-counterplay, and three-active/two-reserve rotation.
 - Typed combat events alongside readable battle logs.
 - Headless simulator with table, JSON, and CSV reports.
-- Automated regression suite: **313 tests passing, 0 failing, 0 skipped** after the combat effect coverage audit; run `npm test` locally to verify your checkout.
+- Automated regression suite: **363 tests passing, 0 failing, 0 skipped** after Serpent migration and mixed-faction preview/selection coverage; run `npm test` locally to verify your checkout.
 
 Reward awarding, XP, inventory, persistent stage progression, and save/load are not implemented. The encounter completion callback exposes reward metadata for a future progression layer.
 
@@ -29,7 +29,7 @@ Reward awarding, XP, inventory, persistent stage progression, and save/load are 
 npm start
 ```
 
-The interactive deployment flow opens the **unified operative roster**. You can mix Falcon Company and Phantom Rebellion characters, filter by faction/mastery/role, search public profile details, inspect character stats and abilities, and select three to five unique operatives. You then choose the three active slots in order and arrange any remaining choices into the reserve queue. The default setup is three active plus up to two reserves, and the resulting mixed team enters the Training Ground PvE encounter. The hidden `elishia_p` operative appears as **Unknown** in player-facing output; its internal roster ID is not displayed in the selection interface.
+The interactive deployment flow opens the **unified operative roster**. You can mix Falcon Company, Phantom Rebellion, and Serpent Syndicate characters, filter by faction/mastery/role, search public profile details, inspect character stats and abilities, and select three to five unique operatives. You then choose the three active slots in order and arrange any remaining choices into the reserve queue. The default setup is three active plus up to two reserves, and the resulting mixed team enters the Training Ground PvE encounter. The hidden `elishia_p` operative appears as **Unknown** in player-facing output; its internal roster ID is not displayed in the selection interface.
 
 Run the test suite:
 
@@ -78,10 +78,12 @@ node tools/simulate.js --battles 100 --format json --out reports/sample.json
 node tools/simulate.js --battles 100 --format csv --out reports/sample.csv
 ```
 
-Run a seeded Phantom-versus-Falcon tactical batch (the harness alternates faction seating and uses symmetric hit/evasion behavior):
+Run seeded faction matchups (the harness supports any distinct pair and alternates faction seating with symmetric hit/evasion behavior):
 
 ```bash
 npm run simulate:factions -- --battles 500 --seed 20261122 --active 3
+npm run simulate:factions -- --player serpent --opponent falcon --battles 100 --active 3
+npm run simulate:factions -- --player serpent --opponent phantom --battles 100 --active 3
 ```
 
 Compare Falcon with Evalete against temporary one-for-one Phantom replacements (100 matched-seed battles per variant by default):
@@ -123,7 +125,7 @@ package.json          Project metadata and standard npm scripts
 ## Source and data authority
 
 - Executable code and automated tests define actual runtime combat behavior.
-- `characters/skillData/` contains the live Falcon and Phantom skill/passive definitions; `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, and `data/encounters/` contain enemy and encounter definitions. `ai/falconTactics.js` provides the initial tactical Falcon controller; `ai/falconTacticsV2.js` provides the coordinated Falcon controller with reserve rotation and Toxic-counter logic; `ai/phantomTactics.js` provides Phantom's faction-specific tactical controller. `characters/phantom.js` creates Phantom actors; `characters/skills.js` assembles player and enemy registries through the shared interpreter.
+- `characters/skillData/` contains the live Falcon, Phantom, and Serpent skill/passive definitions; `data/enemySkills/`, `data/enemies/`, `data/enemyAI/`, and `data/encounters/` contain enemy and encounter definitions. `ai/falconTactics.js` provides the initial tactical Falcon controller; `ai/falconTacticsV2.js` provides the coordinated Falcon controller with reserve rotation and Toxic-counter logic; `ai/phantomTactics.js` and `ai/serpentTactics.js` provide Phantom and Serpent faction-specific tactical controllers. `characters/phantom.js` and `characters/serpent.js` create their actors; `characters/skills.js` assembles player and enemy registries through the shared interpreter.
 - `characters/roster.js` is the central registry for player-selectable factions and builds the unified actor catalog; the deployment selector contains no faction-specific selection branches.
 - `references/characterTerraData.js` is a compact owner-reference extract containing selected skill objects and stat information. It is not a full character roster and is not imported by the combat engine.
 - The owner maintains the separate website-facing character data. The `elishia_p` internal key displays as `Unknown`; all five player-facing skill descriptions remain neutral. Phantom Bleeding currently uses an initial provisional baseline of 0.15× the applier's ATK as Anomaly damage per affected-unit turn-start tick for 2 turns; it does not stack, and reapplication refreshes duration. This value is documented in `docs/reference/PHANTOM_IMPLEMENTATION_GUIDE.md`. When engine mechanics change, update the relevant implementation/reference notes and provide the owner with the corresponding reference changes to apply to the site-facing data. Do not create a duplicate `ref/` directory or package the full original JSON.
@@ -134,6 +136,6 @@ package.json          Project metadata and standard npm scripts
 - Preserve deterministic RNG call order unless a gameplay change intentionally changes it.
 - Treat golden transcript changes as behavior changes: regenerate only deliberately, review the diff, and document the reason.
 - Run `npm test` before handing off a change. Record simulator samples as observations, not proof of balance.
-- The Iteration 5 combat effect coverage audit is complete; the next planned feature milestone is Serpent Syndicate migration through the unified roster and shared skill runtime.
+- Serpent Syndicate is now integrated into the unified roster and shared skill runtime. Future milestones can focus on three-faction balance testing, further encounter coverage, or a graphical roster interface.
 
 See [project status](docs/project/PROJECT_STATUS.md), [architecture](docs/reference/ARCHITECTURE.md), and [testing guidance](docs/project/TESTING_AND_PLAYTESTING.md).

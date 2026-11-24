@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-11-23 — Iteration 6: Serpent Syndicate shared-runtime migration
+
+- Added Verra, Kane, Galloz, Claude, and Tekushiki as five selectable Serpent Syndicate operatives through `characters/serpent.js` and the central `characters/roster.js` registry. Tekushiki is now an official/canon member by owner authorization; his origin and past remain deliberately unresolved.
+- Migrated all 20 Serpent skill slots and five passives into `characters/skillData/`. Verra's two mode-based skills provide 22 executable branches across attack/heal options.
+- Added reusable Poison behavior with source attribution and distinct tuning: Verra's Poison ticks for 0.25× her Mpow; Kane's and Claude's Poison ticks for 0.20× their applier's Mpow, each for two affected-unit turns.
+- Integrated Verra's heal/cleanse/Toxic-resistance support, Kane's Poison damage synergy and multi-hit sequences, Galloz's Reinforcement and next-strike charge, Claude's Fracture and team support, and Tekushiki's two-mark Snare/Bind control through the shared effects/passive/status systems.
+- Added Serpent tactical AI with role-aware targeting and reserve rotation; registered Serpent in the symmetric faction-duel harness so it can act on either battle side and face Falcon or Phantom.
+- Updated the unified selector to include 15 operatives across all three factions, show Verra's mode names/descriptions in profile previews, and format primary/secondary roles consistently. Updated the compact owner reference and separate website-facing `characterTerraData` copy.
+- Added Serpent migration, mechanics, selection, and faction-duel regression coverage. **Verification:** 333 tests passed, 0 failed, 0 skipped.
+- Ran 10-battle Serpent-vs-Falcon and Serpent-vs-Phantom integration smoke batches with alternating seats and zero rejected decisions. These small batches verify execution only; they are not balance benchmarks.
+
 ## 2026-11-22 — Iteration 5: Combat effect coverage and mixed-faction validation
 
 - Added live passive and summon registry introspection (`has`/`entries`) and load-time validation that every declared lifecycle event and handler resolves before battle execution.

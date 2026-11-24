@@ -81,3 +81,14 @@ test("Guaranteed-hit mastery attacks consume but are not blocked by a pending Ac
   assert.ok(target.hp < before);
   assert.equal(zenki.nextAttackAccuracy, 0);
 });
+
+test("Evalete's Catalyst Protocol does not activate from reserve and initializes only on deployment", () => {
+  const w = world();
+  const evalete = w.byId.evalete;
+  const active = w.allies.filter((actor) => actor.id !== "evalete");
+  w.skillSet.onBattleStart(active);
+  assert.equal(evalete.catalystWingId, undefined, "reserve Evalete should not spawn her passive Wing");
+  w.skillSet.onBattleStart([evalete]);
+  const wing = w.state.actors.find((actor) => actor.id === evalete.catalystWingId);
+  assert.ok(wing?.alive, "deploying Evalete should activate her passive Wing");
+});

@@ -172,6 +172,8 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
         key: skill.key,
         name: skill.name,
         category: skill.category,
+        cost: skill.cost,
+        cooldown: skill.cooldown,
         targeting: skill.targeting,
         usable: skill.usable,
       };

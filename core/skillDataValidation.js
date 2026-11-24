@@ -20,8 +20,8 @@ function validateSkillData(
   const summons = data.summons || {};
   const keys = new Set();
   const resultKeys = {
-    heal: ["healed"], damage: ["damage"], physicalHit: ["damage"], masteryHit: ["damage", "missed", "bonusText"], masteryMultiHit: ["damage", "missed", "bonusText", "hitsLanded", "hitDamages"], shield: ["shield"],
-    shieldSelf: ["shield"], summon: ["summon"], cleanseAllies: ["cleansedCount"],
+    heal: ["healed"], healPower: ["healed", "healedTargetIds"], healPowerAllies: ["healed", "healedTargetIds"], healSelf: ["healed"], damage: ["damage"], physicalHit: ["damage"], masteryHit: ["damage", "missed", "bonusText"], masteryMultiHit: ["damage", "missed", "bonusText", "hitsLanded", "hitDamages"], shield: ["shield"],
+    shieldSelf: ["shield"], summon: ["summon"], cleanseAllies: ["cleansedCount"], cleanseTarget: ["cleansedCount"], consumeTetherMarks: ["consumedMarks"],
   };
   const checkText = (where, value, allowed, label) => {
     if (value === undefined) return;
@@ -34,6 +34,33 @@ function validateSkillData(
     if (!effect || typeof effect.id !== "string" || !effect.id || !Number.isInteger(effect.turns) || effect.turns < 1 ||
       (effect.amount !== undefined && !isNum(effect.amount)) || (needsStat && typeof effect.stat !== "string")) {
       fail(where, "status effect needs id, positive integer turns, optional numeric amount and optional stat");
+    }
+  };
+  const checkPowerModifiers = (where, modifiers, label = "powerModifiers") => {
+    if (modifiers === undefined) return;
+    if (!Array.isArray(modifiers)) fail(where, `${label} must be an array`);
+    for (const modifier of modifiers) {
+      const condition = modifier?.when || {};
+      const hasFlag = typeof condition.flag === "string" && Boolean(condition.flag) && typeof condition.equals === "boolean";
+      const validFlag = condition.flag === undefined || hasFlag;
+      const validAndFlags = condition.andFlags === undefined ||
+        (Array.isArray(condition.andFlags) && condition.andFlags.every((item) => item && typeof item.flag === "string" && item.flag && typeof item.equals === "boolean"));
+      const hasTargetHpCondition = condition.targetHpPercentBelow !== undefined;
+      const validTargetHpCondition = !hasTargetHpCondition ||
+        (isNum(condition.targetHpPercentBelow) && condition.targetHpPercentBelow > 0 && condition.targetHpPercentBelow <= 100);
+      const validActorStatus = condition.status === undefined || (typeof condition.status === "string" && Boolean(condition.status));
+      const validTargetStatus = condition.targetStatus === undefined || (typeof condition.targetStatus === "string" && Boolean(condition.targetStatus));
+      const hasCondition = hasFlag || (Array.isArray(condition.andFlags) && condition.andFlags.length > 0) || hasTargetHpCondition ||
+        typeof condition.status === "string" || typeof condition.targetStatus === "string";
+      const variants = [
+        isNum(modifier?.percent) && modifier.percent > -100,
+        isNum(modifier?.setPower) && modifier.setPower > 0,
+        isNum(modifier?.addPower) && modifier.addPower > 0,
+      ].filter(Boolean).length;
+      if (!modifier || !hasCondition || !validFlag || !validAndFlags || !validTargetHpCondition || !validActorStatus ||
+        !validTargetStatus || variants !== 1 || (modifier.bonusText !== undefined && typeof modifier.bonusText !== "string")) {
+        fail(where, `${label} entries need a valid flag/status/HP condition and exactly one of percent, setPower or addPower`);
+      }
     }
   };
   const checkEffects = (where, effects, targeting, message) => {
@@ -58,11 +85,28 @@ function validateSkillData(
       if (effect.onlyHitTargets && !["damageOverTime", "statusEnemies"].includes(type)) {
         fail(where, "onlyHitTargets is supported only by damageOverTime and statusEnemies");
       }
-      if (["heal", "shield", "masteryHit", "masteryMultiHit", "damage", "damageOverTime", "conditionalStatus", "statusGroup", "physicalHit"].includes(type) &&
+      if (["heal", "healPower", "cleanseTarget", "shield", "masteryHit", "masteryMultiHit", "damage", "damageOverTime", "conditionalStatus", "statusGroup", "physicalHit", "consumeTetherMarks"].includes(type) &&
         !(type === "damageOverTime" && ["ally", "enemy", "opponent"].includes(effect.side)) && !["enemy", "ally"].includes(targeting)) {
         fail(where, `${type} effect acts on a target but targeting is "${targeting}"`);
       }
-      if (["heal", "healAllies", "hotAllies"].includes(type) && !(isNum(effect.percentMaxHP) && effect.percentMaxHP > 0)) fail(where, `${type} needs percentMaxHP > 0`);
+      if (["heal", "healAllies", "hotAllies", "healSelf"].includes(type) && !(isNum(effect.percentMaxHP) && effect.percentMaxHP > 0)) fail(where, `${type} needs percentMaxHP > 0`);
+      if (["healPower", "healPowerAllies"].includes(type) && (!(isNum(effect.multiplier) && effect.multiplier > 0) ||
+        (effect.scalingStat !== undefined && !["ATK", "MPow"].includes(effect.scalingStat)))) {
+        fail(where, `${type} needs multiplier > 0 and scalingStat ATK or MPow`);
+      }
+      if (type === "healPower" && (effect.multiplierBelowHpPercent !== undefined || effect.conditionalMultiplier !== undefined) &&
+        (!(isNum(effect.multiplierBelowHpPercent) && effect.multiplierBelowHpPercent > 0 && effect.multiplierBelowHpPercent <= 100) ||
+          !(isNum(effect.conditionalMultiplier) && effect.conditionalMultiplier > 0))) {
+        fail(where, "conditional healPower requires multiplierBelowHpPercent (0–100) and conditionalMultiplier > 0");
+      }
+      if (type === "consumeTetherMarks") {
+        if (targeting !== "enemy" || (effect.minimumStacks !== undefined && (!Number.isInteger(effect.minimumStacks) || effect.minimumStacks < 1)) ||
+          (effect.markStatus !== undefined && (typeof effect.markStatus !== "string" || !effect.markStatus)) ||
+          (effect.removeStatuses !== undefined && (!Array.isArray(effect.removeStatuses) || !effect.removeStatuses.every((id) => typeof id === "string" && id))) ||
+          (effect.apply !== undefined && (!effect.apply || typeof effect.apply.id !== "string" || !effect.apply.id || !Number.isInteger(effect.apply.turns) || effect.apply.turns < 1))) {
+          fail(where, "consumeTetherMarks requires enemy targeting and valid mark/consume/apply options");
+        }
+      }
       if (["damage", "masteryHit", "masteryDamageAllEnemies", "masteryDamageAllOpponents", "damageOverTime"].includes(type) && !(typeof effect.element === "string" && isNum(effect.power) && effect.power > 0)) fail(where, `${type} needs element and power > 0`);
       if (type === "masteryMultiHit") {
         if (targeting !== "enemy") fail(where, "masteryMultiHit requires enemy targeting");
@@ -114,31 +158,10 @@ function validateSkillData(
         (typeof effect.critRateBonusWhenStatus !== "string" || !effect.critRateBonusWhenStatus || !(isNum(effect.critRateBonus) && effect.critRateBonus >= 0))) {
         fail(where, "masteryHit critRateBonusWhenStatus needs a status ID and non-negative critRateBonus");
       }
-      if (type === "masteryHit") {
-        if (effect.accuracy !== undefined && effect.accuracy !== "guaranteed" && effect.accuracy !== "standard") fail(where, "masteryHit accuracy must be standard or guaranteed");
-        if (effect.powerModifiers !== undefined && !Array.isArray(effect.powerModifiers)) fail(where, "masteryHit powerModifiers must be an array");
-        for (const modifier of effect.powerModifiers || []) {
-          const condition = modifier?.when;
-          const hasFlag = typeof condition?.flag === "string" && Boolean(condition.flag) && typeof condition.equals === "boolean";
-          const validFlag = condition?.flag === undefined || hasFlag;
-          const validAndFlags = condition?.andFlags === undefined ||
-            (Array.isArray(condition.andFlags) && condition.andFlags.every((item) => item && typeof item.flag === "string" && item.flag && typeof item.equals === "boolean"));
-          const hasTargetHpCondition = condition?.targetHpPercentBelow !== undefined;
-          const validTargetHpCondition = !hasTargetHpCondition ||
-            (isNum(condition.targetHpPercentBelow) && condition.targetHpPercentBelow > 0 && condition.targetHpPercentBelow <= 100);
-          const hasActorStatus = typeof condition?.status === "string" && Boolean(condition.status);
-          const validActorStatus = condition?.status === undefined || hasActorStatus;
-          const hasTargetStatus = typeof condition?.targetStatus === "string" && Boolean(condition.targetStatus);
-          const validTargetStatus = condition?.targetStatus === undefined || hasTargetStatus;
-          const hasCondition = hasFlag || (Array.isArray(condition?.andFlags) && condition.andFlags.length > 0) || hasTargetHpCondition || hasActorStatus || hasTargetStatus;
-          const hasPercent = isNum(modifier?.percent) && modifier.percent > -100;
-          const hasSetPower = isNum(modifier?.setPower) && modifier.setPower > 0;
-          if (!hasCondition || !validFlag || !validAndFlags || !validTargetHpCondition || !validActorStatus || !validTargetStatus ||
-            hasPercent === hasSetPower ||
-            (modifier?.bonusText !== undefined && typeof modifier.bonusText !== "string")) {
-            fail(where, "masteryHit power modifiers need a flag, status or target HP condition, exactly one of percent > -100 or setPower > 0, and optional bonusText");
-          }
-        }
+      if (["masteryHit", "masteryMultiHit", "masteryDamageAllOpponents"].includes(type)) {
+        if (effect.accuracy !== undefined && !["standard", "guaranteed"].includes(effect.accuracy)) fail(where, `${type} accuracy must be standard or guaranteed`);
+        checkPowerModifiers(where, effect.powerModifiers, "powerModifiers");
+        if (type === "masteryMultiHit") checkPowerModifiers(where, effect.lastHitPowerModifiers, "lastHitPowerModifiers");
       }
       if (type === "physicalHit" && !(isNum(effect.power) && effect.power > 0)) fail(where, "physicalHit needs power > 0");
       if (["shield", "shieldSelf", "shieldAllies"].includes(type)) {
@@ -157,8 +180,25 @@ function validateSkillData(
         !(isNum(effect.damageReflectionPercent) && effect.damageReflectionPercent >= 0 && effect.damageReflectionPercent <= 100)) {
         fail(where, "damageReflectionPercent must be between 0 and 100");
       }
+      if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.nextSkillPowerAdd !== undefined &&
+        (!(isNum(effect.nextSkillPowerAdd) && effect.nextSkillPowerAdd > 0) ||
+          (effect.scalingStat !== undefined && !["ATK", "MPow"].includes(effect.scalingStat)) ||
+          (effect.damageType !== undefined && typeof effect.damageType !== "string"))) {
+        fail(where, "nextSkillPowerAdd needs a positive value and optional valid scalingStat/damageType");
+      }
       if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.untargetable !== undefined && typeof effect.untargetable !== "boolean") {
         fail(where, "untargetable must be a boolean");
+      }
+      if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.skipAction !== undefined && typeof effect.skipAction !== "boolean") {
+        fail(where, "skipAction must be a boolean");
+      }
+      if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) &&
+        (effect.resistanceType !== undefined || effect.resistancePercent !== undefined) &&
+        (typeof effect.resistanceType !== "string" || !effect.resistanceType || !(isNum(effect.resistancePercent) && effect.resistancePercent > 0 && effect.resistancePercent <= 100))) {
+        fail(where, "typed resistance needs resistanceType and resistancePercent between 0 and 100");
+      }
+      if (type === "statusEnemies" && effect.requiresStatus !== undefined && (typeof effect.requiresStatus !== "string" || !effect.requiresStatus)) {
+        fail(where, "statusEnemies requiresStatus must be a non-empty status ID");
       }
       if (["status", "statusSelf", "statusAllies", "statusEnemies"].includes(type) && effect.expireAtTurnStart !== undefined && typeof effect.expireAtTurnStart !== "boolean") {
         fail(where, "expireAtTurnStart must be a boolean");
@@ -272,6 +312,10 @@ function validateSkillData(
   }
   for (const mod of (data.passive?.incomingAttackMods || [])) {
     if (typeof mod.type !== "string" || !isNum(mod.points)) fail("passive", "incoming attack modifiers need a type and numeric points");
+  }
+  for (const mod of (data.passive?.conditionalDamageMods || [])) {
+    if (!mod || typeof mod.damageType !== "string" || !mod.damageType || typeof mod.targetStatus !== "string" || !mod.targetStatus ||
+      !isNum(mod.percent) || mod.percent <= -100) fail("passive", "conditionalDamageMods need damageType, targetStatus and percent > -100");
   }
   for (const hook of (data.passive?.onSkillUsed || [])) {
     if (typeof hook.tag !== "string" || !hook.tag) fail("passive", "each onSkillUsed hook needs a tag");

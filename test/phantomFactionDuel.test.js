@@ -4,7 +4,7 @@ const { playFactionDuel, summarizeFactionDuel, FACTIONS } = require("../tools/li
 const { createDeploymentSelector } = require("../ui/deploymentSelection");
 const { createFalconParty } = require("../characters/falcon");
 
-const factions = ["falcon", "phantom"];
+const factions = ["falcon", "phantom", "serpent"];
 
 test("both factions expose five selectable combatants for a three-active, two-reserve formation", () => {
   for (const id of factions) {
@@ -70,4 +70,54 @@ test("Phantom can also be the player-side faction in a real tactical faction due
   assert.equal(summary.rejectedDecisions, 0);
   assert.ok(events.some((event) => event.type === "SkillUsed" && FACTIONS.phantom.ids.includes(event.actorId)));
   assert.ok(events.some((event) => event.type === "SkillUsed" && FACTIONS.falcon.ids.includes(event.actorId)));
+});
+
+
+test("Serpent Syndicate exposes five unique playable operatives and runs tactical skills on both sides", async () => {
+  assert.equal(FACTIONS.serpent.ids.length, 5);
+  assert.equal(new Set(FACTIONS.serpent.ids).size, 5);
+  const battle = await playFactionDuel({ seed: 29003, playerFaction: "serpent", opponentFaction: "falcon", maxActive: 3 });
+  const summary = summarizeFactionDuel(battle);
+  const events = battle.events.history;
+  assert.ok(["VICTORY", "DEFEAT", "DRAW"].includes(battle.result));
+  assert.equal(summary.rejectedDecisions, 0);
+  assert.ok(events.some((event) => event.type === "SkillUsed" && FACTIONS.serpent.ids.includes(event.actorId)));
+  assert.ok(events.some((event) => event.type === "SkillUsed" && FACTIONS.falcon.ids.includes(event.actorId)));
+  assert.equal(battle.playerFaction, "serpent");
+  assert.equal(battle.opponentFaction, "falcon");
+  assert.equal(battle.telemetry.version, 2);
+  assert.ok(battle.telemetry.totalEventCount > 0);
+  assert.equal(battle.telemetry.eventCount, 0, "timeline snapshots are disabled by default for batch efficiency");
+  assert.ok(battle.telemetry.actorMetrics.verra, "actor-level metrics should include Serpent operatives");
+});
+
+
+test("Serpent tactical AI works on the enemy side and in a Phantom matchup", async () => {
+  const versusFalcon = await playFactionDuel({
+    seed: 29004, playerFaction: "falcon", opponentFaction: "serpent", maxActive: 3,
+  });
+  const falconSummary = summarizeFactionDuel(versusFalcon);
+  const falconEvents = versusFalcon.events.history;
+  assert.ok(["VICTORY", "DEFEAT", "DRAW"].includes(versusFalcon.result));
+  assert.equal(falconSummary.rejectedDecisions, 0);
+  assert.ok(falconEvents.some((event) => event.type === "SkillUsed" && FACTIONS.serpent.ids.includes(event.actorId)));
+  assert.ok(falconEvents.some((event) => event.type === "PartySwitched" && event.side === "enemy"), "enemy-side Serpent reserves must deploy");
+
+  const versusPhantom = await playFactionDuel({
+    seed: 29005, playerFaction: "serpent", opponentFaction: "phantom", maxActive: 3,
+  });
+  const phantomSummary = summarizeFactionDuel(versusPhantom);
+  assert.ok(["VICTORY", "DEFEAT", "DRAW"].includes(versusPhantom.result));
+  assert.equal(phantomSummary.rejectedDecisions, 0);
+  assert.ok(versusPhantom.events.history.some((event) => event.type === "SkillUsed" && FACTIONS.phantom.ids.includes(event.actorId)));
+});
+
+test("faction-duel runner accepts an isolated tactical-controller override for experiments", async () => {
+  const { createSerpentTacticsController } = require("../ai/serpentTactics");
+  const baseline = createSerpentTacticsController({ standardThreshold: 0.12, verraThreshold: 0.10, poisonThreshold: 0.22 });
+  let decisionCount = 0;
+  const experimentController = { chooseAction(view) { decisionCount++; return baseline.chooseAction(view); } };
+  const battle = await playFactionDuel({ seed: 29006, playerFaction: "serpent", opponentFaction: "phantom", controllerOverrides: { serpent: experimentController } });
+  assert.ok(decisionCount > 0, "experimental controller should be used during the duel");
+  assert.ok(["VICTORY", "DEFEAT", "DRAW"].includes(battle.result));
 });

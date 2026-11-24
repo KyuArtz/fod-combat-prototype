@@ -1,5 +1,8 @@
 # Iteration 5 — Combat Effect Coverage & Mixed-Faction Validation
 
+> **Historical scope note (2026-11-22):** This audit snapshot covered the ten Falcon and Phantom operatives available at that time. Serpent Syndicate was migrated afterward; the current roster has 15 operatives across three factions, with its own mechanics and selection tests documented in the [Serpent Implementation Guide](../reference/SERPENT_IMPLEMENTATION_GUIDE.md) and current [Project Status](PROJECT_STATUS.md).
+
+
 **Status:** Complete  
 **Snapshot:** 2026-11-22  
 **Scope:** Shared engine coverage before Serpent Syndicate migration.
@@ -76,4 +79,4 @@ Seven golden scenarios changed only because of the intentional lifecycle behavio
 
 - No Falcon or Phantom character stat or skill values were changed in this audit.
 - Phantom Bleeding's 0.15× ATK Anomaly tick remains provisional pending owner approval.
-- The next planned milestone is Serpent Syndicate migration through the existing unified roster and shared skill/effect/passive/summon registries.
+- At the time of this 2026-11-22 audit, the next planned milestone was Serpent Syndicate migration. That migration was completed on 2026-11-23; see the [Serpent Implementation Guide](../reference/SERPENT_IMPLEMENTATION_GUIDE.md) and current [Project Status](PROJECT_STATUS.md).
