@@ -8,8 +8,10 @@ This index is the entry point for project documentation. Current-state documents
 |---|---|
 | [Project status](project/PROJECT_STATUS.md) | Current implemented capabilities, verification, and known limitations |
 | [Baseline audit](project/BASELINE_AUDIT.md) | Findings, restructuring decisions, and verification for this documentation/codebase pass |
+| [P0 clean-baseline audit](project/P0_CLEAN_BASELINE_AUDIT.md) | Current clean snapshot, package scripts, test inventory, and verification results |
 | [Roadmap](project/ROADMAP.md) | Remaining work and planned development sequence |
 | [Testing and playtesting](project/TESTING_AND_PLAYTESTING.md) | Test commands, regression policy, simulator use, and merge gate |
+| [Test redundancy review](project/TEST_REDUNDANCY_REVIEW.md) | Assertion-level review and conservative test-retention decisions |
 | [AI handoff](project/AI_HANDOFF.md) | Concise source-grounded continuation context and development rules |
 | [Architecture decisions](project/DECISIONS.md) | Accepted and deferred design decisions (ADRs) |
 | [Changelog](project/CHANGELOG.md) | Chronological record of implementation milestones |

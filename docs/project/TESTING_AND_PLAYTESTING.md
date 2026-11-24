@@ -10,32 +10,28 @@ npm test
 
 This runs Node's built-in test runner (`node --test`). No third-party test framework or install step is required.
 
-The historical Iteration 3 and Iteration 5 snapshots had earlier test totals. The current three-faction checkout reports **333 tests passing, 0 failing, 0 skipped** after Serpent migration and selector-preview coverage. Always use the result from the current checkout rather than relying on a historical count.
+The historical Iteration 3 and Iteration 5 snapshots had earlier test totals. The current three-faction checkout reports **363 tests passing, 0 failing, 0 skipped** after Serpent migration and selector-preview coverage. Always use the result from the current checkout rather than relying on a historical count.
+
+## Test consolidation policy
+
+The current test suite was reviewed for redundancy in [Test Redundancy Review](TEST_REDUNDANCY_REVIEW.md). No test sources were removed: the review found related coverage clusters but no proven duplicate assertions safe to delete. Similar test names or topics are not sufficient grounds for removal.
 
 ## Test suite map
 
-| Test file | Main coverage |
-|---|---|
-| `basicAttack.test.js` | Shared player/enemy basic attack, evasion, retaliation, invalid inputs |
-| `controllers.test.js` | Controller injection, headless battles, decision recording/replay, rejected decisions |
-| `determinism.test.js`, `rng.test.js` | Seed validation, RNG state, deterministic battle replay |
-| `eventBus.test.js` | Event delivery, subscriptions, typed event contracts, payload behavior |
-| `battleTimers.test.js`, `effectRegistry.test.js`, `effectTiming.test.js` | Battle-scoped timers, pluggable effect handlers, and status/shield duration timing |
-| `passiveModifiers.test.js`, `passiveRegistry.test.js`, `summonRegistry.test.js` | Generic passive modifiers, passive event dispatch, and reusable summon lifecycle handlers |
-| `damageAttribution.test.js` | Direct, reflected, and DoT source attribution and simulator damage contribution metrics |
-| `openingInitiative.test.js` | Player-first and speed opening policies, ties, scheduler compatibility |
-| `thresholdCombatReadiness.test.js` | Continuous readiness, tie ordering, CR adjustments, reserves, cloned state |
-| `turnViewAndDecisions.test.js` | Turn views, legal action shapes, target validation, terminal decisions |
-| `falconApprovedSkillData.test.js`, `falconSkillData.test.js`, `phantomMigration.test.js`, `serpentMigration.test.js`, `enemySkillData.test.js` | Approved Falcon, Phantom, and Serpent definitions, hidden-operative neutral-copy check, generic validation, registry construction and shared interpreter execution |
-| `elishiaMechanics.test.js`, `falconApprovedElishia.test.js`, `falconApprovedLifecycle.test.js`, `falconApprovedRoster.test.js`, `falconFinalizedMechanics.test.js`, `effectTiming.test.js` | Adaptive Barrier, approved Falcon passives/skills, cross-kit generic mechanics, and status/shield duration timing |
-| `fullBattleRegression.test.js`, `phantomBattleIntegration.test.js` | Full-battle skill use, AI interactions, battle outcomes, status timing, switching/reserves, and all five Phantom kits in a real battle |
-| `goldenTranscripts.test.js`, `goldenElishia.test.js` | Deterministic full-battle logs and final-state fixtures |
-| `enemyDataAndEncounter.test.js` | Enemy archetype, policy, boss passive, and encounter data validation |
-| `falconTacticalController.test.js` | Deterministic tactical player controller, legal actions, and boss-encounter execution |
-| `encounterProgression.test.js` | Waves, stat overrides, reinforcement triggers, lifecycle and completion callback |
-| `simulator.test.js` | CLI validation, deterministic batch metrics, output formats, encounter reporting |
-| `referencePackaging.test.js` | Ensures the compact owner-reference package contains only the intended reference file |
-| `unifiedRosterSelection.test.js` | Unified Falcon/Phantom/Serpent roster, faction/mastery/primary-or-secondary-role filters, public-safe previews including mode variants, ordered active/reserve formation, and real battle integration |
+The test suite is grouped by responsibility. Keep tests that protect distinct contracts; consolidate only when overlap is proven and coverage remains explicit.
+
+| Area | Test files | Coverage focus |
+|---|---|---|
+| Core combat and targeting | `basicAttack.test.js`, `cleansePriority.test.js`, `damageAttribution.test.js`, `passiveModifiers.test.js`, `statusDisplay.test.js` | Action resolution, damage sources, cleanse ordering, modifiers, player-facing status presentation |
+| Battle flow and controller contracts | `controllers.test.js`, `eventBus.test.js`, `turnViewAndDecisions.test.js`, `factionSideRelativeSupport.test.js`, `fullBattleRegression.test.js` | Legal action views, controller injection, decisions, battle integration, side-relative support |
+| RNG and replay determinism | `determinism.test.js`, `rng.test.js`, `goldenTranscripts.test.js`, `goldenElishia.test.js` | Seeded replay, RNG behavior, exact transcript/final-state fixtures |
+| Scheduling and initiative | `openingInitiative.test.js`, `thresholdCombatReadiness.test.js` | Opening policy, continuous readiness, tie fairness, reserve CR and scheduler previews |
+| Effect, passive, summon and timing registries | `effectRegistry.test.js`, `effectTiming.test.js`, `passiveRegistry.test.js`, `summonRegistry.test.js`, `battleTimers.test.js`, `skillSetAlias.test.js` | Shared handler contracts, duration/stacking, lifecycle hooks, timers and aliases |
+| Skill definitions and faction mechanics | `falconSkillData.test.js`, `falconApprovedSkillData.test.js`, `falconApprovedElishia.test.js`, `falconApprovedLifecycle.test.js`, `falconApprovedRoster.test.js`, `falconFinalizedMechanics.test.js`, `elishiaMechanics.test.js`, `phantomMigration.test.js`, `serpentMigration.test.js` | Skill schema, faction passives, and migration coverage |
+| Faction AI and matchup integration | `falconTacticalController.test.js`, `falconTacticsV2.test.js`, `phantomBattleIntegration.test.js`, `phantomFactionDuel.test.js`, `serpentTactics.test.js`, `fieldMedicSwap.test.js` | Tactical controller decisions, real battles, faction support on either side, and matchup tooling |
+| Enemy data and encounter progression | `enemyDataAndEncounter.test.js`, `enemySkillData.test.js`, `encounterProgression.test.js`, `engineCoverageAudit.test.js` | Enemy kits, policies, encounters, waves, reinforcement hooks, and registry-wide contract audits |
+| Simulator and reporting | `simulator.test.js`, `battleTelemetry.test.js` | CLI options, batch metrics, telemetry, output formats and aggregation |
+| Roster and reference boundaries | `unifiedRosterSelection.test.js`, `referencePackaging.test.js` | Mixed-faction selection, public previews, active/reserve formation and compact reference packaging |
 
 Golden fixtures are stored in `test/fixtures/golden/` as compressed files.
 

@@ -158,9 +158,9 @@ Tactical Blightheart battles averaged 11,410 total damage dealt by Falcon (inclu
 
 **Tuning note:** an initial boss stat increase (HP 4,320 / ATK 165 / MPow 220) with guaranteed AoE cadence drove tactical wins to 4/80 (5%). That version was rejected. The current profile is the intermediate tuned version above; it produced a 42.0% tactical win rate over 150 seeds.
 
-These are controller-dependent prototype observations, not universal balance estimates. Use the raw JSON batch reports and sample transcripts in `reports/` for reproducibility.
+These are controller-dependent prototype observations, not universal balance estimates. Raw JSON batches and sample transcripts from these historical runs are not included in the clean snapshot; rerun the commands in this guide for fresh results.
 
-The consolidated iteration-2 report, per-agent contribution summary, reproducible JSON batches, and sample transcripts are in [`reports/`](../../reports/README.md). At the Iteration 2 snapshot, the suite result was 263 passed, 0 failed, and 38 superseded legacy assertions skipped; this is a historical count, not the current post-cleanup result.
+Raw reports and sample transcripts from the earlier Iteration 2/3 playtests are intentionally omitted from the clean snapshot. The historical findings and configuration details remain documented here; reproduce current runs using the simulator commands below. The Iteration 2 test count (263 passed and 38 superseded assertions skipped) is historical only.
 
 
 ## Iteration 3 — Coordinated Falcon, cleanse counterplay and active/reserve boss test (2026-11-22)
@@ -186,15 +186,9 @@ The three-active coordinated run averaged 1.86 manual party-switch events, 0.91 
 
 The five-active coordinated run won all 100 attempts and never used reserves; it is a formation comparison, not the primary fairness target. The random three-active controller won 1/100, indicating the encounter strongly rewards coordinated ability use and reserve management. The three-active 68.7% result is the primary challenge benchmark for the current formation. These are deterministic headless controller observations, not estimates of human-player win probability.
 
-### Artifacts and reproduction
+### Reproduction
 
-- `reports/iteration3/falcon-coordinated-3active-150.json` — primary coordinated three-active batch.
-- `reports/iteration3/falcon-random-3active-100.json` — random-policy three-active control.
-- `reports/iteration3/falcon-coordinated-5active-100.json` — five-active formation control.
-- `reports/iteration3/falcon-iteration3-sample-battles.md` — full seeded victory and defeat transcripts (seeds 996000 and 996004).
-- `reports/iteration3/falcon-iteration3-report.md` — consolidated report and interpretation.
-
-Reproduce the primary run with:
+Historical raw reports and transcripts from Iteration 3 are not included in the clean snapshot. Reproduce the primary run with:
 
 ```bash
 node tools/simulate.js --battles 150 --seed 996000 --policy coordinated --active 3 --party-order jazen,evalete,zackry,elishia,zenki --encounter blightheartSanctum --format json --out reports/iteration3/falcon-coordinated-3active-150.json

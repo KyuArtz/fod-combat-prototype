@@ -41,7 +41,7 @@ No character stats, skills, damage formulas, or tactical thresholds were changed
 - Average damage dealt: 11,965.14 (ally seat), 11,931.80 (enemy seat)
 - Average damage received: 10,530.80 (ally seat), 10,585.70 (enemy seat)
 
-Each matched seed had the same win/loss outcome in both seat orientations for both matchups (0 discordant pairs). The Falcon 20-seed smoke test also showed 3 wins in each seat, and Phantom 0 in each seat.
+Each matched seed had the same win/loss outcome in both seat orientations for both matchups (0 discordant pairs). 
 
 ## Remaining balance conclusion
 
