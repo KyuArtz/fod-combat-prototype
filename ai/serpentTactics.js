@@ -152,8 +152,23 @@ function reserveSwitch(view, switchPolicy = {}) {
   return { type: "switch", reserveId: incoming.id, activeId: outgoing.member.id };
 }
 
+function hasCriticalTreatmentOpportunity(view, criticalHpRatio = 0.15) {
+  if (view?.actor?.skillSet !== "verra" && view?.actor?.id !== "verra") return false;
+  const friendlies = (view.friendlies || []).filter((unit) => !unit.summon && unit.hp > 0);
+  const treatmentActions = (view.actions || []).filter((action) =>
+    action.usable && ["unstableRemedy", "causticInjection"].includes(action.key),
+  );
+  return friendlies.some((unit) => ratio(unit) <= criticalHpRatio && treatmentActions.some((action) =>
+    (action.modes || []).some((mode) => ["remedy", "treat"].includes(mode.id) && (mode.targets || []).includes(unit.id)),
+  ));
+}
+
+
 function chooseAction(rawView, switchPolicy = {}) {
-  const swap = reserveSwitch(rawView, switchPolicy);
+  // Give Verra a chance to take an available treatment action before rotation
+  // when an eligible ally is at or below the emergency HP threshold.
+  const deferRotationForTreatment = hasCriticalTreatmentOpportunity(rawView, switchPolicy.criticalTreatmentThreshold ?? 0.15);
+  const swap = deferRotationForTreatment ? null : reserveSwitch(rawView, switchPolicy);
   if (swap) return swap;
 
   const view = rawView;

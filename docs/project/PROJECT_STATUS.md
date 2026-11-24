@@ -53,7 +53,7 @@ The prototype has a controller-driven battle loop, deterministic seeded randomne
 
 ## Verification
 
-Current `npm test`: **363 passed, 0 failed, 0 skipped**. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
+Current `npm test`: **367 passed, 0 failed, 0 skipped**. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
 
 Additional validation for this Serpent migration: all 145 JavaScript files pass `node --check`, the website-facing JSON parses, the compact owner-reference module loads, and 40 Markdown documents have no broken relative links. Run `npm test` from the project root to verify the checkout.
 

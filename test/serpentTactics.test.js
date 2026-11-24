@@ -151,3 +151,48 @@ test("conservative policy lowers poison-triggered rotation threshold while basel
   assert.deepEqual(chooseSerpentAction(poisonedView), { type: "switch", reserveId: "claude", activeId: "kane" });
   assert.notEqual(conservative.chooseAction(poisonedView).type, "switch");
 });
+
+function makeVerraEmergencySwitchView({ allyHp = 135, treatmentAvailable = true, targetable = true } = {}) {
+  const verra = { id: "verra", skillSet: "verra", hp: 800, maxHp: 1000, statuses: {} };
+  const kane = { id: "kane", role: "stalker", hp: allyHp, maxHp: 1000, alive: true, statuses: {} };
+  const galloz = { id: "galloz", role: "juggernaut", hp: 800, maxHp: 1000, alive: true, statuses: {} };
+  const reserve = { id: "claude", role: "tactician", hp: 900, maxHp: 1000, alive: true, statuses: {} };
+  const targets = targetable ? ["verra", "kane", "galloz"] : ["verra", "galloz"];
+  return {
+    kind: "player",
+    actor: verra,
+    friendlies: [verra, kane, galloz],
+    opponents: [{ id: "phantom-lucaz", role: "juggernaut", hp: 1000, maxHp: 1000, statuses: {} }],
+    actions: [
+      { type: "switch", active: [kane, verra, galloz], reserves: [reserve] },
+      { type: "basic", targets: ["phantom-lucaz"] },
+      { type: "skill", key: "unstableRemedy", usable: treatmentAvailable, modes: [{ id: "remedy", targets }] },
+      { type: "skill", key: "causticInjection", usable: treatmentAvailable, modes: [{ id: "treat", targets }] },
+    ],
+  };
+}
+
+test("Verra prioritizes emergency treatment over rotation when a teammate is critically injured", () => {
+  assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView()), {
+    type: "skill", skillKey: "unstableRemedy", mode: "remedy", targetId: "kane",
+  });
+});
+
+test("Verra does not defer rotation when emergency treatment is unavailable", () => {
+  assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView({ treatmentAvailable: false })), {
+    type: "switch", reserveId: "claude", activeId: "kane",
+  });
+});
+
+test("Verra does not defer rotation when the critical ally cannot be treated by available modes", () => {
+  assert.deepEqual(chooseSerpentAction(makeVerraEmergencySwitchView({ targetable: false })), {
+    type: "switch", reserveId: "claude", activeId: "kane",
+  });
+});
+
+test("Verra emergency-treatment override respects its configurable HP threshold", () => {
+  const view = makeVerraEmergencySwitchView({ allyHp: 200 });
+  assert.deepEqual(chooseSerpentAction(view), {
+    type: "switch", reserveId: "claude", activeId: "kane",
+  });
+});

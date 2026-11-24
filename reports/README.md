@@ -1,19 +1,27 @@
 # Local Simulation Reports
 
-Simulator outputs written to `reports/` are local, generated artifacts and are ignored by Git by default (`*.json` and `*.csv`). Do not commit large raw batches or sample transcripts unless they are specifically needed for reproducibility or an audit.
+Simulator outputs written to `reports/` are generated artifacts and are ignored by Git by default (`*.json` and `*.csv`). Keep only durable findings and evidence needed to reproduce a decision.
+
 
 ## Retention policy
 
-- Keep a small, curated summary when it captures a durable decision or an important verification result.
-- Keep raw JSON/CSV only when it is necessary to reproduce, independently validate, or investigate that result.
-- Delete superseded runs and duplicate samples after confirming that the useful conclusion is preserved elsewhere.
-- Do not treat smoke-test samples as balance evidence. Record the seed, configuration, number of battles, and interpretation.
+- Keep curated summaries that capture durable decisions or verification results.
+- Keep raw JSON/CSV only when it is necessary to reproduce, independently validate, or investigate a result.
+- Delete superseded runs and duplicate samples after confirming the useful conclusion is preserved elsewhere.
+- Do not treat smoke-test samples as balance evidence. Record seed, configuration, battle count, and interpretation.
+- Large forensic event timelines should be summarized, then discarded unless an active investigation needs the event-level detail.
 
-## Examples
+## Current retained evidence
+
+- `experiments/falcon-enemy-action-metadata-seat-bias-fix.md` — seat-bias fix notes.
+- `experiments/seat-bias-fix-validation-100.json` — matched-seat validation evidence.
+- `p1-serpent-observational-100.json` — 100 battles per Serpent matchup (Falcon and Phantom), alternating seats.
+- `p1-serpent-phantom-forensic-summary.json` — compact 20-seed matched-seat forensic summary (40 battles), derived from a timeline replay; raw timeline discarded.
+- `P1_SERPENT_TACTICAL_AUDIT.md` — interpretation and follow-up plan for P1.
+
+## Example
 
 ```bash
 npm run simulate -- --battles 100 --seed 42
 npm run simulate:factions -- --player serpent --opponent falcon --battles 100 --active 3
 ```
-
-The clean project snapshot retains the concise seat-bias fix report and its 100-seed matched-seat JSON validation as current audit evidence. The earlier 20-seed smoke artifact was discarded as superseded by the larger validation. These are exceptions, not a general archive of historical runs.

@@ -10,7 +10,7 @@ npm test
 
 This runs Node's built-in test runner (`node --test`). No third-party test framework or install step is required.
 
-The historical Iteration 3 and Iteration 5 snapshots had earlier test totals. The current three-faction checkout reports **363 tests passing, 0 failing, 0 skipped** after Serpent migration and selector-preview coverage. Always use the result from the current checkout rather than relying on a historical count.
+The historical Iteration 3 and Iteration 5 snapshots had earlier test totals. The current three-faction checkout reports **367 tests passing, 0 failing, 0 skipped** after Serpent migration and selector-preview coverage. Always use the result from the current checkout rather than relying on a historical count.
 
 ## Test consolidation policy
 

@@ -14,7 +14,7 @@ A Node.js command-line prototype for experimenting with **Fragments of Decay (F.
 - Coordinated Falcon, Phantom, and Serpent controllers with role-aware target focus, faction-specific tactics, Toxic-counterplay, and three-active/two-reserve rotation.
 - Typed combat events alongside readable battle logs.
 - Headless simulator with table, JSON, and CSV reports.
-- Automated regression suite: **363 tests passing, 0 failing, 0 skipped** after Serpent migration and mixed-faction preview/selection coverage; run `npm test` locally to verify your checkout.
+- Automated regression suite: **367 tests passing, 0 failing, 0 skipped** after Serpent migration and mixed-faction preview/selection coverage; run `npm test` locally to verify your checkout.
 
 Reward awarding, XP, inventory, persistent stage progression, and save/load are not implemented. The encounter completion callback exposes reward metadata for a future progression layer.
 
