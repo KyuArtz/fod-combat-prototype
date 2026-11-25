@@ -92,9 +92,9 @@ Compare Falcon with Evalete against temporary one-for-one Phantom replacements (
 npm run simulate:medic-swap -- --battles 100 --seed 20261122 --active 3
 ```
 
-See [the Evalete substitution experiment](reports/field-medic-substitution-report.md) for results. This is an experimental mixed-faction test; it does not change either permanent roster.
+Evalete substitution is available as an experimental mixed-faction test via `npm run simulate:medic-swap`; the experiment report is not included in this clean snapshot.
 
-See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) for options and [the enemy archetype and balance notes](docs/reference/ENEMY_ARCHETYPES_AND_BALANCE.md) for current enemy kits, stat comparisons, and the scaled Falcon playtests, tactical controller, and Blightheart boss encounter. Damage events include source attribution for actor contribution analysis. Generated reports are local artifacts and are ignored by Git; see `reports/README.md`.
+See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) for options and [the enemy archetype and balance notes](docs/reference/ENEMY_ARCHETYPES_AND_BALANCE.md) for current enemy kits, stat comparisons, and the scaled Falcon playtests, tactical controller, and Blightheart boss encounter. Damage events include source attribution for actor contribution analysis. Generated reports are local artifacts and are ignored by Git; see [reports workflow](reports/README.md).
 
 ## Documentation
 

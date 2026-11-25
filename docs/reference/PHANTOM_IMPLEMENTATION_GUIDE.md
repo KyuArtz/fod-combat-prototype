@@ -142,4 +142,4 @@ From the project root:
 npm run simulate:factions -- --battles 500 --seed 20261122 --active 3
 ```
 
-Raw results are in `reports/phantom-vs-falcon-500.json`. Curated samples and a detailed report are in `reports/phantom-vs-falcon-sample-battles.md` and `reports/phantom-vs-falcon-playtest-report.md`. The interactive terminal supports selecting either faction with `npm start`; the selected roster is then ordered by the player, with the first three members active and the remaining two in reserve. The `elishia_p` member continues to display as `Unknown`.
+The raw result batches, curated samples, and detailed report from the earlier Phantom-vs-Falcon 500-battle playtest are not included in the clean snapshot. The matchup can be reproduced with `npm run simulate:factions` using the current CLI options. The interactive terminal supports selecting either faction with `npm start`; the selected roster is then ordered by the player, with the first three members active and the remaining two in reserve. The `elishia_p` member continues to display as `Unknown`.
