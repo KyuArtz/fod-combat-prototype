@@ -33,6 +33,8 @@ function createTurnRunner({
   say,
   formation,
   onEnemySkillTargeted = () => {},
+  onPassiveDeploy = () => {},
+  onPassiveUndeploy = () => {},
 }) {
   const resolved = {
     player: normalizeController("player", controllers.player),
@@ -77,6 +79,8 @@ function createTurnRunner({
         const activeIndex = sideParty.active.findIndex((member) => member.id === decision.activeId);
         const switched = formation.switchPartyMember(state, reserveIndex, activeIndex, actor.side);
         if (!switched.changed) return false;
+        onPassiveUndeploy(switched.outgoing);
+        onPassiveDeploy(switched.incoming);
         say(`${switched.incoming.name} joins the active formation!`);
         say(`${switched.outgoing.name} moves to reserve.`);
         emitCombatEvent(events, "PartySwitched", { incomingId: switched.incoming.id, outgoingId: switched.outgoing.id, side: actor.side, round: state.round });

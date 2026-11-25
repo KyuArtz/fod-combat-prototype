@@ -1,5 +1,6 @@
 const { createFalconParty } = require("./falcon");
 const { createPhantomParty } = require("./phantom");
+const { createSerpentParty } = require("./serpent");
 const { getCharacterSkillData } = require("./skills");
 
 // Central registry for player-selectable factions. New factions can be added here
@@ -7,6 +8,7 @@ const { getCharacterSkillData } = require("./skills");
 const PLAYABLE_FACTIONS = Object.freeze([
   Object.freeze({ id: "falcon", label: "Falcon Company", factory: createFalconParty }),
   Object.freeze({ id: "phantom", label: "Phantom Rebellion", factory: createPhantomParty }),
+  Object.freeze({ id: "serpent", label: "Serpent Syndicate", factory: createSerpentParty }),
 ]);
 
 const FACTION_LABELS = Object.freeze(
@@ -30,13 +32,18 @@ function getFactionLabel(faction) {
   return FACTION_LABELS[faction] || String(faction || "Independent");
 }
 
+function formatRoleLabel(role) {
+  return String(role || "unassigned").split(/[-_]/).map((part) => part ? part[0].toUpperCase() + part.slice(1) : part).join(" ");
+}
+
 function getCharacterPreview(actor) {
   const data = getCharacterSkillData(actor.skillSet || actor.id);
   return {
     name: actor.name,
     faction: actor.faction,
     factionLabel: getFactionLabel(actor.faction),
-    role: actor.role || "unassigned",
+    role: (actor.roles?.length ? actor.roles : (actor.role ? [actor.role] : [])).map(formatRoleLabel).join(" / ") || "Unassigned",
+    roles: (actor.roles || (actor.role ? [actor.role] : [])).map(formatRoleLabel),
     mastery: actor.mastery || "Unassigned",
     stats: {
       HP: actor.stats.HP,
@@ -50,10 +57,8 @@ function getCharacterPreview(actor) {
       CritRate: actor.stats.CritRate ?? 0,
     },
     passive: data?.passive ? structuredClone(data.passive) : null,
-    skills: (data?.skills || []).map((skill, index) => ({
-      category: skill.category || (index === 3 ? "Ultimate" : `Skill ${index + 1}`),
-      name: skill.name,
-      description: (skill.description || skill.message || "No description available.")
+    skills: (data?.skills || []).map((skill, index) => {
+      const formatPreviewText = (value) => String(value || "")
         .replaceAll("{actor}", actor.name)
         .replaceAll("{target}", "the selected target")
         .replaceAll("{damage}", "calculated damage")
@@ -61,11 +66,23 @@ function getCharacterPreview(actor) {
         .replaceAll("{shield}", "the shield amount")
         .replaceAll("{hitsLanded}", "multiple")
         .replaceAll("{cleansedCount}", "harmful effects")
-        .replaceAll("{bonusText}", ""),
-      cost: skill.cost,
-      cooldown: skill.cooldown,
-      tags: [...(skill.tags || [])],
-    })),
+        .replaceAll("{bonusText}", "");
+      const modes = (skill.modes || []).map((mode) => ({
+        id: mode.id,
+        label: mode.label || mode.id,
+        targeting: mode.targeting || "none",
+        description: formatPreviewText(mode.description || mode.message || "No description available."),
+      }));
+      return {
+        category: skill.category || (index === 3 ? "Ultimate" : `Skill ${index + 1}`),
+        name: skill.name,
+        description: formatPreviewText(skill.description || skill.message || (modes.length ? "Choose one of the available modes:" : "No description available.")),
+        ...(modes.length ? { modes } : {}),
+        cost: skill.cost,
+        cooldown: skill.cooldown,
+        tags: [...(skill.tags || [])],
+      };
+    }),
   };
 }
 
@@ -74,5 +91,6 @@ module.exports = {
   FACTION_LABELS,
   createPlayableRoster,
   getFactionLabel,
+  formatRoleLabel,
   getCharacterPreview,
 };

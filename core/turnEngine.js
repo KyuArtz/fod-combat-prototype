@@ -38,19 +38,25 @@ function createTurnEngine(context) {
     actor._isTakingTurn = true;
     const staggered = Boolean(actor.statuses.staggered);
     const actionDelayed = Boolean(actor.statuses.actionDelay);
+    const boundEntry = Object.entries(actor.statuses || {}).find(([, status]) => status?.skipAction === true);
+    const bound = Boolean(boundEntry);
     if (staggered) {
       delete actor.statuses.staggered;
       say(`${actor.name}'s next action was delayed by Stagger.`);
     }
     if (actionDelayed) delete actor.statuses.actionDelay;
-    emitCombatEvent(events, "TurnStarted", { actorId: actor.id, side: actor.side, round: state.round, staggered });
+    if (boundEntry) {
+      delete actor.statuses[boundEntry[0]];
+      say(`${actor.name} is Bound and cannot act this turn!`);
+    }
+    emitCombatEvent(events, "TurnStarted", { actorId: actor.id, side: actor.side, round: state.round, staggered, bound });
     actor.mp = Math.min(
       actor.stats.MP,
       actor.mp + Math.ceil(actor.stats.MP * 0.05),
     );
     tickCooldowns(actor);
     const survivedStartEffects = onTurnStart(actor);
-    return actionDelayed || survivedStartEffects === false || !actor.alive;
+    return actionDelayed || bound || survivedStartEffects === false || !actor.alive;
   }
 
   function getNextActor() {

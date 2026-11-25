@@ -1,5 +1,5 @@
-// Selected in-engine Falcon and Phantom skill reference. Mechanics are implemented in characters/skillData/*.js.
-// The hidden operative retains neutral player-facing skill descriptions.
+// Selected in-engine Falcon, Phantom, and Serpent skill reference. Mechanics are implemented in characters/skillData/*.js.
+// The hidden operative retains neutral player-facing skill descriptions; Tekushiki is an official Serpent member.
 module.exports = {
   "characters": {
     "elishia": {
@@ -90,7 +90,7 @@ module.exports = {
         "CritRate": 10
       },
       "passiveSkill": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_passive.png",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_passive.webp",
         "title": "Catalyst Protocol",
         "description": "The Catalyst Wing is automatically deployed at battle start as a targetable passive summon and persists for 12 Evalete turns. At the start of every second Evalete turn, beginning with turn 2, it heals all active allies for 8% of their Max HP and grants each a shield equal to 10% of their Max HP for 2 turns. Destroying the Wing disables future pulses and grants no fallback shield.",
         "type": "passive",
@@ -101,7 +101,7 @@ module.exports = {
         ]
       },
       "skill1": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_1.jpeg",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_1.webp",
         "title": "Skill 1: Sentinel Pulse",
         "description": "Fires an Energy pulse at one enemy for mastery damage at 0.75× Mpow power. The target's DEF is reduced by 15% for 2 turns.",
         "type": "active",
@@ -113,7 +113,7 @@ module.exports = {
         ]
       },
       "skill2": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_2.png",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_2.webp",
         "title": "Skill 2: Triage Infusion",
         "description": "Administers a concentrated bio-catalyst dose to one selected ally, instantly healing them for 22% of their Max HP and applying healing over time equal to 10% Max HP per turn for 3 turns.",
         "type": "active",
@@ -124,7 +124,7 @@ module.exports = {
         ]
       },
       "skill3": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_3.png",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_3.webp",
         "title": "Skill 3: Guardian Field",
         "description": "Generates a protective field on all active allies, healing each for 12% of their Max HP and granting DEF +15% for 2 turns.",
         "type": "active",
@@ -136,7 +136,7 @@ module.exports = {
         ]
       },
       "ultimate": {
-        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_4.png",
+        "icon": "assets/images/character-presets/skill-icons/terra/evalete_skill_4.webp",
         "title": "Ultimate: Catalyst Overdrive",
         "description": "Activates full Catalyst Protocol on all active allies. First cleanses harmful statuses (debuffs or negative stat effects) from living active non-summon allies, then instantly heals each for 18% of their Max HP, grants DEF +25%, and applies healing over time equal to 10% Max HP per turn for 3 turns. Allies also gain 25% damage reflection for 3 turns, returning 25% of direct incoming damage after mitigation and before shield absorption to its original attacker. Reflected damage cannot trigger reflection again.",
         "type": "active",
@@ -707,8 +707,8 @@ module.exports = {
       "stats": {
         "HP": 1125,
         "MP": 150,
-        "ATK": 82,
-        "Mpow": 155,
+        "ATK": 65,
+        "Mpow": 160,
         "DEF": 72,
         "RES": 100,
         "SPD": 88,
@@ -717,237 +717,238 @@ module.exports = {
       },
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/verra_passive.webp",
-        "title": "Volatile Expertise",
-        "description": "Verra's compounds are bidirectional. Whenever Verra deals damage with a skill, all active allies are healed for 20% of her Mpow. Enemies afflicted with Toxic take additional Toxic damage equal to 35% of Verra's Mpow at the start of their turns; reapplying Toxic refreshes its duration instead of stacking. When an enemy afflicted with Toxic is defeated, Verra recovers 8 MP. Additionally, when Verra applies Toxic to an enemy, all Serpent allies gain Toxic Resonance: +5% damage to that target for 2 turns (stacks up to 3 times, one per Serpent ally).",
+        "title": "Toxicology Prodigy",
+        "description": "Verra's Poison deals damage equal to 25% of her Mpow as Toxic damage at the start of the afflicted enemy's turn for 2 turns. Poison does not stack; reapplication refreshes its duration. Whenever Verra heals an ally, that ally gains Toxic Resistance +10% for 2 turns.",
         "type": "passive",
         "effects": [
-          "DEBUFF",
-          "HEAL",
+          "DOT",
           "BUFF"
         ]
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/verra_skill_1.webp",
         "title": "Skill 1: Caustic Injection",
-        "description": "Inject a concentrated compound into one enemy, dealing 105% Mpow as Toxic damage and inflicting Toxic for 2 turns. All active allies are simultaneously healed for 45% Mpow.",
+        "description": "Verra switches her ammunition based on the selected target. Enemy: Deals 110% Mpow Toxic damage and inflicts Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow. Ally: Restores HP equal to 130% Mpow and removes 1 debuff.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 1,
         "effects": [
           "DMG",
           "HEAL",
-          "DEBUFF"
+          "DEBUFF",
+          "DOT"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/verra_skill_2.webp",
         "title": "Skill 2: Chemical Catastrophe",
-        "description": "Mode A (all enemies): Detonate a volatile chemical cloud dealing 80% Mpow as Toxic damage to all enemies and inflicting Toxic for 2 turns on all targets not already afflicted. If at least one enemy already has Toxic, this mode deals 110% Mpow as Toxic damage to each Toxic-afflicted enemy instead. All active allies are healed for 55% Mpow.\n\nMode B (single target): If no enemy currently has Toxic, this skill auto-targets all enemies (same as Mode A). If the controller selects a single target that already has Toxic, deals 110% Mpow as Toxic damage to them only and heals all allies for 55% Mpow.",
+        "description": "Launches a volatile vial at all enemies, dealing 85% Mpow Toxic damage and inflicting Poison for 2 turns. Enemies already afflicted with Poison receive an additional 20% Mpow damage on impact. Verra's Poison ticks for 25% of her Mpow.",
         "type": "active",
         "mpCost": 35,
         "cooldown": 3,
         "effects": [
           "DMG",
-          "HEAL",
-          "DEBUFF"
+          "DOT"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/verra_skill_3.webp",
         "title": "Skill 3: Unstable Remedy",
-        "description": "Administer an unstable antidote: restore one ally's HP by 140% Mpow and remove one debuff from them, while dealing 70% Mpow as Toxic damage to one enemy target of your choice. If the healed ally is below 50% max HP, the heal increases to 180% Mpow. Costs 10 MP less if the target had no debuffs to remove.",
+        "description": "Switches between two vial types. Ally: Restores 160% Mpow HP, increased to 200% Mpow if the target is below 50% HP, and removes 1 debuff. Enemy: Deals 100% Mpow Toxic damage and inflicts Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow.",
         "type": "active",
         "mpCost": 30,
         "cooldown": 2,
         "effects": [
-          "HEAL",
-          "DMG",
-          "UTILITY"
-        ]
-      },
-      "ultimate": {
-        "icon": "assets/images/character-presets/skill-icons/terra/verra_ultimate.webp",
-        "title": "Ultimate: Pandemic Protocol",
-        "description": "Release a catastrophic chemical cloud dealing 140% Mpow as Toxic damage to all enemies. Enemies already afflicted with Toxic take an additional 60% Mpow as Toxic damage. All active allies are healed for 75% Mpow and gain Toxic Resistance 10% for 2 turns.",
-        "type": "active",
-        "mpCost": 60,
-        "cooldown": 5,
-        "effects": [
           "DMG",
           "HEAL",
           "DEBUFF",
-          "BUFF"
-        ]
-      }
-    },
-    "kane": {
-      "stats": {
-        "HP": 1275,
-        "MP": 135,
-        "ATK": 105,
-        "Mpow": 0,
-        "DEF": 78,
-        "RES": 88,
-        "SPD": 80,
-        "EVA": 0,
-        "CritRate": 14
-      },
-      "passiveSkill": {
-        "icon": "assets/images/character-presets/skill-icons/terra/kane_passive.webp",
-        "title": "Modular Architecture",
-        "description": "Deployed charges last for 4 turns or until detonated. When a charge detonates, it deals 70% ATK as Kinetic damage to one primary enemy and 35% ATK to one additional enemy, and applies Exposed (+10% incoming damage for 2 turns) to the primary target. If two charges detonate within the same turn, both Exposed bonuses are suppressed and the damage instead increases by 50%. Additionally, when Kane takes damage from any source, there is a 30% chance a Construct Charge detonates automatically at 40% ATK (one trigger per turn).",
-        "type": "passive",
-        "effects": [
-          "DMG",
-          "DEBUFF"
-        ]
-      },
-      "skill1": {
-        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_1.webp",
-        "title": "Skill 1: Construct Charge",
-        "description": "Place one Construct Charge on one enemy for 4 turns. If Kane has fewer than 2 charges deployed, this charge is placed. Otherwise, the oldest existing charge is detonated first (dealing 65% ATK as Kinetic damage to one enemy and 32% ATK to one additional enemy, plus Exposed for 2 turns), then the new charge is placed. Costs 5 MP less if detonating a placed charge. The charge can be manually detonated by placing a second charge or by the passive trigger.",
-        "type": "active",
-        "mpCost": 20,
-        "cooldown": 2,
-        "effects": [
-          "DMG",
-          "DEBUFF"
-        ]
-      },
-      "skill2": {
-        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_2.webp",
-        "title": "Skill 2: Reactive Scaffold",
-        "description": "Deploy a short-lived cover segment lasting 3 turns with 150 HP. While the scaffold exists, Kane gains ATK +10% for 2 turns. The scaffold blocks targeting for both sides — it counts as an active ally for enemy target selection, and enemies cannot be targeted through it (enemy skills that require line of sight to a target are blocked). Only one scaffold can exist at a time; redeploying replaces it. The scaffold is destroyed if it absorbs damage equal to 150 HP.",
-        "type": "active",
-        "mpCost": 28,
-        "cooldown": 3,
-        "effects": [
-          "BUFF",
-          "UTILITY"
-        ]
-      },
-      "skill3": {
-        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_3.webp",
-        "title": "Skill 3: Architect's Gambit",
-        "description": "Trigger a chain reaction through all active Construct Charges on the battlefield, detonating each for 75% ATK as Kinetic damage (one primary + one additional enemy per charge) with Exposed for 2 turns. Enemies affected by multiple charge detonations take +20% damage per additional hit. If no charges are active, deals 40% ATK as Kinetic damage to all enemies and applies Exposed to one of them.",
-        "type": "active",
-        "mpCost": 38,
-        "cooldown": 4,
-        "effects": [
-          "DMG",
-          "DEBUFF"
+          "DOT"
         ]
       },
       "ultimate": {
-        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_4.webp",
-        "title": "Ultimate: Masterwork Detonation",
-        "description": "Deploy 3 Construct Charges on 3 different enemies of your choice. At the start of Kane's next turn, they detonate in sequence. Each direct hit deals 60% ATK as Kinetic damage to the primary target and 30% ATK to an additional enemy, with Exposed for 2 turns. If all 3 charges detonate in the same turn, the final explosion deals 120% ATK instead of 60%.",
+        "icon": "assets/images/character-presets/skill-icons/terra/verra_skill_4.webp",
+        "title": "Ultimate: Pandemic Protocol",
+        "description": "Verra unleashes a barrage of perfected chemical payloads. All enemies take 145% Mpow Toxic damage and are inflicted with Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow. All allies recover HP equal to 100% Mpow and gain Toxic Resistance +15% for 2 turns.",
         "type": "active",
         "mpCost": 60,
         "cooldown": 6,
         "effects": [
           "DMG",
-          "DEBUFF"
+          "HEAL",
+          "BUFF",
+          "DOT"
+        ]
+      }
+    },
+    "kane": {
+      "stats": {
+        "HP": 1080,
+        "MP": 135,
+        "ATK": 65,
+        "Mpow": 150,
+        "DEF": 68,
+        "RES": 78,
+        "SPD": 112,
+        "EVA": 14,
+        "CritRate": 18
+      },
+      "passiveSkill": {
+        "icon": "assets/images/character-presets/skill-icons/terra/kane_passive.webp",
+        "title": "Serpent's Instinct",
+        "description": "Kane deals 10% increased Toxic damage to enemies afflicted with Poison. This bonus does not stack.",
+        "type": "passive",
+        "effects": [
+          "BUFF",
+          "DMG"
+        ]
+      },
+      "skill1": {
+        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_1.webp",
+        "title": "Skill 1: Twin Fang",
+        "description": "Kane strikes a single enemy twice with his Venom Crescents, each hit dealing 60% Mpow as Toxic damage. Inflicts Poison for 2 turns. Poison deals 20% of Kane's Mpow as Toxic damage at the start of the afflicted enemy's turn for 2 turns.",
+        "type": "active",
+        "mpCost": 20,
+        "cooldown": 1,
+        "effects": [
+          "DMG",
+          "DOT"
+        ]
+      },
+      "skill2": {
+        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_2.webp",
+        "title": "Skill 2: Venomous Pursuit",
+        "description": "Kane launches his levitating blades at a single enemy, dealing 85% Mpow as Toxic damage and inflicting Poison for 2 turns. Kane gains SPD +10 and EVA +8 for 2 turns. These buffs do not stack; subsequent applications refresh their duration. Poison deals 20% of Kane's Mpow as Toxic damage per tick for 2 turns.",
+        "type": "active",
+        "mpCost": 28,
+        "cooldown": 3,
+        "effects": [
+          "DMG",
+          "DOT",
+          "BUFF"
+        ]
+      },
+      "skill3": {
+        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_3.webp",
+        "title": "Skill 3: Phantom Orbit",
+        "description": "Kane commands his levitating blades to strike a single enemy three times, each hit dealing 50% Mpow as Toxic damage. If the target is already afflicted with Poison before this skill is used, the final hit deals an additional 30% Mpow as Toxic damage. Inflicts Poison for 2 turns. Poison deals 20% of Kane's Mpow as Toxic damage per tick for 2 turns.",
+        "type": "active",
+        "mpCost": 40,
+        "cooldown": 4,
+        "effects": [
+          "DMG",
+          "DOT"
+        ]
+      },
+      "ultimate": {
+        "icon": "assets/images/character-presets/skill-icons/terra/kane_skill_4.webp",
+        "title": "Ultimate: Deadly Convergence",
+        "description": "Kane converges both Venom Crescents on a single target, dealing 250% Mpow as Toxic damage. If the target is already afflicted with Poison before the attack, deals an additional 50% Mpow as Toxic damage. Inflicts Poison for 2 turns. This skill does not consume Poison. Poison deals 20% of Kane's Mpow as Toxic damage per tick for 2 turns.",
+        "type": "active",
+        "mpCost": 65,
+        "cooldown": 6,
+        "effects": [
+          "DMG",
+          "DOT"
         ]
       }
     },
     "galloz": {
       "stats": {
-        "HP": 1800,
-        "MP": 95,
-        "ATK": 120,
+        "HP": 1950,
+        "MP": 110,
+        "ATK": 115,
         "Mpow": 0,
-        "DEF": 108,
-        "RES": 88,
-        "SPD": 45,
+        "DEF": 120,
+        "RES": 95,
+        "SPD": 42,
         "EVA": 0,
-        "CritRate": 10
+        "CritRate": 8
       },
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/galloz_passive.webp",
-        "title": "Catalyst Shell",
-        "description": "Galloz's reinforced armor passively reduces incoming damage by 8%. When Galloz uses a skill that deals damage, the Catalyst Shell overheats: he gains DEF +15% for 1 turn but his SPD is reduced by 10 for 1 turn. This effect can stack up to 2 times. At 2 stacks, his next skill costs 10 MP less. Additionally, when Galloz's SPD penalty from Catalyst Overlord ends, he gains DEF +20% for 1 turn.",
+        "title": "Catalyst Husk",
+        "description": "Galloz's cybernetic armor passively reduces incoming damage by 8%. Whenever he is hit by an enemy skill, he gains 1 Reinforcement stack, increasing his DEF by 5% per stack. Maximum 2 stacks. At 2 stacks, his next damaging skill deals an additional 15% ATK as Kinetic damage and consumes both stacks. Reinforcement stacks last 3 turns.",
         "type": "passive",
         "effects": [
           "BUFF",
-          "DEBUFF"
+          "DMG"
         ]
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_1.webp",
-        "title": "Skill 1: Breach Cannon",
-        "description": "Fire a heavy close-range blast dealing 120% ATK as Kinetic damage to one target and all enemies adjacent to it (one primary + up to 2 additional enemies). Enemies hit are pushed to the end of their next CR accumulation cycle (they lose their next scheduled action). Lighter enemies (HP below 800 at time of hit) are also Staggered for 1 turn.",
+        "title": "Skill 1: Ironclad Impact",
+        "description": "Galloz drives his reinforced mechanical arm into a single enemy, dealing 125% ATK as Kinetic damage. After attacking, Galloz gains a shield equal to 6% of his maximum HP for 2 turns.",
         "type": "active",
-        "mpCost": 25,
-        "cooldown": 2,
+        "mpCost": 20,
+        "cooldown": 1,
         "effects": [
           "DMG",
-          "CONTROL"
+          "SHIELD"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_2.webp",
-        "title": "Skill 2: Pressure Reactor",
-        "description": "Charge for 1 turn. Galloz becomes Untargetable for 1 turn and gains ATK +20% for 2 turns starting from the charge's completion. If Galloz is hit by a damaging skill during the channel, the charge is interrupted, he takes +20% damage from that hit, and gains no buff.",
+        "title": "Skill 2: Tyrant's Guard",
+        "description": "Galloz activates his reinforced plating, gaining a shield equal to 15% of his maximum HP for 2 turns. All active allies also receive 12% damage reduction for 2 turns.",
         "type": "active",
         "mpCost": 30,
         "cooldown": 3,
         "effects": [
+          "SHIELD",
           "BUFF"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_3.webp",
-        "title": "Skill 3: Tyrant's Rupture",
-        "description": "Release a radial blast dealing 110% ATK as Kinetic damage to one primary enemy and one additional enemy. After this skill, Galloz is Slowed: SPD −15 for 2 turns. If Galloz has 2 stacks of Catalyst Shell overheating, this skill costs 10 MP less and the Slow duration is reduced to 1 turn.",
+        "title": "Skill 3: Reactor Quake",
+        "description": "Galloz drives his mechanical arm into the ground, releasing a catalyst-powered shockwave that deals 90% ATK as Kinetic damage to all enemies. Galloz gains DEF +10% for 2 turns. If he has 2 Reinforcement stacks, the attack deals an additional 30% ATK as Kinetic damage and consumes both stacks.",
         "type": "active",
-        "mpCost": 45,
-        "cooldown": 5,
-        "effects": [
-          "DMG",
-          "DEBUFF"
-        ]
-      },
-      "ultimate": {
-        "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_4.webp",
-        "title": "Ultimate: Catalyst Overlord",
-        "description": "Overload Galloz's Catalyst Shell for 3 turns. During this time, Galloz gains DEF +40%, RES +20%, and his skills deal +30% ATK as Kinetic damage. At the end of the 3 turns, Galloz releases a devastating radial blast dealing 240% ATK as Kinetic damage to all enemies, then enters a cooldown state: ATK −20% and SPD −20 for 2 turns.",
-        "type": "active",
-        "mpCost": 60,
-        "cooldown": 7,
-        "effects": [
-          "DMG",
-          "BUFF",
-          "DEBUFF"
-        ]
-      }
-    },
-    "claude": {
-      "stats": {
-        "HP": 1175,
-        "MP": 145,
-        "ATK": 90,
-        "Mpow": 0,
-        "DEF": 75,
-        "RES": 95,
-        "SPD": 90,
-        "EVA": 0,
-        "CritRate": 14
-      },
-      "passiveSkill": {
-        "icon": "assets/images/character-presets/skill-icons/terra/claude_passive.webp",
-        "title": "Showstopper Charge",
-        "description": "Claude can place 1 Showstopper Charge on one enemy or ally per turn. Charges detonate automatically at the start of Claude's next turn, dealing 40% ATK as Kinetic damage to the target and 20% ATK to one additional enemy of your choice. Detonating a charge grants Claude SPD +10 for 1 turn. If the target enemy has 2 or more other enemies with a Toxic status at the time of detonation, the damage increases by 50%.",
-        "type": "passive",
+        "mpCost": 40,
+        "cooldown": 4,
         "effects": [
           "DMG",
           "BUFF"
         ]
       },
+      "ultimate": {
+        "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_4.webp",
+        "title": "Ultimate: Catalyst Overlord",
+        "description": "Galloz releases the full output of his Catalyst Reactor, dealing 190% ATK as Kinetic damage to all enemies and restoring HP equal to 10% of his maximum HP. He gains 20% damage reduction for 2 turns. His next damaging skill used within those 2 turns deals an additional 20% ATK as Kinetic damage.",
+        "type": "active",
+        "mpCost": 65,
+        "cooldown": 6,
+        "effects": [
+          "DMG",
+          "HEAL",
+          "BUFF"
+        ]
+      }
+    },
+    "claude": {
+      "stats": {
+        "HP": 1200,
+        "MP": 155,
+        "ATK": 65,
+        "Mpow": 145,
+        "DEF": 80,
+        "RES": 100,
+        "SPD": 100,
+        "EVA": 5,
+        "CritRate": 12
+      },
+      "passiveSkill": {
+        "icon": "assets/images/character-presets/skill-icons/terra/claude_passive.webp",
+        "title": "Unstable Formulation",
+        "description": "Whenever Claude uses an active skill, he has a 100% chance to inflict Fracture on the primary enemy hit, reducing their DEF by 8% for 2 turns. Fracture does not stack; subsequent applications refresh its duration.",
+        "type": "passive",
+        "effects": [
+          "DEBUFF"
+        ]
+      },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/claude_skill_1.webp",
-        "title": "Skill 1: Volatile Orders",
-        "description": "Boost a nearby ally's ATK +15% and SPD +10 for 2 turns. The effect ends if the ally is defeated or swapped out of the active formation. Claude gains +5 MP when this skill is cast.",
+        "title": "Skill 1: Rallying Catalyst",
+        "description": "Claude throws a supportive vial at one ally, increasing their ATK by 20% and SPD by 10% for 2 turns.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 2,
@@ -957,56 +958,61 @@ module.exports = {
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/claude_skill_2.webp",
-        "title": "Skill 2: Chain Reaction",
-        "description": "Detonate an active Showstopper Charge early, dealing 80% ATK as Kinetic damage to the target and one additional enemy. If the target has 2 or more other enemies nearby (allies of your choice), the damage increases by 40% and all nearby enemies are Staggered for 1 turn. If no charge is active, this skill costs 5 MP less and deals 40% ATK as Kinetic damage to one enemy without applying Stagger.",
+        "title": "Skill 2: Rupture Flask",
+        "description": "Claude throws an explosive vial at one enemy, dealing 130% Mpow as Toxic damage and inflicting Poison for 2 turns. Reduces the target's DEF by 15% for 2 turns. Poison deals 20% of Claude's Mpow as Toxic damage per tick for 2 turns.",
         "type": "active",
-        "mpCost": 28,
-        "cooldown": 3,
+        "mpCost": 25,
+        "cooldown": 2,
         "effects": [
           "DMG",
-          "CONTROL"
+          "DEBUFF",
+          "DOT"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/claude_skill_3.webp",
-        "title": "Skill 3: Grand Finale",
-        "description": "Channel for 1 turn, marking a target enemy. At the end of the channel, deal 150% ATK as Kinetic damage to that enemy and one additional enemy. If Claude has an active Showstopper Charge on the primary target or any enemy within range of the mark, that charge detonates immediately and the damage to that target increases by 60%. Claude cannot act during the channel turn.",
+        "title": "Skill 3: Sabotage Cocktail",
+        "description": "Claude throws a volatile mixture that explodes across all enemies, dealing 75% Mpow as Toxic damage, inflicting Poison for 2 turns, and reducing their ATK by 15% for 2 turns. Poison deals 20% of Claude's Mpow as Toxic damage per tick for 2 turns.",
         "type": "active",
-        "mpCost": 45,
-        "cooldown": 5,
+        "mpCost": 35,
+        "cooldown": 3,
         "effects": [
-          "DMG"
+          "DMG",
+          "DEBUFF",
+          "DOT"
         ]
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/claude_skill_4.webp",
-        "title": "Ultimate: Curtain Call",
-        "description": "Place Showstopper Charges on up to 3 enemies of your choice. At the start of Claude's next turn, all charges detonate in sequence. Each direct hit deals 55% ATK as Kinetic damage, and one additional enemy takes 45% ATK as Kinetic damage splash. If any detonation occurs within range of another enemy, that enemy also takes 30% ATK as Kinetic damage. After this skill, Claude gains SPD +15 for 2 turns.",
+        "title": "Ultimate: Masterpiece in Mayhem",
+        "description": "Claude unleashes a perfected chain of volatile concoctions against all enemies, dealing 150% Mpow as Toxic damage and inflicting Poison for 2 turns. All allies gain ATK +15% and SPD +10% for 2 turns. Reduces all enemies' DEF by 20% for 2 turns. Poison deals 20% of Claude's Mpow as Toxic damage per tick for 2 turns.",
         "type": "active",
-        "mpCost": 60,
-        "cooldown": 7,
+        "mpCost": 65,
+        "cooldown": 6,
         "effects": [
           "DMG",
-          "BUFF"
+          "DEBUFF",
+          "BUFF",
+          "DOT"
         ]
       }
     },
     "tekushiki": {
       "stats": {
-        "HP": 1150,
-        "MP": 110,
-        "ATK": 100,
+        "HP": 1200,
+        "MP": 125,
+        "ATK": 115,
         "Mpow": 0,
-        "DEF": 75,
-        "RES": 78,
-        "SPD": 88,
-        "EVA": 0,
+        "DEF": 85,
+        "RES": 90,
+        "SPD": 95,
+        "EVA": 8,
         "CritRate": 14
       },
       "passiveSkill": {
         "icon": "assets/images/character-presets/skill-icons/terra/tekushiki_passive.webp",
         "title": "Tether Snare",
-        "description": "When Tekushiki targets an enemy with a skill, he applies 1 Tether Mark for 2 turns. Enemies with 3 Tether Marks are Bound: SPD −15 and lose their next scheduled action (their CR is pushed to the end of the current accumulation cycle). Tekushiki can maintain up to 3 Tether Marks simultaneously; applying a mark to a fully-marked enemy refreshes all three targets' durations instead.",
+        "description": "Tekushiki's attacks apply 1 Tether Mark to enemies hit. Each enemy can hold a maximum of 2 Tether Marks, lasting 2 turns each. At 2 Marks, the target becomes Snared, reducing SPD by 15% for 2 turns. Snared enemies cannot gain additional Tether Marks while Snared.",
         "type": "passive",
         "effects": [
           "DEBUFF",
@@ -1015,32 +1021,33 @@ module.exports = {
       },
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/tekushiki_skill_1.webp",
-        "title": "Skill 1: Ruin Reversal",
-        "description": "Reposition by using the tether to strike a target enemy, dealing 80% ATK as Kinetic damage. If Tekushiki ends his turn with a Tether Mark on that enemy, the mark's duration is extended by 1 turn. If he ends his turn with no Tether Marks active, he gains RES +15% for 1 turn instead.",
+        "title": "Ruin Reversal",
+        "description": "Tekushiki strikes one enemy with the Tether of Ruin, dealing 100% ATK as Kinetic damage and applying 1 Tether Mark. If the target is already Snared, this attack deals an additional 35% ATK as Kinetic damage.",
         "type": "active",
         "mpCost": 18,
-        "cooldown": 2,
+        "cooldown": 1,
         "effects": [
-          "BUFF",
-          "DMG"
+          "DMG",
+          "DEBUFF"
         ]
       },
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/tekushiki_skill_2.webp",
-        "title": "Skill 2: Null Knot",
-        "description": "Create a stationary disruption zone on one enemy for 2 turns. Enemies starting their turn within the zone (the marked enemy and one additional enemy of your choice) have their skills interrupted if they are channeling, and their SPD reduced by 15 for the duration. The zone also reveals hidden/cloaked enemies within it. Tekushiki gains +1 Tether Mark on all enemies starting their turn in the zone.",
+        "title": "Null Knot",
+        "description": "Tekushiki creates a tether trap that strikes all enemies, dealing 70% ATK as Kinetic damage, reducing their SPD by 10% for 2 turns, and applying 1 Tether Mark to each enemy hit.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
         "effects": [
-          "CONTROL",
-          "DEBUFF"
+          "DMG",
+          "DEBUFF",
+          "CONTROL"
         ]
       },
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/tekushiki_skill_3.webp",
-        "title": "Skill 3: Last Thread",
-        "description": "Link to a marked enemy with the Tether of Ruin, then deal 140% ATK as Kinetic damage and interrupt any channeling skill they are using. If the target has 3 Tether Marks, they are also Bound for 1 turn. If Tekushiki and the target are separated by an enemy or the target becomes Untargetable before the damage resolves, the skill is cancelled and only the Tether Mark is applied.",
+        "title": "Last Thread",
+        "description": "Tekushiki lashes one enemy with the Tether of Ruin, dealing 150% ATK as Kinetic damage. If the target has 2 Tether Marks, consumes both Marks to inflict Bind for 1 turn.",
         "type": "active",
         "mpCost": 40,
         "cooldown": 4,
@@ -1052,15 +1059,15 @@ module.exports = {
       },
       "ultimate": {
         "icon": "assets/images/character-presets/skill-icons/terra/tekushiki_skill_4.webp",
-        "title": "Ultimate: Ruin's Embrace",
-        "description": "Unleash the Tether of Ruin in a wide arc, binding all enemies in a target area. Each enemy takes 100% ATK as Kinetic damage and gains 1 Tether Mark. Enemies with 3 or more Tether Marks from this skill are Bound for 2 turns. Additionally, Tekushiki pulls himself to the position of the enemy with the most Tether Marks in the area and deals 60% ATK as Kinetic damage to all enemies within 2 tiles of his new position. If no enemies are in the area, Tekushiki gains DEF +20% for 1 turn instead.",
+        "title": "Ruin's Embrace",
+        "description": "Tekushiki unleashes the Tether of Ruin across all enemies, dealing 120% ATK as Kinetic damage, applying 1 Tether Mark, and reducing their SPD by 20% for 2 turns. Enemies already Snared are additionally Bound for 1 turn.",
         "type": "active",
         "mpCost": 60,
         "cooldown": 6,
         "effects": [
           "DMG",
-          "CONTROL",
-          "DEBUFF"
+          "DEBUFF",
+          "CONTROL"
         ]
       }
     },

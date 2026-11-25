@@ -10,8 +10,10 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Legacy and threshold readiness schedulers; threshold is preferred.
 - [x] Seeded RNG, typed event bus, controller-driven turns, decision validation, and deterministic replay.
 - [x] Player-first PvE opening initiative.
-- [x] Data-driven Falcon and Phantom skills/passives using the shared skill interpreter.
-- [x] Unified mixed-faction roster selector with public-profile filters, character previews, three active slots, and up to two ordered reserves.
+- [x] Data-driven Falcon, Phantom, and Serpent skills/passives using the shared skill interpreter.
+- [x] Unified three-faction mixed roster selector with public-profile filters, mode-based character previews, three active slots, and up to two ordered reserves.
+- [x] Serpent Syndicate migration: Verra, Kane, Galloz, Claude, and owner-authorized canon member Tekushiki registered and selectable through shared skill/effect/passive systems.
+- [x] Serpent-specific tactical AI and Falcon/Phantom/Serpent faction-duel support with alternating seating.
 - [x] Initial Phantom Rebellion migration: five playable kits, party factory, neutral hidden-operative skill descriptions, shared effect/passive integration, and a full-battle smoke test.
 - [x] Shared player/enemy basic-attack resolver.
 - [x] Full-battle regression coverage and golden transcript fixtures.
@@ -61,7 +63,7 @@ This roadmap separates completed foundations from proposed future work. An unche
 
 ## Open technical decisions
 - [ ] Decide whether to add saved formations/loadout slots after the interactive unified selector has been playtested.
-- [ ] Add Serpent Syndicate to the playable-roster registry after its skill migration and regression coverage are complete.
+- [x] Add Serpent Syndicate to the playable-roster registry after skill migration, tactical AI, and regression coverage.
 
 - [ ] Decide whether and when runtime Falcon base stats should be synchronized with the owner-maintained stat sheet.
 - [ ] Decide PvP and ambush opening-initiative policies.
@@ -70,20 +72,16 @@ This roadmap separates completed foundations from proposed future work. An unche
 - [x] Add source attribution to direct, reflected, and DoT damage events for attacker-level damage analytics.
 - [ ] Continue evaluating stage/level scaling and broader combat balance using additional policies, encounters, seed ranges, and human playtests.
 
-## Next planned feature milestone — Serpent Syndicate migration
+## Current follow-up opportunities
 
-**Serpent Syndicate shared-runtime integration**
+The three faction integrations are complete. No single next feature has been locked. Useful follow-ups include:
 
-The Iteration 5 engine coverage audit is complete. The next planned faction expansion is Serpent Syndicate migration. Scope:
+1. Run larger three-way faction balance studies and add matchup/role analytics before changing character values.
+2. Improve Serpent tactical decisions and review faction coverage where it is materially weaker than sustain-focused teams.
+3. Playtest the unified roster selector and consider saved formations or a graphical roster interface later.
+4. Expand encounter variety and boss patterns without tuning around tiny smoke samples.
 
-1. Inspect the latest Serpent skill definitions and runtime stats without silently changing character concepts or lore.
-2. Migrate Verra, Kane, Galloz, and Claude through the existing shared skill/effect/passive/summon registries.
-3. Keep Tekushiki out of the user's owned roster unless explicitly requested; he is a friend's OC and should be handled separately.
-4. Add Serpent to `characters/roster.js` only after its actor factories and complete skill sets pass registry-backed validation.
-5. Add faction-specific tactical behavior only where Serpent's approved mechanics require it; preserve generic target and status contracts.
-6. Validate mixed-faction selection and battle execution with Serpent members, then run targeted tests and seeded balance samples.
-
-Keep Phantom Bleeding's 0.15× ATK Anomaly tick provisional until the owner approves or replaces it.
+Keep Phantom Bleeding's 0.15× ATK Anomaly tick provisional until a later balance review. Serpent Poison values are separate: Verra 0.25× Mpow; Kane and Claude 0.20× Mpow, each for two affected-unit turns.
 
 The reward and stage-progression foundation remains a later milestone; encounter completion metadata is an integration hook, not an existing reward system.
 

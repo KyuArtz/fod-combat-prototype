@@ -1,9 +1,29 @@
 // Declarative skill effect handlers. Keep effect execution separate from skill policy and validation.
-const { matchesModifierCondition, consumeNextAttackDamageModifier, consumeNextSkillDamageModifier } = require("../statusEffects");
+const { matchesModifierCondition, getHighestPriorityCleanseEntry, consumeNextAttackDamageModifier, consumeNextSkillDamageModifier, consumeNextSkillPowerModifier } = require("../statusEffects");
 const { isBattleTimerActive } = require("../battleTimers");
 const { emitCombatEvent } = require("../../core/combatEvents");
 
 const pct = (value, percent) => Math.floor((value * percent) / 100);
+
+function resolvePowerModifiers(basePower, modifiers = [], actor, target) {
+  let power = basePower;
+  const bonusText = [];
+  for (const modifier of modifiers) {
+    const condition = modifier.when || {};
+    if ((condition.flag || condition.andFlags?.length) && !matchesModifierCondition(actor, condition)) continue;
+    if (condition.status && !actor.statuses?.[condition.status]) continue;
+    if (condition.targetStatus && !target?.statuses?.[condition.targetStatus]) continue;
+    if (condition.targetHpPercentBelow !== undefined) {
+      const maxHp = target?.stats?.HP;
+      if (!(Number.isFinite(maxHp) && maxHp > 0 && target.hp / maxHp * 100 < condition.targetHpPercentBelow)) continue;
+    }
+    if (modifier.setPower !== undefined) power = modifier.setPower;
+    else if (modifier.addPower !== undefined) power += modifier.addPower;
+    else power *= 1 + modifier.percent / 100;
+    if (modifier.bonusText) bonusText.push(modifier.bonusText);
+  }
+  return { power, bonusText };
+}
 
 function createDefaultEffectHandlers(context) {
   const opposingSide = (side) => side === "ally" ? "enemy" : "ally";
@@ -19,6 +39,45 @@ function createDefaultEffectHandlers(context) {
     heal(effect, run) {
       run.results.healed = heal(run.target, pct(run.target.stats.HP, effect.percentMaxHP));
     },
+    healPower(effect, run) {
+      const stat = effect.scalingStat || "MPow";
+      const base = effectiveStat ? effectiveStat(run.actor, stat) : (run.actor.stats[stat] || 0);
+      const maxHp = run.target?.stats?.HP || 0;
+      const hpPercent = maxHp > 0 ? run.target.hp / maxHp * 100 : 100;
+      const multiplier = effect.multiplierBelowHpPercent !== undefined && hpPercent < effect.multiplierBelowHpPercent
+        ? (effect.conditionalMultiplier || effect.multiplier)
+        : effect.multiplier;
+      run.results.healed = heal(run.target, Math.floor(base * multiplier));
+      run.results.healedTargetIds = run.results.healed > 0 ? [run.target.id] : [];
+    },
+    healPowerAllies(effect, run) {
+      const amount = Math.floor((effectiveStat ? effectiveStat(run.actor, effect.scalingStat || "MPow") : (run.actor.stats[effect.scalingStat || "MPow"] || 0)) * effect.multiplier);
+      let total = 0;
+      const healedTargetIds = [];
+      for (const ally of sideActors(run.actor.side).filter((unit) => !unit.summon)) {
+        const healed = heal(ally, amount);
+        total += healed;
+        if (healed > 0) healedTargetIds.push(ally.id);
+      }
+      run.results.healed = total;
+      run.results.healedTargetIds = healedTargetIds;
+    },
+    healSelf(effect, run) {
+      run.results.healed = heal(run.actor, pct(run.actor.stats.HP, effect.percentMaxHP));
+    },
+    cleanseTarget(effect, run) {
+      if (!run.target) return;
+      const entry = getHighestPriorityCleanseEntry(run.target.statuses || {});
+      if (!entry) {
+        run.results.cleansedCount = 0;
+        return;
+      }
+      delete run.target.statuses[entry[0]];
+      run.results.cleansedCount = 1;
+      if (events) emitCombatEvent(events, "StatusCleansed", {
+        actorId: run.actor.id, targetId: run.target.id, statusIds: [entry[0]],
+      });
+    },
     healAllies(effect, run) {
       for (const ally of sideActors(run.actor.side).filter((unit) => !unit.summon)) {
         heal(ally, pct(ally.stats.HP, effect.percentMaxHP));
@@ -32,7 +91,9 @@ function createDefaultEffectHandlers(context) {
     physicalHit(effect, run) {
       const bonus = consumeNextAttackDamageModifier(run.actor);
       const skillBonus = consumeNextSkillDamageModifier(run.actor, run.skill?.key, "Physical");
-      const outcome = hitPhysical(run.actor, run.target, effect.power * (1 + bonus / 100) * (1 + skillBonus / 100), effect.canCrit ?? true);
+      const outcome = hitPhysical(run.actor, run.target, effect.power * (1 + bonus / 100) * (1 + skillBonus / 100), effect.canCrit ?? true, {
+        actionType: "skill", skillKey: run.skill?.key,
+      });
       run.results.skillBonus = skillBonus;
       run.results.damage = outcome.damage;
       run.results.missed = Boolean(outcome.miss);
@@ -44,7 +105,9 @@ function createDefaultEffectHandlers(context) {
       const skillBonus = consumeNextSkillDamageModifier(run.actor, run.skill?.key, effect.element);
       const power = effect.power * (1 + bonus / 100) * (1 + skillBonus / 100);
       const outcome = calculateMastery(run.actor, run.target, effect.element, power, effect.canCrit ?? true, effect.scalingStat || "MPow");
-      applyDamage(run.target, outcome.damage, effect.element, run.actor, { kind: "direct" });
+      applyDamage(run.target, outcome.damage, effect.element, run.actor, {
+        kind: "direct", actionType: "skill", skillKey: run.skill?.key,
+      });
       run.results.skillBonus = skillBonus;
       run.results.damage = outcome.damage;
       run.results.missed = false;
@@ -133,6 +196,7 @@ function createDefaultEffectHandlers(context) {
     },
     statusEnemies(effect, run) {
       let targets = sideActors(opposingSide(run.actor.side));
+      if (effect.requiresStatus) targets = targets.filter((enemy) => enemy.statuses?.[effect.requiresStatus]);
       if (effect.onlyHitTargets) {
         const hitIds = new Set(run.results.hitTargetIds || []);
         targets = targets.filter((target) => hitIds.has(target.id));
@@ -143,23 +207,15 @@ function createDefaultEffectHandlers(context) {
       }
     },
     masteryHit(effect, run) {
-      let power = effect.power;
-      const bonusText = [];
-      for (const modifier of effect.powerModifiers || []) {
-        const condition = modifier.when || {};
-        if ((condition.flag || condition.andFlags?.length) && !matchesModifierCondition(run.actor, condition)) continue;
-        if (condition.status && !run.actor.statuses?.[condition.status]) continue;
-        if (condition.targetStatus && !run.target?.statuses?.[condition.targetStatus]) continue;
-        if (condition.targetHpPercentBelow !== undefined) {
-          const maxHp = run.target?.stats?.HP;
-          if (!(Number.isFinite(maxHp) && maxHp > 0 && run.target.hp / maxHp * 100 < condition.targetHpPercentBelow)) continue;
-        }
-        if (modifier.setPower !== undefined) power = modifier.setPower;
-        else power *= 1 + modifier.percent / 100;
-        if (modifier.bonusText) bonusText.push(modifier.bonusText);
-      }
+      const resolved = resolvePowerModifiers(effect.power, effect.powerModifiers || [], run.actor, run.target);
+      let power = resolved.power;
+      const bonusText = [...resolved.bonusText];
       const attackBonus = consumeNextAttackDamageModifier(run.actor);
       const skillBonus = consumeNextSkillDamageModifier(run.actor, run.skill?.key, effect.element);
+      const skillPowerAdd = effect.ignoreNextSkillPowerModifier
+        ? (consumeNextSkillPowerModifier(run.actor, run.skill?.key, effect.element, effect.scalingStat || "MPow"), 0)
+        : consumeNextSkillPowerModifier(run.actor, run.skill?.key, effect.element, effect.scalingStat || "MPow");
+      power += skillPowerAdd;
       power *= 1 + attackBonus / 100;
       power *= 1 + skillBonus / 100;
       if (attackBonus) bonusText.push(` (+${attackBonus}% next-attack bonus)`);
@@ -173,7 +229,9 @@ function createDefaultEffectHandlers(context) {
       } else if (effect.critRateBonus) {
         options.critRateBonus = effect.critRateBonus;
       }
-      const outcome = hitMastery(run.actor, run.target, effect.element, power, effect.canCrit ?? true, options);
+      const outcome = hitMastery(run.actor, run.target, effect.element, power, effect.canCrit ?? true, {
+        ...options, actionType: "skill", skillKey: run.skill?.key,
+      });
       run.results.skillBonus = skillBonus;
       run.results.damage = outcome.damage;
       run.results.missed = Boolean(outcome.miss);
@@ -187,22 +245,36 @@ function createDefaultEffectHandlers(context) {
       const execute = effect.lastHitModifier && targetPercent < effect.lastHitModifier.targetHpPercentBelow;
       const attackBonus = consumeNextAttackDamageModifier(run.actor);
       const skillBonus = consumeNextSkillDamageModifier(run.actor, run.skill?.key, effect.element);
+      const skillPowerAdd = effect.ignoreNextSkillPowerModifier
+        ? (consumeNextSkillPowerModifier(run.actor, run.skill?.key, effect.element, effect.scalingStat || "MPow"), 0)
+        : consumeNextSkillPowerModifier(run.actor, run.skill?.key, effect.element, effect.scalingStat || "MPow");
       const hits = [];
       let totalDamage = 0;
       let missed = false;
       const hitTargetIds = [];
       const missedTargetIds = [];
+      const lastHitModifiers = [];
       for (let index = 0; index < effect.hits.length; index++) {
         if (!run.target?.alive) break;
         let power = effect.hits[index];
         if (index === effect.hits.length - 1 && execute) power = effect.lastHitModifier.setPower;
+        const standard = resolvePowerModifiers(power, effect.powerModifiers || [], run.actor, run.target);
+        power = standard.power;
+        if (index === effect.hits.length - 1) {
+          const finalHit = resolvePowerModifiers(power, effect.lastHitPowerModifiers || [], run.actor, run.target);
+          power = finalHit.power;
+          lastHitModifiers.push(...finalHit.bonusText);
+        }
+        if (index === 0) power += skillPowerAdd;
         power *= 1 + attackBonus / 100;
         power *= 1 + skillBonus / 100;
         const options = {
           ...(index > 0 || effect.accuracy === "guaranteed" ? { ignoreAccuracy: true } : {}),
           scalingStat: effect.scalingStat || "MPow",
         };
-        const outcome = hitMastery(run.actor, run.target, effect.element, power, effect.canCrit ?? true, options);
+        const outcome = hitMastery(run.actor, run.target, effect.element, power, effect.canCrit ?? true, {
+        ...options, actionType: "skill", skillKey: run.skill?.key,
+      });
         if (outcome.miss) {
           missed = true;
           missedTargetIds.push(run.target.id);
@@ -221,6 +293,7 @@ function createDefaultEffectHandlers(context) {
       run.results.missed = missed;
       run.results.bonusText = [
         execute ? " (execution shot)" : "",
+        ...lastHitModifiers,
         attackBonus ? ` (+${attackBonus}% next-attack bonus)` : "",
         skillBonus ? ` (+${skillBonus}% next-skill bonus)` : "",
       ].join("");
@@ -232,7 +305,9 @@ function createDefaultEffectHandlers(context) {
       run.results.hitTargetIds = [];
       run.results.missedTargetIds = [];
       for (const enemy of sideActors(opposingSide(run.actor.side))) {
-        const outcome = hitMastery(run.actor, enemy, effect.element, power, effect.canCrit ?? true, { scalingStat: effect.scalingStat || "MPow" });
+        const outcome = hitMastery(run.actor, enemy, effect.element, power, effect.canCrit ?? true, {
+        scalingStat: effect.scalingStat || "MPow", actionType: "skill", skillKey: run.skill?.key,
+      });
         if (outcome.miss) run.results.missedTargetIds.push(enemy.id);
         else run.results.hitTargetIds.push(enemy.id);
         if (effect.status && !outcome.miss && enemy.alive && random() * 100 < effect.statusChance) {
@@ -244,16 +319,26 @@ function createDefaultEffectHandlers(context) {
     },
     masteryDamageAllOpponents(effect, run) {
       const attackBonus = consumeNextAttackDamageModifier(run.actor);
-      const skillBonus = consumeNextSkillDamageModifier(run.actor, run.skill?.key, effect.element);
-      const power = effect.power * (1 + attackBonus / 100) * (1 + skillBonus / 100);
+      const skillBonus = effect.ignoreNextSkillDamageModifier
+        ? (consumeNextSkillDamageModifier(run.actor, run.skill?.key, effect.element), 0)
+        : consumeNextSkillDamageModifier(run.actor, run.skill?.key, effect.element);
+      const skillPowerAdd = effect.ignoreNextSkillPowerModifier
+        ? (consumeNextSkillPowerModifier(run.actor, run.skill?.key, effect.element, effect.scalingStat || "MPow"), 0)
+        : consumeNextSkillPowerModifier(run.actor, run.skill?.key, effect.element, effect.scalingStat || "MPow");
       const opponentSide = opposingSide(run.actor.side);
       let totalDamage = 0;
       let hits = 0;
+      const bonusText = [];
       run.results.hitTargetIds = [];
       run.results.missedTargetIds = [];
       for (const target of alive(state, opponentSide)) {
         if (effect.excludeSummons && target.summon) continue;
-        const outcome = hitMastery(run.actor, target, effect.element, power, effect.canCrit ?? true, { scalingStat: effect.scalingStat || "MPow" });
+        const resolved = resolvePowerModifiers(effect.power, effect.powerModifiers || [], run.actor, target);
+        const power = (resolved.power + skillPowerAdd) * (1 + attackBonus / 100) * (1 + skillBonus / 100);
+        bonusText.push(...resolved.bonusText);
+        const outcome = hitMastery(run.actor, target, effect.element, power, effect.canCrit ?? true, {
+          scalingStat: effect.scalingStat || "MPow", actionType: "skill", skillKey: run.skill?.key,
+        });
         if (!outcome.miss) {
           totalDamage += outcome.damage;
           hits++;
@@ -263,6 +348,7 @@ function createDefaultEffectHandlers(context) {
       run.results.skillBonus = skillBonus;
       run.results.damage = totalDamage;
       run.results.targetsHit = hits;
+      run.results.bonusText = [...new Set(bonusText)].join("");
     },
     cleanseAllies(effect, run) {
       let totalCleansed = 0;
@@ -311,6 +397,19 @@ function createDefaultEffectHandlers(context) {
       });
       state.actors.push(summon);
       run.results.summon = summon.name;
+    },
+    consumeTetherMarks(effect, run) {
+      const target = run.target;
+      if (!target?.alive || run.results.missed || !(run.results.hitTargetIds || []).includes(target.id)) return;
+      const mark = target.statuses?.[effect.markStatus || "tetherMarks"];
+      if (!mark || (mark.stacks || 0) < (effect.minimumStacks || 2)) return;
+      delete target.statuses[effect.markStatus || "tetherMarks"];
+      for (const statusId of effect.removeStatuses || []) delete target.statuses[statusId];
+      const status = { ...(effect.apply || {}) };
+      const id = status.id;
+      delete status.id;
+      if (id) addStatus(target, id, status);
+      run.results.consumedMarks = mark.stacks;
     },
     setBattleTimer(effect, run) {
       state.battleTimers ||= {};

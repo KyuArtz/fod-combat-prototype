@@ -1,7 +1,7 @@
 # Handler Reuse Audit
 
-**Updated:** 2026-11-22  
-**Scope:** Active effect, passive and summon registries; their current consumers in Falcon, Phantom, and enemy skill data and shared combat systems.  
+**Updated:** 2026-11-23  
+**Scope:** Active effect, passive and summon registries; their current consumers in Falcon, Phantom, Serpent, and enemy skill data and shared combat systems.  
 **Cleanup result:** Retired Meo-9 scan/Final Protocol plumbing and the old dedicated `commandUplink` validator were removed. No character-specific skill engine was introduced.
 
 ## Active skill-effect handlers
@@ -56,4 +56,4 @@ The duplicate `data/skills/` directory and obsolete `core/skillEffects.js` file 
 - Ally-targeting mode restrictions are enforced in `core/skillInterpreter.js` as an execution-time precondition, including `targetFaction` and `excludeSelf`; the terminal decision view remains a separate earlier filter.
 - DoT source attribution survives when the source moves to reserve or is no longer in the deployed actor list. Later simultaneous DoT ticks are skipped after the target is incapacitated by an earlier tick.
 - Active owner-linked summons are dismissed when their owner is incapacitated. This does not invoke destruction-only handlers. Actor-turn statuses and owner-clocked summon activity/duration pause while their owner is in reserve.
-- Full suite after these changes: **313 passed, 0 failed, 0 skipped**. See [Iteration 5 Engine Coverage Audit](../project/ENGINE_COVERAGE_AUDIT.md).
+- Historical Iteration 5 full suite: **313 passed, 0 failed, 0 skipped** before Serpent migration. The current three-faction suite is reported in the Serpent migration report and current Project Status.

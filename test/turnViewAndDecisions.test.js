@@ -175,3 +175,12 @@ test("terminal controller: an out-of-range target for a skill says so and return
   assert.deepEqual(await decision, { type: "basic", targetId: "drone" });
   assert.ok(lines.includes("No valid target selected."));
 });
+
+test("terminal ally-target menu excludes summons from healing and support target lists", async () => {
+  const view = playerView();
+  view.allies.push({ id: "catalyst-wing", name: "Catalyst Wing", summon: true, hp: 10, maxHp: 10 });
+  view.actions[2].targets = ["elishia", "zenki"];
+  const { decision, lines } = terminal(["3", "2"], view); // Barrier, choose Zenki
+  assert.deepEqual(await decision, { type: "skill", skillKey: "barrier", targetId: "zenki" });
+  assert.ok(!lines.some((line) => line.includes("Catalyst Wing")), "summon should not appear in ally-target prompt");
+});

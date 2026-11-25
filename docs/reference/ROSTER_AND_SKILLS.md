@@ -2,11 +2,11 @@
 
 ## Unified selectable roster
 
-The current interactive roster is assembled by `characters/roster.js`, which registers Falcon Company and Phantom Rebellion and merges their actor factories into one catalog. The selector supports faction/mastery/role filters, public-profile search, character previews, selecting three to five unique operatives, and ordering three active slots plus up to two reserves. The hidden operative is displayed as **Unknown** and is not searchable by its internal actor key. See [Unified Character Selection](UNIFIED_ROSTER_SELECTION.md) for terminal commands, battle integration, and the extension contract for future factions.
+The current interactive roster is assembled by `characters/roster.js`, which registers Falcon Company, Phantom Rebellion, and Serpent Syndicate and merges their actor factories into one catalog. The selector supports faction/mastery/primary-or-secondary-role filters, public-profile search, character previews (including mode-based skill descriptions), selecting three to five unique operatives, and ordering three active slots plus up to two reserves. The hidden operative is displayed as **Unknown** and is not searchable by its internal actor key. See [Unified Character Selection](UNIFIED_ROSTER_SELECTION.md) for terminal commands, battle integration, and the extension contract for future factions.
 
 ## Mastery types
 
-The prototype defines eight mastery types: Energy, Kinetic, Electromagnetic, Toxic, Nuclear, Nanotech, Cryogenic, and Anomaly. Falcon and Phantom agents receive a +15 mastery bonus for their assigned mastery in the current runtime data. Mastery resistance defaults to zero unless configured.
+The prototype defines eight mastery types: Energy, Kinetic, Electromagnetic, Toxic, Nuclear, Nanotech, Cryogenic, and Anomaly. Falcon, Phantom, and Serpent agents receive a +15 mastery bonus for their assigned mastery in the current runtime data. Mastery resistance defaults to zero unless configured.
 
 ## Falcon runtime roster
 
@@ -78,10 +78,36 @@ The source roster uses the internal key `elishia_p` for the Unknown operative. H
 
 All 20 Phantom active skills and their passive subscriptions are data-defined in `characters/skillData/` and assembled by `characters/skills.js` through the same interpreter used by Falcon. Mirazhel's mark applies its damage-taken bonus only to Phantom-faction attackers. Veil of the Unseen is restricted to another Phantom ally. Evasion passives, ATK/MPow scaling, one-use modifiers, Bleeding, Stagger, and shield replacement use shared registries/handlers.
 
+## Serpent runtime roster
+
+The Serpent party factory is `characters/serpent.js`. It creates five official roster actors with source stats normalized to the runtime `MPow`/`Evasion` fields and a +15 bonus to each character's primary mastery.
+
+| Character | Mastery | Role | HP | MP | ATK | MPow | DEF | RES | SPD | Crit | Evasion |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Verra Sable | Toxic | Field Medic / Demolitionist | 1125 | 150 | 65 | 160 | 72 | 100 | 88 | 12 | 5 |
+| Kane Virell | Toxic | Stalker | 1080 | 135 | 65 | 150 | 68 | 78 | 112 | 18 | 14 |
+| Galloz Brakk | Kinetic | Juggernaut | 1950 | 110 | 115 | 0 | 120 | 95 | 42 | 8 | 0 |
+| Claude Mercer | Toxic | Tactician / Demolitionist | 1200 | 155 | 65 | 145 | 80 | 100 | 100 | 12 | 5 |
+| Tekushiki | Kinetic | Vanguard / Demolitionist | 1200 | 125 | 115 | 0 | 85 | 90 | 95 | 14 | 8 |
+
+### Serpent skill registry
+
+All five Serpent skill sets and passives live in `characters/skillData/` and use the shared interpreter. Verra has two mode-based skills (attack/treatment and remedy/corrosive), so the 20 skill slots expose 22 executable mode/skill branches.
+
+| Character | Passive | Skill 1 | Skill 2 | Skill 3 | Ultimate |
+|---|---|---|---|---|---|
+| Verra | Toxicology Prodigy | Caustic Injection | Chemical Catastrophe | Unstable Remedy | Pandemic Protocol |
+| Kane | Serpent's Instinct | Twin Fang | Venomous Pursuit | Phantom Orbit | Deadly Convergence |
+| Galloz | Catalyst Husk | Ironclad Impact | Tyrant's Guard | Reactor Quake | Catalyst Overlord |
+| Claude | Unstable Formulation | Rallying Catalyst | Rupture Flask | Sabotage Cocktail | Masterpiece in Mayhem |
+| Tekushiki | Tether Snare | Ruin Reversal | Null Knot | Last Thread | Ruin's Embrace |
+
+Verra's Poison ticks for 25% of her Mpow as Toxic damage for 2 turns; Kane's and Claude's Poison ticks for 20% of the applier's Mpow for 2 turns. These are separate from Phantom's provisional Bleeding value. Tekushiki is now an official/canon Serpent member by owner authorization; his origin and past remain open mysteries in the current character description.
+
 ## Enemy skills and AI
 
 All six enemy archetypes have declarative skill sets in `data/enemySkills/` and dedicated policies in `data/enemyAI/`. The Blightheart Overseer has a dedicated phase-aware boss policy; the five standard archetypes use role-specific ordered rules.
 
 ## Data authority
 
-Runtime Falcon and Phantom skill behavior comes from `characters/skillData/`; enemy skill behavior comes from `data/enemySkills/`. Both factions use the shared skill runtime, combat systems, and tests. `references/characterTerraData.js` is the compact owner-reference extract containing selected skill objects and stat information; it is not a full character roster and is not imported by the engine. The owner maintains the separate website-facing character data.
+Runtime Falcon, Phantom, and Serpent skill behavior comes from `characters/skillData/`; enemy skill behavior comes from `data/enemySkills/`. All three factions use the shared skill runtime, combat systems, and tests. `references/characterTerraData.js` is the compact owner-reference extract containing selected skill objects and stat information; it is not a full character roster and is not imported by the engine. The owner maintains the separate website-facing character data.

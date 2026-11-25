@@ -9,7 +9,8 @@ The interactive prototype can build a player formation from the combined playabl
 `characters/roster.js` is the player-selectable faction registry. It currently registers:
 
 - Falcon Company — five operatives.
-- Phantom Rebellion — five operatives.
+- Phantom Rebellion — five operatives, including the neutral-display `Unknown` operative.
+- Serpent Syndicate — five operatives, including the now-canon Tekushiki.
 
 `createPlayableRoster({ side })` asks each registered faction factory for actors on the requested side, merges the results, and rejects duplicate actor IDs. Each actor retains its original `faction`, `role`, `mastery`, `skillSet`, stats, passive data, and runtime identity.
 
@@ -21,7 +22,7 @@ The default CLI entry point enables `selectPartyCharacters` and uses three activ
 
 1. Browse the combined roster.
 2. Narrow the roster with a faction, mastery, or role filter; search by public-facing name/profile fields.
-3. Inspect an operative's faction, role, mastery, combat stats, passive description, and skill names/descriptions/MP costs/cooldowns.
+3. Inspect an operative's faction, primary/secondary roles, mastery, combat stats, passive description, skill names/descriptions/MP costs/cooldowns, and any selectable skill-mode descriptions.
 4. Select three to five unique operatives. Selection order is preserved until formation ordering.
 5. Choose the three active slots in order.
 6. Arrange any remaining selected operatives as the reserve queue.
@@ -35,7 +36,7 @@ Available roster commands:
 | `info N` | Show the selected candidate's character preview |
 | `filter faction phantom` | Filter by faction ID or label |
 | `filter mastery anomaly` | Filter by mastery |
-| `filter role stalker` | Filter by combat role |
+| `filter role stalker` | Filter by primary or secondary combat role |
 | `search <text>` | Search public-facing name, faction label, role, or mastery |
 | `all` | Clear the current filter/search |
 | `selected` | Show the selected roster |
@@ -65,6 +66,6 @@ The selector does not contain faction-specific branches. Faction targeting rules
 ## Current limitations
 
 - This is a terminal selector, not a graphical roster screen.
-- The current registry contains Falcon and Phantom only; Serpent Syndicate is not yet selectable.
+- The current registry contains Falcon Company, Phantom Rebellion, and Serpent Syndicate (15 operatives total).
 - The player may choose three to five characters; persistent saved formations/loadout slots are not implemented.
 - Character previews use explicit passive descriptions and declarative skill copy from the live skill data. Keep those descriptions neutral for any hidden or unrevealed character.

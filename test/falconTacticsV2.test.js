@@ -198,3 +198,29 @@ test("Evalete conserves MP for Catalyst Overdrive while multiple allies suffer T
   };
   assert.deepEqual(createCoordinatedFalconController().chooseAction(view), { type: "basic", targetId: "toxic-stalker-test" });
 });
+
+test("enemy-side Falcon action views retain MP costs so Evalete conserves MP symmetrically", () => {
+  const poison = { damageType: "Toxic", dotDamage: 19, turnStart: { damageField: "dotDamage", damageTypeField: "damageType" }, turns: 2 };
+  const falcon = [
+    { id: "elishia", name: "Elishia", hp: 877, maxHp: 1100, statuses: {}, shields: [], summon: false },
+    { id: "evalete", name: "Evalete", hp: 632, maxHp: 1450, statuses: { poison, adaptiveResistance: { damageType: "Toxic", amount: 15, turns: 2 } }, shields: [], summon: false },
+    { id: "zackry", name: "Zackry", hp: 1047, maxHp: 1250, statuses: {}, shields: [], summon: false },
+  ];
+  const serpent = [
+    { id: "verra", name: "Verra", hp: 1006, maxHp: 1125, statuses: {}, shields: [], summon: false },
+    { id: "kane", name: "Kane", hp: 1052, maxHp: 1080, statuses: {}, shields: [], summon: false },
+    { id: "galloz", name: "Galloz", hp: 1950, maxHp: 1950, statuses: {}, shields: [], summon: false },
+  ];
+  const view = {
+    kind: "enemy",
+    actor: { id: "evalete", name: "Evalete", side: "enemy", skillSet: "evalete", hp: 632, maxHp: 1450, mp: 25, statuses: { poison, adaptiveResistance: { damageType: "Toxic", amount: 15, turns: 2 } } },
+    allies: serpent, enemies: falcon, friendlies: falcon, opponents: serpent,
+    actions: [
+      { type: "basic", targets: ["verra", "kane", "galloz"] },
+      { type: "enemySkill", key: "catalyst", cost: 65, usable: false, targeting: "none" },
+      { type: "enemySkill", key: "triage", cost: 25, usable: true, targeting: "ally", targets: ["elishia", "evalete", "zackry"] },
+      { type: "enemySkill", key: "pulse", cost: 20, usable: true, targeting: "enemy", targets: ["verra", "kane", "galloz"] },
+    ],
+  };
+  assert.deepEqual(createCoordinatedFalconController().chooseAction(view), { type: "basic", targetId: "verra" });
+});

@@ -1,4 +1,4 @@
-const { getCharacterPreview, getFactionLabel } = require("../characters/roster");
+const { getCharacterPreview, getFactionLabel, formatRoleLabel } = require("../characters/roster");
 
 const SEPARATOR = "-------------------------------------------------------------------------------------";
 
@@ -7,7 +7,8 @@ function normalize(value) {
 }
 
 function describeActor(actor) {
-  return `${actor.name} | ${getFactionLabel(actor.faction)} | ${actor.role || "unassigned"} | ${actor.mastery || "unassigned"}`;
+  const role = (actor.roles?.length ? actor.roles : (actor.role ? [actor.role] : [])).map(formatRoleLabel).join(" / ") || "Unassigned";
+  return `${actor.name} | ${getFactionLabel(actor.faction)} | ${role} | ${actor.mastery || "unassigned"}`;
 }
 
 function matchesFilter(actor, filter) {
@@ -18,11 +19,11 @@ function matchesFilter(actor, filter) {
     return normalize(actor.faction).includes(expected) || normalize(getFactionLabel(actor.faction)).includes(expected);
   }
   if (filter.field === "mastery") return normalize(actor.mastery).includes(expected);
-  if (filter.field === "role") return normalize(actor.role).includes(expected);
+  if (filter.field === "role") return [actor.role, ...(actor.roles || [])].some((role) => normalize(role).includes(expected));
   if (filter.field === "search") {
     // Deliberately search public-facing profile data only; do not expose or index
     // internal actor IDs such as the hidden operative's roster key.
-    return [actor.name, getFactionLabel(actor.faction), actor.role, actor.mastery]
+    return [actor.name, getFactionLabel(actor.faction), actor.role, ...(actor.roles || []), actor.mastery]
       .some((value) => normalize(value).includes(expected));
   }
   return true;
@@ -102,7 +103,8 @@ function createDeploymentSelector({ ask, output }) {
     if (!filtered.length) output.log("No operatives match this filter.");
     filtered.forEach((actor, index) => {
       const selected = selectedIds.has(actor.id) ? "[SELECTED]" : "";
-      output.log(`${index + 1}. ${selected} ${actor.name} — ${getFactionLabel(actor.faction)} | ${actor.role} | ${actor.mastery}`);
+      const role = (actor.roles?.length ? actor.roles : (actor.role ? [actor.role] : [])).map(formatRoleLabel).join(" / ") || "Unassigned";
+      output.log(`${index + 1}. ${selected} ${actor.name} — ${getFactionLabel(actor.faction)} | ${role} | ${actor.mastery}`);
     });
     output.log("\nCommands: number = select/deselect | info N = details | filter faction|mastery|role VALUE | search TEXT | all | selected | done | help");
     return filtered;
@@ -122,6 +124,9 @@ function createDeploymentSelector({ ask, output }) {
     preview.skills.forEach((skill) => {
       output.log(`- ${skill.category}: ${skill.name} [${skill.cost} MP, CD ${skill.cooldown}]`);
       output.log(`  ${skill.description}`);
+      for (const mode of skill.modes || []) {
+        output.log(`    • ${mode.label} (${mode.targeting}): ${mode.description}`);
+      }
     });
     output.log(SEPARATOR);
   }

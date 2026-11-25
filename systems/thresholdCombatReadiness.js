@@ -9,9 +9,15 @@ function actorKey(actor) {
 }
 
 function compareActors(left, right) {
-  const leftKey = actorKey(left);
-  const rightKey = actorKey(right);
-  return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+  // Actor identity, not seat, is the primary deterministic tie-break. Prefixing
+  // keys with side (ally/enemy) silently gave ally-side actors priority in
+  // simultaneous readiness ties, which made seat swaps non-neutral.
+  const leftKey = left.id || left.name || JSON.stringify(left.stats || {});
+  const rightKey = right.id || right.name || JSON.stringify(right.stats || {});
+  if (leftKey !== rightKey) return leftKey < rightKey ? -1 : 1;
+  const leftSide = left.side || '';
+  const rightSide = right.side || '';
+  return leftSide < rightSide ? -1 : leftSide > rightSide ? 1 : 0;
 }
 
 // Scheduler bookkeeping (elapsed time, tie rotation cursor, ready queue) lives on

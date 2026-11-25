@@ -14,7 +14,9 @@ function createBattleMenu(context) {
   }
 
   async function chooseTarget(view, side, promptText = "Target") {
-    const targets = side === "enemy" ? view.enemies : view.allies;
+    const targets = side === "enemy"
+      ? view.enemies.filter((target) => !target.untargetable)
+      : view.allies.filter((target) => !target.summon && !target.untargetable);
     if (!targets.length) return null;
     output.log(`${promptText}:`);
     targets.forEach((target, index) => {

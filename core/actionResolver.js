@@ -66,7 +66,11 @@ function createActionResolver({
   function hitPhysical(attacker, target, power = 1, canCrit = true, options = {}) {
     if (accuracyMiss(attacker, target, options.ignoreAccuracy)) return { damage: 0, crit: false, miss: true };
     const outcome = calculatePhysical(attacker, target, power * (options.damageMultiplier || 1), canCrit);
-    applyDamage(target, outcome.damage, "Physical", attacker, { kind: options.kind || "direct" });
+    applyDamage(target, outcome.damage, "Physical", attacker, {
+      kind: options.kind || "direct",
+      ...(options.actionType ? { actionType: options.actionType } : {}),
+      ...(options.skillKey ? { skillKey: options.skillKey } : {}),
+    });
     return outcome;
   }
 
@@ -81,7 +85,11 @@ function createActionResolver({
       options.scalingStat || "MPow",
       options.critRateBonus || 0,
     );
-    applyDamage(target, outcome.damage, type, attacker, { kind: options.kind || "direct" });
+    applyDamage(target, outcome.damage, type, attacker, {
+      kind: options.kind || "direct",
+      ...(options.actionType ? { actionType: options.actionType } : {}),
+      ...(options.skillKey ? { skillKey: options.skillKey } : {}),
+    });
     say(
       `  ${target.name} takes ${outcome.damage} ${type} damage${outcome.crit ? " (CRIT)" : ""}.`,
     );
@@ -114,7 +122,7 @@ function createActionResolver({
 
     const retaliation = (target.side === "ally" || symmetricEvasion) && target.statuses.retaliation;
     const nextAttackBonus = consumeNextAttackDamageModifier(actor);
-    const outcome = hitPhysical(actor, target, 1, true, { damageMultiplier: 1 + nextAttackBonus / 100 });
+    const outcome = hitPhysical(actor, target, 1, true, { damageMultiplier: 1 + nextAttackBonus / 100, actionType: "basic" });
     say(
       `${actor.name} attacks ${target.name} for ${outcome.damage} Physical damage${outcome.crit ? " (CRIT)" : ""}.`,
     );

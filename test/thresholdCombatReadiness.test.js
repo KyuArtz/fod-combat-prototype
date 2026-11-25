@@ -86,6 +86,20 @@ test("simultaneous equal-SPD actors tie-break deterministically, not by formatio
   ]);
 });
 
+test("equal-SPD faction duel ties are seat-neutral and sort by actor identity", () => {
+  const alphaAlly = actor("Alpha", 100, { id: "alpha", side: "ally" });
+  const bravoEnemy = actor("Bravo", 100, { id: "bravo", side: "enemy" });
+  const firstState = createBattleState();
+  firstState.actors = [alphaAlly, bravoEnemy];
+  assert.equal(createThresholdScheduler().nextActor(firstState, effectiveStat), alphaAlly);
+
+  const alphaEnemy = actor("Alpha", 100, { id: "alpha", side: "enemy" });
+  const bravoAlly = actor("Bravo", 100, { id: "bravo", side: "ally" });
+  const reversedState = createBattleState();
+  reversedState.actors = [bravoAlly, alphaEnemy];
+  assert.equal(createThresholdScheduler().nextActor(reversedState, effectiveStat), alphaEnemy);
+});
+
 test("faster actor can receive legitimate consecutive turns", () => {
   const { order } = scheduleOrder(
     [actor("Quick", 200), actor("Slow", 50)],

@@ -1,3 +1,48 @@
+// Shared cleanse ranking keeps tactical AI decisions and effect execution aligned.
+// Higher tiers represent more urgent combat impact; ties are resolved by severity,
+// remaining duration, then stable status ID so insertion order never decides.
+function getStatusCleansePriority(status) {
+  if (!status || !(status.debuff || (Number.isFinite(status.amount) && status.amount < 0))) return 0;
+  if (status.skipAction || status.control || status.delayCR > 0) return 100;
+  if (status.dotDamage > 0 && typeof status.damageType === "string") return 75;
+  if (status.stat && Number.isFinite(status.amount) && status.amount < 0) return 55;
+  if (status.damageTakenPercent > 0 || status.evasionPenalty > 0 || status.accuracyPenalty > 0) return 50;
+  return 30;
+}
+
+function getCleanseSeverity(status) {
+  const duration = Number.isFinite(status?.turns) && status.turns > 0 ? status.turns : 1;
+  const magnitude = Math.max(
+    status?.skipAction ? 1000 : 0,
+    status?.control ? 500 : 0,
+    Number.isFinite(status?.delayCR) ? Math.abs(status.delayCR) : 0,
+    Number.isFinite(status?.dotDamage) ? Math.max(0, status.dotDamage) : 0,
+    Number.isFinite(status?.amount) ? Math.abs(status.amount) : 0,
+    Number.isFinite(status?.damageTakenPercent) ? Math.max(0, status.damageTakenPercent) : 0,
+    Number.isFinite(status?.evasionPenalty) ? Math.max(0, status.evasionPenalty) : 0,
+    Number.isFinite(status?.accuracyPenalty) ? Math.max(0, status.accuracyPenalty) : 0,
+  );
+  return magnitude * duration;
+}
+
+function getHighestPriorityCleanseEntry(statuses = {}) {
+  return Object.entries(statuses || {})
+    .map(([statusId, status]) => ({
+      statusId,
+      status,
+      priority: getStatusCleansePriority(status),
+      severity: getCleanseSeverity(status),
+    }))
+    .filter((entry) => entry.priority > 0)
+    .sort((a, b) =>
+      b.priority - a.priority ||
+      b.severity - a.severity ||
+      (Number(b.status?.turns) || 0) - (Number(a.status?.turns) || 0) ||
+      a.statusId.localeCompare(b.statusId),
+    )
+    .map(({ statusId, status }) => [statusId, status])[0] || null;
+}
+
 function addStatus(target, key, data) {
   if ((target.passive?.immunities || []).includes(key)) return false;
   // Stagger delays readiness rather than deleting the actor's next action.
@@ -12,10 +57,20 @@ function addStatus(target, key, data) {
     // cannot silently change its strength. Explicitly stackable effects opt in.
     const strengthFields = [
       "amount", "stat", "damageTakenPercent", "damageDealtPercent", "damageReflectionPercent",
-      "evasionPenalty", "hotPercentMaxHP", "dotDamage", "nextAttackDamagePercent", "shieldPercent",
+      "evasionPenalty", "hotPercentMaxHP", "nextAttackDamagePercent", "nextSkillDamagePercent",
+      "nextSkillPowerAdd", "shieldPercent", "resistancePercent",
     ];
     for (const field of strengthFields) {
       if (existing[field] !== undefined && next[field] !== undefined) next[field] = existing[field];
+    }
+    // Reapplying the same DoT refreshes duration, but the stronger tick wins.
+    // Keep attribution tied to the actor whose stronger DoT is still active.
+    if (Number.isFinite(existing.dotDamage) && Number.isFinite(next.dotDamage)) {
+      if (existing.dotDamage >= next.dotDamage) {
+        for (const field of ["dotDamage", "damageType", "sourceId", "sourceSide", "turnStart"]) {
+          if (existing[field] !== undefined) next[field] = existing[field];
+        }
+      }
     }
     if (existing.stackable) next.stackable = true;
   }
@@ -152,6 +207,15 @@ function tickStatuses(actor) {
       delete effect.appliedDuringCurrentTurn;
       continue;
     }
+    if (Array.isArray(effect.stackDurations)) {
+      effect.stackDurations = effect.stackDurations
+        .map((duration) => duration - 1)
+        .filter((duration) => duration > 0);
+      effect.stacks = effect.stackDurations.length;
+      effect.turns = effect.stackDurations.length ? Math.max(...effect.stackDurations) : 0;
+      if (!effect.stackDurations.length) delete actor.statuses[key];
+      continue;
+    }
     if (!Number.isFinite(effect.turns)) continue;
     effect.turns--;
     if (effect.turns <= 0) delete actor.statuses[key];
@@ -183,8 +247,22 @@ function consumeNextSkillDamageModifier(actor, skillKey, damageType) {
   return strongest;
 }
 
+function consumeNextSkillPowerModifier(actor, skillKey, damageType, scalingStat = "MPow") {
+  const candidates = Object.entries(actor?.statuses || {})
+    .filter(([, status]) => Number.isFinite(status.nextSkillPowerAdd) && status.nextSkillPowerAdd > 0 &&
+      (!status.skillKey || status.skillKey === skillKey) &&
+      (!status.damageType || status.damageType === damageType) &&
+      (!status.scalingStat || status.scalingStat === scalingStat))
+    .sort((left, right) => right[1].nextSkillPowerAdd - left[1].nextSkillPowerAdd);
+  if (!candidates.length) return 0;
+  const strongest = candidates[0][1].nextSkillPowerAdd;
+  // One-use power modifiers obey strongest-value priority and are consumed together.
+  for (const [statusId] of candidates) delete actor.statuses[statusId];
+  return strongest;
+}
+
 function incomingAttackModifier(target, type) {
   return (target.passive?.incomingAttackMods || []).reduce((total, mod) => total + (mod.type === type ? mod.points || 0 : 0), 0);
 }
 
-module.exports = { addStatus, matchesModifierCondition, effectiveStat, incomingAttackModifier, processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, expireTurnStartStatuses, tickStatuses, consumeNextAttackDamageModifier, consumeNextSkillDamageModifier };
+module.exports = { addStatus, getStatusCleansePriority, getCleanseSeverity, getHighestPriorityCleanseEntry, matchesModifierCondition, effectiveStat, incomingAttackModifier, processTurnStartStatuses, processTurnStartStatusRefreshes, processUnitDefeatedStatusReactions, expireTurnStartStatuses, tickStatuses, consumeNextAttackDamageModifier, consumeNextSkillDamageModifier, consumeNextSkillPowerModifier };

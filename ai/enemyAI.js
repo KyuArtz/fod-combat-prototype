@@ -37,6 +37,8 @@ function createEnemyAI(context) {
       name: skill.name,
       targeting: skill.targeting,
       category: skill.category,
+      cost: skill.cost,
+      cooldown: actor.cooldowns[skill.key] || 0,
       targetFaction: skill.targetFaction,
       excludeSelf: skill.excludeSelf,
       ...(skill.modes ? { modes: structuredClone(skill.modes) } : {}),

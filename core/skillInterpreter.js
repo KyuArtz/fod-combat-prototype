@@ -54,7 +54,13 @@ function createSkillInterpreter(context) {
       ...(skill.description ? { description: skill.description } : {}),
       ...(skill.excludeSelf ? { excludeSelf: true } : {}),
       ...(skill.targetFaction ? { targetFaction: skill.targetFaction } : {}),
-      ...(skill.targeting === "mode" ? { modes: skill.modes.map(({ id, label, targeting }) => ({ id, label, targeting })) } : {}),
+      ...(skill.targeting === "mode" ? {
+        modes: skill.modes.map(({ id, label, targeting, description, message }) => ({
+          id, label, targeting,
+          ...(description ? { description } : {}),
+          ...(message ? { message } : {}),
+        })),
+      } : {}),
       run: (actor, args) => runSkill(data, skill, actor, args),
     }));
   }

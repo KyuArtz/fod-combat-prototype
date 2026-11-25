@@ -2,35 +2,48 @@ const { createBattle } = require("../../core/battle");
 const { createEventBus } = require("../../core/eventBus");
 const { createFalconParty } = require("../../characters/falcon");
 const { createPhantomParty } = require("../../characters/phantom");
+const { createSerpentParty } = require("../../characters/serpent");
 const { createCoordinatedFalconController } = require("../../ai/falconTacticsV2");
 const { createPhantomTacticsController } = require("../../ai/phantomTactics");
+const { createSerpentTacticsController } = require("../../ai/serpentTactics");
+const { createBattleTelemetry } = require("../../core/telemetry/battleTelemetry");
 
 const FACTIONS = Object.freeze({
   falcon: { factory: createFalconParty, ids: ["elishia", "evalete", "zackry", "jazen", "zenki"] },
   phantom: { factory: createPhantomParty, ids: ["mirazhel", "elishia_p", "lucaz", "clarke", "liezli"] },
+  serpent: { factory: createSerpentParty, ids: ["verra", "kane", "galloz", "claude", "tekushiki"] },
 });
 
-function opponentOf(faction) {
-  if (!FACTIONS[faction]) throw new TypeError(`Unknown faction "${faction}". Use falcon or phantom.`);
+function opponentOf(faction, requestedOpponent) {
+  if (!FACTIONS[faction]) throw new TypeError(`Unknown faction "${faction}". Choose falcon, phantom, or serpent.`);
+  if (requestedOpponent !== undefined) {
+    if (!FACTIONS[requestedOpponent]) throw new TypeError(`Unknown opponent faction "${requestedOpponent}". Choose falcon, phantom, or serpent.`);
+    if (requestedOpponent === faction) throw new TypeError("A faction cannot duel itself in the faction matchup runner.");
+    return requestedOpponent;
+  }
   return faction === "falcon" ? "phantom" : "falcon";
 }
 
 function controllerFor(faction) {
-  return faction === "falcon"
-    ? createCoordinatedFalconController()
-    : createPhantomTacticsController();
+  if (faction === "falcon") return createCoordinatedFalconController();
+  if (faction === "phantom") return createPhantomTacticsController();
+  if (faction === "serpent") return createSerpentTacticsController();
+  throw new TypeError(`No tactical controller registered for "${faction}".`);
 }
 
 async function playFactionDuel({
   seed = 1,
   playerFaction = "falcon",
+  opponentFaction: requestedOpponentFaction,
   maxActive = 3,
   openingInitiative = "speed",
   events = createEventBus({ record: true }),
+  telemetryOptions = {},
+  controllerOverrides = {},
 } = {}) {
   const player = FACTIONS[playerFaction];
   if (!player) throw new TypeError(`Unknown playerFaction "${playerFaction}". Use falcon or phantom.`);
-  const opponentFaction = opponentOf(playerFaction);
+  const opponentFaction = opponentOf(playerFaction, requestedOpponentFaction);
   const opponent = FACTIONS[opponentFaction];
   const battle = createBattle({
     output: { log() {} },
@@ -46,12 +59,13 @@ async function playFactionDuel({
     // Both factions use identical Evasion checks and evade-triggered passives.
     symmetricEvasion: true,
     controllers: {
-      player: controllerFor(playerFaction),
-      enemy: controllerFor(opponentFaction),
+      player: controllerOverrides[playerFaction] || controllerFor(playerFaction),
+      enemy: controllerOverrides[opponentFaction] || controllerFor(opponentFaction),
     },
   });
 
   const initialSeed = battle.state.rng.seed;
+  const telemetry = createBattleTelemetry(battle.events, battle.state, telemetryOptions);
   try {
     const result = await battle.run();
     return {
@@ -62,8 +76,10 @@ async function playFactionDuel({
       opponentFaction,
       state: battle.state,
       events: battle.events,
+      telemetry: telemetry.summary(),
     };
   } finally {
+    telemetry.dispose();
     battle.close();
   }
 }
@@ -71,9 +87,9 @@ async function playFactionDuel({
 function summarizeFactionDuel(battle) {
   const rows = battle.events.history || [];
   const damageByActor = {};
-  const damageByFaction = { falcon: 0, phantom: 0 };
+  const damageByFaction = Object.fromEntries(Object.keys(FACTIONS).map((faction) => [faction, 0]));
   const skillsByActor = {};
-  const switchesByFaction = { falcon: 0, phantom: 0 };
+  const switchesByFaction = Object.fromEntries(Object.keys(FACTIONS).map((faction) => [faction, 0]));
   let rejectedDecisions = 0;
   let reserveDeployments = 0;
   let bleedTicks = 0;
@@ -111,6 +127,7 @@ function summarizeFactionDuel(battle) {
     reserveDeployments,
     rejectedDecisions,
     dotTicks: bleedTicks,
+    telemetry: battle.telemetry || null,
   };
 }
 

@@ -13,7 +13,7 @@ const { createFalconWorld, skill } = require("./helpers/falconWorld");
 const { processTurnStartStatuses, addStatus } = require("../systems/statusEffects");
 const formation = require("../systems/formation");
 
-const CHARACTER_IDS = ["elishia", "evalete", "zackry", "jazen", "zenki", "mirazhel", "elishia_p", "lucaz", "clarke", "liezli"];
+const CHARACTER_IDS = ["elishia", "evalete", "zackry", "jazen", "zenki", "mirazhel", "elishia_p", "lucaz", "clarke", "liezli", "verra", "kane", "galloz", "claude", "tekushiki"];
 const ENEMY_IDS = ["trainingDrone", "rogueAutomaton", "siegeTurret", "reconDrone", "toxicStalker", "blightheartOverseer"];
 
 function stubContext() {
