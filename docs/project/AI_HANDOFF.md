@@ -9,7 +9,7 @@ Use this document as a concise starting point for future F.O.D. development sess
 - Default scheduler: `threshold`; `legacy` remains available for comparison.
 - Default interactive flow: unified mixed-faction roster selection across Falcon Company, Phantom Rebellion, and Serpent Syndicate (3–5 unique operatives; first three active, remaining selected members become reserves), followed by `trainingGround`.
 - Current roster: 15 selectable operatives, five per faction. Tekushiki is an official/canon member of Serpent by user authorization on 2026-11-23.
-- Current verification: `npm test` — 367 passed, 0 failed, 0 skipped.
+- Current verification: `npm test` — 370 passed, 0 failed, 0 skipped.
 - All three faction tactical controllers and symmetric faction-duel simulations are integrated.
 
 ## Start every work session by

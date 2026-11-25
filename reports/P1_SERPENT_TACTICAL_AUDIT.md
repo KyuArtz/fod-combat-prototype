@@ -60,3 +60,8 @@ Switching a critically injured Kane out may preserve him, but it also forfeits a
 The 100-battle telemetry JSON and compact matched-seat forensic summary are retained. The 3.4 MB event-by-event forensic timeline was discarded after extracting its durable summary; it can be regenerated using the retained `tools/serpentForensicReplay.js` runner. No obsolete scripts were removed during this P1 observational pass.
 
 > **Verification update (P1.1):** The earlier test count was affected by duplicate project nesting in the audit ZIP. The duplicate was removed in the P1.1 deliverable. The corrected single-project suite now reports 367 passing tests. See `reports/experiments/p1-1-verra-treatment-vs-rotation-audit.md`.
+
+
+> **Verification update (P1.2.1):** The self-exclusion fix in Verra emergency treatment deferral is in place. Current baseline: 370 passing tests.
+
+> **P1.2.2 update:** Incoming pressure and action economy were audited over 40 seeded battles each vs Phantom and Falcon, alternating Serpent seat. Verra was KO’d in 40/40 Phantom and 39/40 Falcon battles. Self-treatment was a substantial share of her treatment actions, and she absorbed no shield damage. No balance changes were made. Details: `reports/experiments/p1-2-2-incoming-pressure-survival-audit.md`.
