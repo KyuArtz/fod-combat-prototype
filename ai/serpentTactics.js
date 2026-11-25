@@ -154,7 +154,8 @@ function reserveSwitch(view, switchPolicy = {}) {
 
 function hasCriticalTreatmentOpportunity(view, criticalHpRatio = 0.15) {
   if (view?.actor?.skillSet !== "verra" && view?.actor?.id !== "verra") return false;
-  const friendlies = (view.friendlies || []).filter((unit) => !unit.summon && unit.hp > 0);
+  // This override is for teammates only; Verra must still be able to rotate when she is critical.
+  const friendlies = (view.friendlies || []).filter((unit) => !unit.summon && unit.hp > 0 && unit.id !== view.actor.id);
   const treatmentActions = (view.actions || []).filter((action) =>
     action.usable && ["unstableRemedy", "causticInjection"].includes(action.key),
   );
