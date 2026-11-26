@@ -7,6 +7,8 @@ const { createSkills } = require("../characters/skills");
 const { makeActor } = require("../characters/actorFactory");
 const { createActionResolver } = require("./actionResolver");
 const { createBattleState } = require("./battleState");
+const { recordIncomingDamage } = require("./incomingPressureTelemetry");
+const { viewIdOf } = require("./turnView");
 const { createEventBus } = require("./eventBus");
 const { emitCombatEvent } = require("./combatEvents");
 const { nextFloat } = require("./rng");
@@ -233,6 +235,11 @@ function createBattle({
       absorbedAmount = Math.max(0, Math.min(amount, shieldBefore - afterShield));
     }
     const actualHpLoss = Math.max(0, beforeHp - target.hp);
+    if (actualHpLoss > 0 && sourceActor && sourceActor.side !== target.side) {
+      recordIncomingDamage(state.incomingPressureTelemetry, {
+        round: state.round, targetId: viewIdOf(state, target), sourceId: viewIdOf(state, sourceActor), hpDamage: actualHpLoss,
+      });
+    }
     emitCombatEvent(events, "DamageApplied", {
       sourceId: sourceActor?.id || null,
       sourceSide: sourceActor?.side || null,

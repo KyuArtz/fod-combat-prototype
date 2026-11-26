@@ -71,9 +71,31 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 - Encounter rewards, XP, currency, inventory, persistent progression, and save/load remain unimplemented.
 - Runtime Falcon base stats remain prototype values and are not automatically synchronized with the owner-maintained stat sheet.
 - Phantom Bleeding's 0.15× ATK Anomaly tick remains a provisional test baseline pending later balance review.
+- **Taunt is only enforced by the default PvE enemy AI** (`ai/targeting.js`). Controller-driven sides (faction duels) still see every opponent as a legal target, so Lucaz's Bastion and Galloz's Tyrant's Guard do not redirect enemy attacks there. Pending test: the `todo` case in `test/gallozFullBattle.test.js`. Fixing it changes duel balance and touches target legality in `core/turnView.js` plus every tactical controller.
 
 ## Data authority
 
 Executable source and tests define runtime behavior. `references/characterTerraData.js` is the compact in-project owner reference; the separate website-facing character JSON remains owner-maintained. The delivered `characterTerraData-serpent-updated.json` includes the Serpent description/role changes for application to the website data. The original uploaded source JSON and previous project archives were preserved.
 
 See [Architecture](../reference/ARCHITECTURE.md), [Testing](TESTING_AND_PLAYTESTING.md), and [Roadmap](ROADMAP.md).
+
+### P1.2.3 Verra action priority audit
+
+- 10 unique Phantom seeds replayed with both seat orientations (20 battles); decision counts analyzed once per seed.
+- 69 Verra decisions across 10 unique battles; Verra KO in 10/10.
+- All 14 actions at 16–30% HP were self-treatment; rotation decisions did not occur in that HP band.
+- At ≤16% HP, 4/6 actions were switches; reserve eligibility was not captured for the two non-switch actions, so no rotation defect was asserted.
+- No combat/AI changes. Next recommended instrumentation: reserve HP and switch candidates plus treatment value/next-turn HP delta.
+
+### P1.2.4 Reserve eligibility & treatment value capture
+
+- 10 matched Phantom seed pairs (20 battles; seeds 20261633–20261642) captured Verra decisions with active/reserve HP, legal treatment options, and healing/cleanse events.
+- 160 Verra decision snapshots; 148 treatment/remedy actions (106 self-targeted, 71.6%).
+- At ≤16% HP, 8 decisions had no safe reserve available; reserve Claude was at 1.33% HP in the critical windows.
+- At 16–30% HP, healthy reserves appeared in 38/40 snapshots, but Verra's current 16% switch threshold does not make her eligible in this band absent another outgoing teammate.
+- Treatment output: 34,066 actual healing from 36,768 requested (2,702 overheal; 7.35%); 140 cleanse events.
+- Diagnostic only. No AI/combat behavior changes. Next: matched rotation-threshold policy experiment, keeping treatment rules and stats fixed.
+
+### P1.2.7 Matchup-dependent rotation policy feasibility
+
+- Telemetry-only feasibility audit across 80 battles (20 seeds, both seats, Phantom/Falcon) captured 2,085 Verra decision snapshots. Current turn view supports reactive state-based policy using HP/status, enemy count/roles/HP, treatment target availability, and reserve health. It does **not** provide rolling incoming-damage/focus history, so true pressure-history adaptation would require a neutral turn-view/engine telemetry addition. Role labels are not validated threat scores. No AI or combat behavior changed; retain 16% default. See `reports/experiments/P1-2-7-matchup-dependent-rotation-feasibility.md`.

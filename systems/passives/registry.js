@@ -172,6 +172,13 @@ function createPassiveRegistry(context) {
       if (subscription.chargeStatusId) delete actor.statuses[subscription.chargeStatusId];
       actor.passiveFlags[subscription.primedFlag] = false;
     },
+    // The primed flag is derived from the charge status. If the charge expires
+    // (or is removed) without being spent, the flag must not outlive it.
+    clearPrimedFlagWithoutCharge(actor, event, subscription) {
+      if (!actor.passiveFlags?.[subscription.primedFlag]) return;
+      if (actor.statuses?.[subscription.chargeStatusId]) return;
+      actor.passiveFlags[subscription.primedFlag] = false;
+    },
     applyFractureToPrimaryHit(actor, event, subscription) {
       const run = event.run;
       if (!actor.alive || !run) return;
@@ -218,7 +225,7 @@ function createPassiveRegistry(context) {
       if (!actor.alive || event.actionType !== "basic" || (event.kind && event.kind !== "direct")) return;
       addTetherMark(actor, event.target, subscription, context);
     },
-    lucazReinforcement(actor, event, subscription) {
+    stackReinforcement(actor, event, subscription) {
       if (!actor.alive || (event.kind && event.kind !== "direct")) return;
       if (subscription.requireEnemySkill && event.actionType !== "skill") return;
       const statusId = subscription.statusId;

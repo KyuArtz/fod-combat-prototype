@@ -1,0 +1,114 @@
+{
+  "overall": {
+    "baseline": {
+      "battles": 400,
+      "serpentWins": 31,
+      "opponentWins": 369,
+      "draws": 0,
+      "winRate": 0.0775,
+      "verraKOs": 393,
+      "averageRounds": 32.9225,
+      "totalDamageToVerra": 939502,
+      "totalHealingToVerra": 492902,
+      "totalVerraTurns": 11774,
+      "switches": 7958,
+      "reserveDeployments": 787
+    },
+    "experimental": {
+      "battles": 400,
+      "serpentWins": 27,
+      "opponentWins": 373,
+      "draws": 0,
+      "winRate": 0.0675,
+      "verraKOs": 389,
+      "averageRounds": 32.795,
+      "totalDamageToVerra": 914283,
+      "totalHealingToVerra": 468582,
+      "totalVerraTurns": 11705,
+      "switches": 7967,
+      "reserveDeployments": 782
+    }
+  },
+  "byMatchup": {
+    "phantom": {
+      "baseline": {
+        "battles": 200,
+        "serpentWins": 10,
+        "opponentWins": 190,
+        "draws": 0,
+        "winRate": 0.05,
+        "verraKOs": 200,
+        "averageRounds": 18.5,
+        "totalDamageToVerra": 428624,
+        "totalHealingToVerra": 203624,
+        "totalVerraTurns": 1556,
+        "switches": 782,
+        "reserveDeployments": 400
+      },
+      "experimental": {
+        "battles": 200,
+        "serpentWins": 0,
+        "opponentWins": 200,
+        "draws": 0,
+        "winRate": 0.0,
+        "verraKOs": 200,
+        "averageRounds": 17.61,
+        "totalDamageToVerra": 404400,
+        "totalHealingToVerra": 179400,
+        "totalVerraTurns": 1518,
+        "switches": 774,
+        "reserveDeployments": 400
+      }
+    },
+    "falcon": {
+      "baseline": {
+        "battles": 200,
+        "serpentWins": 21,
+        "opponentWins": 179,
+        "draws": 0,
+        "winRate": 0.105,
+        "verraKOs": 193,
+        "averageRounds": 47.345,
+        "totalDamageToVerra": 510878,
+        "totalHealingToVerra": 289278,
+        "totalVerraTurns": 10218,
+        "switches": 7176,
+        "reserveDeployments": 387
+      },
+      "experimental": {
+        "battles": 200,
+        "serpentWins": 27,
+        "opponentWins": 173,
+        "draws": 0,
+        "winRate": 0.135,
+        "verraKOs": 189,
+        "averageRounds": 47.98,
+        "totalDamageToVerra": 509883,
+        "totalHealingToVerra": 289182,
+        "totalVerraTurns": 10187,
+        "switches": 7193,
+        "reserveDeployments": 382
+      }
+    }
+  },
+  "matchedOutcomeComparison": {
+    "phantom": {
+      "battles": 200,
+      "baselineOnlyWins": 10,
+      "experimentalOnlyWins": 0,
+      "verraKOImproved": 0,
+      "verraKOWorsened": 0,
+      "experimentalRoundsShorter": 74,
+      "experimentalRoundsLonger": 30
+    },
+    "falcon": {
+      "battles": 200,
+      "baselineOnlyWins": 4,
+      "experimentalOnlyWins": 10,
+      "verraKOImproved": 4,
+      "verraKOWorsened": 0,
+      "experimentalRoundsShorter": 51,
+      "experimentalRoundsLonger": 43
+    }
+  }
+}

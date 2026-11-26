@@ -1,8 +1,29 @@
+// Returns the longest remaining Taunt on a unit, or null when it has none.
+// Statuses without a finite duration count as lasting indefinitely.
+function tauntTurns(unit) {
+  let best = null;
+  for (const status of Object.values(unit.statuses || {})) {
+    if (status?.taunt !== true) continue;
+    const turns = Number.isFinite(status.turns) ? status.turns : Infinity;
+    if (turns <= 0) continue;
+    if (best === null || turns > best) best = turns;
+  }
+  return best;
+}
+
 function enemyTarget(state, actor, alive) {
   const targets = alive(state, "ally").filter((target) => (!target.summon || target.targetableByEnemy) &&
     !Object.values(target.statuses || {}).some((status) => status.untargetable));
   if (!targets.length) return null;
-  const taunter = targets.find((target) => target.statuses?.taunt);
+  // Taunt is stored under each effect's status ID (e.g. tyrantsGuardTaunt),
+  // not necessarily under the generic "taunt" key, so inspect status payloads.
+  // An expired payload (turns <= 0) is ignored even if it lingers. With several
+  // taunters, the longest remaining Taunt wins; ties keep formation order.
+  const taunter = targets.reduce((best, current) => {
+    const turns = tauntTurns(current);
+    if (turns === null) return best;
+    return !best || turns > best.turns ? { unit: current, turns } : best;
+  }, null)?.unit;
   if (taunter) return taunter;
 
   switch (actor.targetSelection || "weakest") {
@@ -28,4 +49,9 @@ function enemyTarget(state, actor, alive) {
   }
 }
 
-module.exports = { enemyTarget };
+// True when the unit has any live Taunt, whatever status ID carries it.
+function hasActiveTaunt(unit) {
+  return tauntTurns(unit) !== null;
+}
+
+module.exports = { enemyTarget, hasActiveTaunt };

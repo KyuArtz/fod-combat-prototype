@@ -1,4 +1,5 @@
 const { createRngState } = require("./rng");
+const { createIncomingPressureTelemetry } = require("./incomingPressureTelemetry");
 
 function createBattleState({ seed } = {}) {
   return {
@@ -8,6 +9,7 @@ function createBattleState({ seed } = {}) {
     schedulerTicks: 0,
     scheduler: null, // threshold scheduler bookkeeping, created lazily
     battleTimers: {},
+    incomingPressureTelemetry: createIncomingPressureTelemetry(),
     lastAllyTargetedEnemyId: null,
     log: [],
     party: {

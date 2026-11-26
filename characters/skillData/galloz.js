@@ -6,8 +6,10 @@ module.exports = {
     description: "Galloz passively reduces incoming damage by 8%. When hit by an enemy skill, he gains one Reinforcement stack, increasing DEF by 5% per stack for 3 turns, up to 2 stacks. At 2 stacks, his next damaging skill gains its defined reinforcement payoff and consumes both stacks.",
     damageTakenPercent: -8,
     events: {
+      turnStart: [{ handler: "clearPrimedFlagWithoutCharge", primedFlag: "gallozReinforcementPrimed", chargeStatusId: "gallozKineticCharge" }],
+      turnEnd: [{ handler: "clearPrimedFlagWithoutCharge", primedFlag: "gallozReinforcementPrimed", chargeStatusId: "gallozKineticCharge" }],
       damageTaken: [{
-        handler: "lucazReinforcement",
+        handler: "stackReinforcement",
         requireEnemySkill: true,
         statusId: "gallozReinforcement",
         chargeStatusId: "gallozKineticCharge",
@@ -37,18 +39,20 @@ module.exports = {
       tags: ["Kinetic", "frontline"], targeting: "enemy",
       effects: [
         { type: "masteryHit", element: "Kinetic", power: 1.25, scalingStat: "ATK" },
-        { type: "shieldSelf", percentMaxHP: 6, turns: 2 },
+        { type: "shieldSelf", percentMaxHP: 8, turns: 2 },
       ],
-      message: "Galloz drives his reinforced arm into {target} for {damage} Kinetic damage and gains a 6% Max HP shield for 2 turns.",
+      message: "Galloz drives his reinforced arm into {target} for {damage} Kinetic damage and gains an 8% Max HP shield for 2 turns.",
     },
     {
       key: "tyrantsGuard", name: "Tyrant's Guard", cost: 30, cooldown: 3,
       tags: ["defensive", "team-support"], targeting: "none",
       effects: [
-        { type: "shieldSelf", percentMaxHP: 15, turns: 2 },
+        { type: "shieldSelf", percentMaxHP: 18, turns: 2 },
+        { type: "statusSelf", id: "tyrantsGuardRes", stat: "RES", amount: 10, turns: 2 },
+        { type: "statusSelf", id: "tyrantsGuardTaunt", taunt: true, turns: 2 },
         { type: "statusAllies", id: "tyrantsGuardDamageReduction", damageTakenPercent: -12, turns: 2 },
       ],
-      message: "TYRANT'S GUARD! Galloz gains a 15% Max HP shield and all active allies gain 12% damage reduction for 2 turns.",
+      message: "TYRANT'S GUARD! Galloz gains an 18% Max HP shield, RES +10%, and Taunt; all active allies gain 12% damage reduction for 2 turns.",
     },
     {
       key: "reactorQuake", name: "Reactor Quake", cost: 40, cooldown: 4,

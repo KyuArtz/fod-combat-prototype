@@ -1,0 +1,329 @@
+{
+  "protocol": {
+    "scope": "Verra action priority and rotation opportunity",
+    "matchup": "Serpent vs Phantom",
+    "seedPairs": 10,
+    "battles": 20,
+    "uniqueSeeds": 10,
+    "eachSeedBothSeats": true,
+    "analysisUsesPlayerSeatOnlyForUniqueDecisionCounts": true,
+    "seedStart": 20261623,
+    "seedEnd": 20261632,
+    "baselineRulesUnchanged": true
+  },
+  "summary": {
+    "uniqueBattlesAnalyzed": 10,
+    "verraDecisionCount": 69,
+    "verraKOs": 10,
+    "actionCounts": {
+      "causticInjection:treat": 34,
+      "unstableRemedy:remedy": 27,
+      "switch:none": 4,
+      "basic:none": 4
+    },
+    "targetCounts": {
+      "verra": 40,
+      "galloz": 11,
+      "kane": 10,
+      "none": 4,
+      "elishia_p": 3,
+      "lucaz": 1
+    },
+    "criticalTeammateOpportunityCount": 1,
+    "criticalTeammateTreatmentCount": 1,
+    "bandSummaries": {
+      "80+": {
+        "decisionCount": 10,
+        "actions": {
+          "causticInjection:treat:verra": 10
+        }
+      },
+      "50-80": {
+        "decisionCount": 23,
+        "actions": {
+          "unstableRemedy:remedy:verra": 10,
+          "causticInjection:treat:galloz": 10,
+          "unstableRemedy:remedy:kane": 3
+        }
+      },
+      "30-50": {
+        "decisionCount": 16,
+        "actions": {
+          "unstableRemedy:remedy:kane": 7,
+          "causticInjection:treat:verra": 5,
+          "unstableRemedy:remedy:verra": 1,
+          "basic:none:elishia_p": 3
+        }
+      },
+      "0-16": {
+        "decisionCount": 6,
+        "actions": {
+          "switch": 4,
+          "unstableRemedy:remedy:galloz": 1,
+          "basic:none:lucaz": 1
+        }
+      },
+      "16-30": {
+        "decisionCount": 14,
+        "actions": {
+          "causticInjection:treat:verra": 9,
+          "unstableRemedy:remedy:verra": 5
+        }
+      }
+    },
+    "verraActionsAt16To30": [
+      {
+        "seed": 20261624,
+        "round": 3,
+        "hpPercent": 26.84,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 26.84
+          }
+        ]
+      },
+      {
+        "seed": 20261625,
+        "round": 3,
+        "hpPercent": 23.02,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 23.02
+          }
+        ]
+      },
+      {
+        "seed": 20261626,
+        "round": 3,
+        "hpPercent": 16.62,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 16.62
+          }
+        ]
+      },
+      {
+        "seed": 20261627,
+        "round": 4,
+        "hpPercent": 18.49,
+        "decision": {
+          "type": "skill",
+          "skillKey": "unstableRemedy",
+          "mode": "remedy",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 18.49
+          }
+        ]
+      },
+      {
+        "seed": 20261628,
+        "round": 3,
+        "hpPercent": 25.42,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 25.42
+          }
+        ]
+      },
+      {
+        "seed": 20261629,
+        "round": 3,
+        "hpPercent": 29.51,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 29.51
+          }
+        ]
+      },
+      {
+        "seed": 20261629,
+        "round": 3,
+        "hpPercent": 23.91,
+        "decision": {
+          "type": "skill",
+          "skillKey": "unstableRemedy",
+          "mode": "remedy",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 23.91
+          }
+        ]
+      },
+      {
+        "seed": 20261629,
+        "round": 4,
+        "hpPercent": 28.44,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 28.44
+          }
+        ]
+      },
+      {
+        "seed": 20261629,
+        "round": 4,
+        "hpPercent": 24.18,
+        "decision": {
+          "type": "skill",
+          "skillKey": "unstableRemedy",
+          "mode": "remedy",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 24.18
+          }
+        ]
+      },
+      {
+        "seed": 20261630,
+        "round": 3,
+        "hpPercent": 16.53,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 16.53
+          }
+        ]
+      },
+      {
+        "seed": 20261631,
+        "round": 3,
+        "hpPercent": 22.67,
+        "decision": {
+          "type": "skill",
+          "skillKey": "unstableRemedy",
+          "mode": "remedy",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 22.67
+          }
+        ]
+      },
+      {
+        "seed": 20261631,
+        "round": 4,
+        "hpPercent": 24,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 24
+          }
+        ]
+      },
+      {
+        "seed": 20261631,
+        "round": 4,
+        "hpPercent": 22.93,
+        "decision": {
+          "type": "skill",
+          "skillKey": "unstableRemedy",
+          "mode": "remedy",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 22.93
+          }
+        ]
+      },
+      {
+        "seed": 20261631,
+        "round": 5,
+        "hpPercent": 23.2,
+        "decision": {
+          "type": "skill",
+          "skillKey": "causticInjection",
+          "mode": "treat",
+          "targetId": "verra"
+        },
+        "criticalAllies": [
+          {
+            "id": "verra",
+            "hpPercent": 23.2
+          }
+        ]
+      }
+    ]
+  },
+  "observations": {
+    "confirmed": [
+      "Verra was KO in all 10 player-seat battles in this seed sample.",
+      "All 14 decisions recorded at 16–30% HP were self-treatment; no rotation decision occurred in that band.",
+      "At or below 16% HP, 4/6 recorded actions were switches; the remaining two were non-switch actions.",
+      "The replay snapshot did not record reserve health/eligibility at each decision, so the two non-switch decisions below 16% cannot be attributed to a rotation defect.",
+      "Self-targeted treatment at high HP sometimes co-occurred with status cleansing, so it should not be treated as pure wasted healing."
+    ],
+    "notEstablished": [
+      "Whether switching at a higher HP threshold would improve survival overall.",
+      "Whether reserves were healthy enough at the two low-HP non-switch decisions.",
+      "Whether treatment action efficacy was enough to offset incoming damage on those exact turn windows."
+    ]
+  }
+}

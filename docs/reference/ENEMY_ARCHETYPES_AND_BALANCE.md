@@ -69,7 +69,7 @@ For comparison, the Falcon party's base stat totals (five characters) are HP 6,1
 
 ## Encounter behaviour
 
-The standard enemy policies and the Blightheart boss policy are ordered-rule AI configurations. They use their skills when the configured conditions and cooldowns allow, then fall back to legal basic attacks. Each enemy archetype has its own target-selection profile. Taunt and Untargetable status handling continue to be enforced by shared targeting rules.
+The standard enemy policies and the Blightheart boss policy are ordered-rule AI configurations. They use their skills when the configured conditions and cooldowns allow, then fall back to legal basic attacks. Each enemy archetype has its own target-selection profile. Taunt and Untargetable status handling continue to be enforced by shared targeting rules. Expired Taunt payloads are ignored, and when several allies are taunting, the longest remaining Taunt is targeted (ties keep formation order).
 
 The `siegeBreakthrough` encounter retains its older per-encounter stat overrides as a lower-progression multi-wave scenario; it is not the benchmark for the newly scaled standard 5v5 balance test.
 

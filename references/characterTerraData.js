@@ -530,7 +530,7 @@ module.exports = {
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/lucaz_skill_2.webp",
         "title": "Skill 2: Bastion of the Unyielding",
-        "description": "Lucaz braces himself, increasing DEF by 25% and RES by 15% for 2 turns while Taunting all enemies for 2 turns. His SPD decreases by 15% while this stance is active.",
+        "description": "Lucaz braces himself, increasing DEF by 25% and RES by 15% for 2 turns while drawing all enemy attacks (Taunt) for 2 turns. His SPD decreases by 15% while this stance is active.",
         "type": "active",
         "mpCost": 25,
         "cooldown": 3,
@@ -728,7 +728,7 @@ module.exports = {
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/verra_skill_1.webp",
         "title": "Skill 1: Caustic Injection",
-        "description": "Verra switches her ammunition based on the selected target. Enemy: Deals 110% Mpow Toxic damage and inflicts Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow. Ally: Restores HP equal to 130% Mpow and removes 1 debuff.",
+        "description": "Verra switches her ammunition based on the selected target. Enemy: Deals 110% Mpow Toxic damage and inflicts Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow. Ally: Restores HP equal to 130% Mpow, removes 1 debuff, and applies a HoT equal to 5% of target Max HP for 3 turns.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 1,
@@ -754,7 +754,7 @@ module.exports = {
       "skill3": {
         "icon": "assets/images/character-presets/skill-icons/terra/verra_skill_3.webp",
         "title": "Skill 3: Unstable Remedy",
-        "description": "Switches between two vial types. Ally: Restores 160% Mpow HP, increased to 200% Mpow if the target is below 50% HP, and removes 1 debuff. Enemy: Deals 100% Mpow Toxic damage and inflicts Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow.",
+        "description": "Switches between two vial types. Ally: Restores 160% Mpow HP, increased to 200% Mpow if the target is below 50% HP, removes 1 debuff, and applies a HoT equal to 5% of target Max HP for 3 turns. Enemy: Deals 100% Mpow Toxic damage and inflicts Poison for 2 turns; Verra's Poison ticks for 25% of her Mpow.",
         "type": "active",
         "mpCost": 30,
         "cooldown": 2,
@@ -877,7 +877,7 @@ module.exports = {
       "skill1": {
         "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_1.webp",
         "title": "Skill 1: Ironclad Impact",
-        "description": "Galloz drives his reinforced mechanical arm into a single enemy, dealing 125% ATK as Kinetic damage. After attacking, Galloz gains a shield equal to 6% of his maximum HP for 2 turns.",
+        "description": "Galloz drives his reinforced mechanical arm into a single enemy, dealing 125% ATK as Kinetic damage. After attacking, Galloz gains a shield equal to 8% of his maximum HP for 2 turns.",
         "type": "active",
         "mpCost": 20,
         "cooldown": 1,
@@ -889,7 +889,7 @@ module.exports = {
       "skill2": {
         "icon": "assets/images/character-presets/skill-icons/terra/galloz_skill_2.webp",
         "title": "Skill 2: Tyrant's Guard",
-        "description": "Galloz activates his reinforced plating, gaining a shield equal to 15% of his maximum HP for 2 turns. All active allies also receive 12% damage reduction for 2 turns.",
+        "description": "Galloz activates his reinforced plating, gaining a shield equal to 18% of his maximum HP, RES +10%, and Taunt for 2 turns. All active allies also receive 12% damage reduction for 2 turns.",
         "type": "active",
         "mpCost": 30,
         "cooldown": 3,

@@ -49,3 +49,7 @@ node tools/serpentTelemetryBatch.js --battles 500 --seed 20261123 --opponents fa
 ```
 
 The report aggregates win rates, alternating seats, faction/actor metrics, KO final-blow attribution, status uptime, and reserve-origin contribution. For full forensic event timelines, run a single battle through `playFactionDuel()` with `telemetryOptions: { includeTimeline: true }`.
+
+## Incoming pressure telemetry (P1.2.9)
+
+The battle state keeps a bounded rolling incoming-damage buffer for tactical observation. Enemy-attributed HP loss is recorded after shields and mitigation, with events grouped by target and source. Same-side/self-inflicted damage and zero HP-loss events are excluded. The AI turn view exposes a detached `actor.incomingPressure` summary: `recentDamage`, `recentHits`, `window` (3 rounds), `damageBySource`, and `lastHitRound`. The summary is observational only; no action-selection policy consumes it yet. A fresh battle creates a fresh telemetry buffer.

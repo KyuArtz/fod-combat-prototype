@@ -12,6 +12,8 @@ Simulator outputs written to `reports/` are generated artifacts and are ignored 
 - Large forensic event timelines should be summarized, then discarded unless an active investigation needs the event-level detail.
 
 ## Current retained evidence
+- `experiments/P1-2-7-matchup-dependent-rotation-feasibility.md` — telemetry-only feasibility audit of opponent-independent adaptive rotation inputs (80 battles, no AI changes).
+- `experiments/P1-2-6-expanded-matched-seed-validation.md` — expanded 800-battle matched-seat rotation threshold comparison; 22% rejected globally, 16% retained.
 
 - `experiments/falcon-enemy-action-metadata-seat-bias-fix.md` — seat-bias fix notes.
 - `experiments/seat-bias-fix-validation-100.json` — matched-seat validation evidence.

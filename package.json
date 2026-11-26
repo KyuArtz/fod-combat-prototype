@@ -16,6 +16,7 @@
     "simulate:factions": "node tools/factionDuel.js",
     "simulate:medic-swap": "node tools/fieldMedicSwap.js",
     "simulate:serpent-telemetry": "node tools/serpentTelemetryBatch.js",
-    "audit:seat-initiative": "node tools/experiments/seatInitiativeFairnessAudit.js"
+    "audit:seat-initiative": "node tools/experiments/seatInitiativeFairnessAudit.js",
+    "audit:serpent-policy-feasibility": "node tools/experiments/p1-2-7-policy-feasibility.js"
   }
 }
