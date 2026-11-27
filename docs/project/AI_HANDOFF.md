@@ -80,7 +80,12 @@ Available player/opponent factions are `falcon`, `phantom`, and `serpent`; they 
 - Enemy and faction AI are deterministic rule-based policies, not learning systems.
 - Encounter rewards, XP, inventory, persistent stage progression, and save/load are not implemented.
 - Runtime Falcon stats remain prototype values pending a separate stat-sync decision.
+- **Taunt is only enforced by the default PvE enemy AI** (`ai/targeting.js`). Controller-driven sides (faction duels) still see every opponent as a legal target, so Lucaz's Bastion and Galloz's Tyrant's Guard do not redirect enemy attacks there. Pending test: the `todo` case in `test/gallozFullBattle.test.js`. Fixing it changes duel balance and touches target legality in `core/turnView.js` plus every tactical controller.
 
 ## Documentation rules
 
 Use the [documentation index](../README.md) to navigate. Keep current state in `PROJECT_STATUS.md`, plans in `ROADMAP.md`, design decisions in `DECISIONS.md`, implementation history in `CHANGELOG.md`, and detailed historical scope in milestone reports. Historical milestones preserve the capabilities and limitations known at their own dates and must not be mistaken for current status.
+
+- **P1.2.4 audit completed (diagnostic only):** 10 paired-seat Phantom seeds (20 battles) captured 160 Verra decision snapshots, reserve health/eligibility, treatment options, and healing/cleanse events. 148 treatment actions; 106 self-targeted (71.6%). At ≤16% HP, 8 decisions had no safe reserve; the reserve Claude was at 1.33% HP in those windows. At 16–30% HP, a healthy reserve was present in 38/40 snapshots, but Verra is not switch-eligible until 16% under current policy. Treatment output: 34,066 actual healing from 36,768 requested (2,702 overheal, 7.35%) and 140 cleanse events. No AI changes. Next: isolated threshold-policy comparison with matched seeds/seats.
+
+- **P1.2.7 feasibility audit completed (telemetry only):** 80 matched-seat battles (20 seeds, Phantom/Falcon) captured 2,085 Verra decisions. Existing decision view supports reactive context (HP/status, enemies, ally/reserve health, action availability), but has no rolling incoming-damage/focus-fire history. Avoid opponent-name and unvalidated role-weight heuristics; keep Verra threshold at 16%. Next if pursued: design a minimal faction-neutral recent-damage view field, then test a prototype separately.

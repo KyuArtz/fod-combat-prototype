@@ -1,3 +1,5 @@
+const { getIncomingPressure } = require("./incomingPressureTelemetry");
+
 // Plain-data description of "what can this actor do right now".
 //
 // A controller (terminal menu, enemy AI, GUI, simulator, test script) reads a
@@ -83,6 +85,7 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
       cr: actor.cr,
       statuses: structuredClone(actor.statuses || {}),
       shields: (actor.shields || []).map((shield) => ({ value: shield.value, turns: shield.turns })),
+      incomingPressure: getIncomingPressure(state.incomingPressureTelemetry, viewIdOf(state, actor), state.round),
     },
     allies,
     enemies,

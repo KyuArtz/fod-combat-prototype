@@ -1,0 +1,25 @@
+{
+  "battles": 20,
+  "uniqueSeeds": 10,
+  "decisionSnapshots": 160,
+  "treatmentDecisions": 148,
+  "selfTreatments": 106,
+  "selfTreatmentPercent": 71.6,
+  "allyTreatmentTargets": {
+    "galloz": 22,
+    "kane": 20
+  },
+  "treatmentsAtHp30OrLess": 46,
+  "selfTreatmentsAtHp30OrLess": 44,
+  "decisionsAtHp30OrLess": 48,
+  "decisionsAtHp16OrLess": 8,
+  "safeReserveAtHp16OrLess": 0,
+  "healthyReserveInHp16to30Band": 38,
+  "healedEvents": 148,
+  "actualHealing": 34066,
+  "requestedHealing": 36768,
+  "overheal": 2702,
+  "statusCleansedEvents": 140,
+  "overhealPercentOfRequested": 7.35,
+  "averageActualHealPerEvent": 230.2
+}

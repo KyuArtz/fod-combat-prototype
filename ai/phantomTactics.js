@@ -2,6 +2,8 @@
 // Favors stealth-oriented setup, priority isolation, evade-triggered pressure,
 // and finishing windows. It works on either faction side via relative turn views.
 
+const { hasActiveTaunt } = require("./targeting");
+
 function hpRatio(unit) {
   return unit && unit.maxHp > 0 ? unit.hp / unit.maxHp : 1;
 }
@@ -130,7 +132,7 @@ function chooseAction(view) {
 
   if (actorId === "lucaz") {
     const bastion = getAction(view, "bastion");
-    if (bastion && hpRatio(view.actor) <= 0.82 && !hasStatus(view.actor, "taunt")) {
+    if (bastion && hpRatio(view.actor) <= 0.82 && !hasActiveTaunt(view.actor)) {
       return skillDecision(view, bastion);
     }
     const ultimate = getAction(view, "ultimate");

@@ -7,8 +7,10 @@ module.exports = {
     description: "Lucaz takes 10% less damage. Incoming hits build DEF reinforcement up to 2 stacks; his next Kinetic skill gains 20% damage and consumes the primed reinforcement.",
     damageTakenPercent: -10,
     events: {
+      turnStart: [{ handler: "clearPrimedFlagWithoutCharge", primedFlag: "reinforcementPrimed", chargeStatusId: "reinforcementKineticCharge" }],
+      turnEnd: [{ handler: "clearPrimedFlagWithoutCharge", primedFlag: "reinforcementPrimed", chargeStatusId: "reinforcementKineticCharge" }],
       damageTaken: [{
-        handler: "lucazReinforcement",
+        handler: "stackReinforcement",
         statusId: "reinforcement",
         chargeStatusId: "reinforcementKineticCharge",
         primedFlag: "reinforcementPrimed",

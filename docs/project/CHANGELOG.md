@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-24 — P1-2-13 review fixes: Taunt targeting and Reinforcement expiry
+
+- **Fixed stale Reinforcement payoff (Galloz, Lucaz):** the `*ReinforcementPrimed` passive flag is now cleared by the new shared `clearPrimedFlagWithoutCharge` passive handler (subscribed on `turnStart` and `turnEnd`) when the matching Kinetic charge status has expired or been removed. Previously Galloz's Reactor Quake could still use its 120% ATK payoff after the charge had run out. In full duels continuous enemy skill hits usually keep refreshing the charge, so this rarely occurred naturally.
+- **Taunt targeting (`ai/targeting.js`):** a Taunt payload with `turns <= 0` is ignored even if it lingers; with several taunters the longest remaining Taunt wins and ties keep formation order (previously roster order decided). New shared `hasActiveTaunt` helper; Phantom's Lucaz AI uses it instead of checking the literal `taunt` status ID.
+- **Renamed** the shared passive handler `lucazReinforcement` to `stackReinforcement` (Lucaz and Galloz both use it). Behavior unchanged.
+- **Wording:** the owner reference copy of Bastion of the Unyielding now says "drawing all enemy attacks (Taunt)" instead of "Taunting all enemies".
+- Reviewed and kept as intended: Ironclad Impact and Catalyst Overlord consume Galloz's charge for its +15% ATK power bonus; Reactor Quake uses its defined 120% payoff instead.
+- **Found, not yet fixed:** Taunt is not enforced for controller-driven sides (see Known limitations in `PROJECT_STATUS.md`). Recorded as a `todo` test.
+- Added `test/reinforcementPrimedExpiry.test.js`, `test/gallozFullBattle.test.js`, and Taunt/helper/Phantom-AI cases in `test/tauntTargeting.test.js`. No golden transcript changed. **Verification:** 390 tests (389 passed, 0 failed, 0 skipped, 1 todo).
+
 ## 2026-11-23 — Iteration 6: Serpent Syndicate shared-runtime migration
 
 - Added Verra, Kane, Galloz, Claude, and Tekushiki as five selectable Serpent Syndicate operatives through `characters/serpent.js` and the central `characters/roster.js` registry. Tekushiki is now an official/canon member by owner authorization; his origin and past remain deliberately unresolved.
