@@ -74,6 +74,9 @@ This roadmap separates completed foundations from proposed future work. An unche
 
 ## Current follow-up opportunities
 
+- [x] **B1 design — Agnostic Effect & Actor Capability Design:** documented proposed vocabulary, separation of damage/effects/capabilities, generic resistance semantics, neutral fallback, and implementation gate. Design review is complete; runtime implementation remains unapproved.
+- [ ] Review/approve B1 terminology and contracts before beginning B2 implementation.
+
 The three faction integrations are complete. No single next feature has been locked. Useful follow-ups include:
 
 1. Run larger three-way faction balance studies and add matchup/role analytics before changing character values.

@@ -33,6 +33,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Enemy archetypes and balance](reference/ENEMY_ARCHETYPES_AND_BALANCE.md) | Six enemy passive/skill kits, the Blightheart boss, tactical Falcon policy, and seeded playtest results |
 | [Owner skill reference](reference/OWNER_SKILL_REFERENCE.md) | Authority and handling of the compact owner-reference extract |
 | [Player-facing skill copy](reference/PLAYER_FACING_SKILL_COPY.md) | Descriptive text; executable data remains authoritative |
+| [Agnostic effect & actor capability design (B1)](reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) | Proposed separation of damage channels, effects, actor capabilities, resistance, and susceptibility |
 
 ## Historical milestone reports
 

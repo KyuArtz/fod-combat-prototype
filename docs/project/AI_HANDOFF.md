@@ -57,6 +57,10 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map.
 - Tekushiki is canon as a Serpent member by explicit owner authorization. Keep his broad established identity (former scientist turned rogue operative, Tether of Ruin, Serpent Syndicate) but do not invent the tether's origin or unexplained past details unless the owner asks.
 - Do not silently canonize Kane, Galloz, Claude, or other backstories whose source text remains labelled as a development proposal.
 
+## B1 — Agnostic effect and actor-capability design
+
+Design proposal is documented in [Agnostic Effect & Actor Capability Design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md). It separates damage channels, effect/control tags, actor capability tags, generic resistance, and faction affinity. B1 is documentation-only: implementation, actor reclassification, faction resistance values, weakness rules, control-proc susceptibility, and Verra redesign are deferred until the design contracts are approved. Baseline test count remains 400.
+
 ## Current character mechanics
 
 - Falcon uses the approved owner-reviewed kits and global stacking/timing rules. See [Falcon Implementation](../reference/FALCON_IMPLEMENTATION_GUIDE.md).

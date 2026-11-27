@@ -75,6 +75,10 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 
 - **Taunt legal-target enforcement is now shared** (`systems/targetingRules.js`) and applied by `core/turnView.js` to hostile single-target actions for player, faction-controller, and neutral-enemy views. `view.opponents` remains unfiltered for tactical context; action target lists are authoritative. Tactical controllers consume those action target lists for single-target selections. AoE behavior is not restricted by Taunt. Post-fix 100-battle samples: Falcon vs Phantom (seats alternate) 76–24; Serpent vs Falcon 67–33; Serpent vs Phantom 43–57. These are directional observations only, not balance conclusions.
 
+## Current design work
+
+- **B1 — Agnostic Effect & Actor Capability Design:** design-only proposal documents separate damage channels, effect/control tags, non-exclusive actor capabilities, generic resistance with optional filters, faction affinities as a separate balance layer, and deterministic resolution responsibilities. No runtime changes or new weaknesses/resistances have been implemented. Review the [B1 design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) before implementation.
+
 ## Data authority
 
 Executable source and tests define runtime behavior. `references/characterTerraData.js` is the compact in-project owner reference; the separate website-facing character JSON remains owner-maintained. The delivered `characterTerraData-serpent-updated.json` includes the Serpent description/role changes for application to the website data. The original uploaded source JSON and previous project archives were preserved.

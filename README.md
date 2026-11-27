@@ -99,6 +99,8 @@ See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) f
 
 ## Documentation
 
+See [B1 — Agnostic Effect & Actor Capability Design](docs/reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) for the proposed future effect/resistance/capability architecture (design-only; not implemented).
+
 Start at the [documentation index](docs/README.md). It separates current project guidance, technical references, and historical milestone records.
 
 ## Project structure

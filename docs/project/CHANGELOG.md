@@ -1,3 +1,10 @@
+## 2026-11-26 — B1 Agnostic Effect & Actor Capability Design
+
+- Added design reference defining separation of damage channels, effect/control tags, actor capabilities, resistance/weakness, and conditional susceptibility.
+- Documented current runtime constraints and a phased implementation gate.
+- Documentation-only milestone; no runtime, skill values, character data, or tests changed.
+- Baseline test verification: 400 passed, 0 failed, 0 skipped, 0 todo.
+
 # Changelog
 
 ## 2026-11-26 — Controller-side Taunt legality (A1)

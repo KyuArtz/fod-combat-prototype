@@ -132,3 +132,12 @@
 **Global Effect Timing v1:** MP regeneration and cooldown decrement happen at actor turn start, followed by DOT, HOT/turn-start healing, passive checks, and the actor action. Statuses/shields tick after the affected actor completes their turn; new effects do not lose duration immediately. Owner-clocked fields/summons advance on owner turns. Meo-9 and Catalyst Wing are owner/passive summons, not independent scheduled actors. Direct-damage reflection uses post-mitigation damage before shields and cannot recursively trigger.
 
 **Architecture:** Keep all character-specific skills declarative in `characters/skillData/`, interpreted through the shared `core/skillInterpreter.js` and reusable `systems/effects/`, `systems/passives/`, `systems/summons/`, damage, status, turn, and targeting systems. Base Falcon stats remain prototype values and are not synchronized to the owner website JSON by this ADR.
+
+
+## ADR-018 — Agnostic effect and actor-capability architecture (B1 design)
+
+**Status:** Proposed design; owner-approved for design exploration, not yet approved for runtime implementation.
+
+**Decision direction:** Keep damage channels, status/effect tags, control effects, actor capabilities, faction affinities, and resistance resolution as distinct concepts. Actor capabilities should be non-exclusive data tags so organic/mechanical/synthetic/hybrid/construct actors can express mixed traits. Generic Resistance is described without a damage-family name; its payload may be universal or explicitly filtered. Damage resistance does not implicitly resist control-effect chance or duration. Unknown capability metadata uses neutral compatibility behavior.
+
+**Constraints:** Existing Physical/mastery damage channels, typed mastery resistance, status stacking, and deterministic RNG behavior remain unchanged until implementation is separately approved. Faction baselines and values (including any Serpent Toxic resistance), weakness values, actor classification, control susceptibility, and Verra’s kit rework remain deferred. See [B1 design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) for the full proposal.
