@@ -37,6 +37,7 @@ function createEnemyFromDefinition(definition, { stats: statOverrides = {}, acto
     id: actorId || definition.id,
     name: definition.name,
     side: "enemy",
+    ...(definition.capabilities ? { capabilities: [...definition.capabilities] } : {}),
     mastery: definition.mastery || "Kinetic",
     ...(definition.skillSet ? { skillSet: definition.skillSet } : {}),
     ...(definition.passive ? { passive: structuredClone(definition.passive) } : {}),

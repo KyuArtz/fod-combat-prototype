@@ -160,3 +160,8 @@ This example is schematic only; the syntax is not final or validated by the curr
 ## B1 conclusion
 
 B1 establishes a design direction for agnostic effects and actor capabilities. It is documentation-only; no runtime mechanics are approved for implementation yet. Next review should focus on the proposed vocabulary, resistance semantics, actor metadata, and deterministic effect-resolution order before any B2 code change.
+
+
+## B2 implementation status
+
+B2 is implemented as inert actor metadata. See [Actor Capability Metadata (B2)](ACTOR_CAPABILITY_METADATA.md) for the whitelist, validation contract, and authored enemy profiles. The current metadata does not affect combat; the B1 proposed effect-resolution and resistance rules remain future work.

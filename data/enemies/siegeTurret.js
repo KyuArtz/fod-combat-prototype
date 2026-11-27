@@ -1,5 +1,6 @@
 module.exports = {
   id: "siege-turret",
+  capabilities: ["mechanical", "electronic-systems"],
   name: "Siege Turret",
   mastery: "Kinetic",
   skillSet: "siegeTurret",

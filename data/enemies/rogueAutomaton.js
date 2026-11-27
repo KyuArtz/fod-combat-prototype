@@ -1,5 +1,6 @@
 module.exports = {
   id: "rogue-automaton",
+  capabilities: ["mechanical", "electronic-systems"],
   name: "Rogue Automaton",
   mastery: "Kinetic",
   skillSet: "rogueAutomaton",

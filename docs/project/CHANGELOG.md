@@ -1,3 +1,11 @@
+## 2026-11-26 — B2 Actor Capability Metadata & Validation
+
+- Actor creation now normalizes optional capability metadata to a validated array; unknown or malformed tags throw. Duplicate tags are removed while preserving order.
+- Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; other enemies and playable roster actors remain undeclared/neutral.
+- Added five focused tests covering neutral fallback, whitelist behavior, normalization, invalid metadata, enemy exposure, and invalid definition rejection.
+- Metadata is inert; no damage, status, control, resistance, weakness, AI, or RNG behavior changed.
+- Test suite: 400 baseline tests; 405 passing after B2.
+
 ## 2026-11-26 — B1 Agnostic Effect & Actor Capability Design
 
 - Added design reference defining separation of damage channels, effect/control tags, actor capabilities, resistance/weakness, and conditional susceptibility.

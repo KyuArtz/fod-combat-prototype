@@ -99,7 +99,7 @@ See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) f
 
 ## Documentation
 
-See [B1 — Agnostic Effect & Actor Capability Design](docs/reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) for the proposed future effect/resistance/capability architecture (design-only; not implemented).
+See [B1 — Agnostic Effect & Actor Capability Design](docs/reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) for the design direction and [Actor Capability Metadata (B2)](docs/reference/ACTOR_CAPABILITY_METADATA.md) for the implemented, inert metadata contract. Capability tags do not currently affect combat.
 
 Start at the [documentation index](docs/README.md). It separates current project guidance, technical references, and historical milestone records.
 

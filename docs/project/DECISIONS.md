@@ -141,3 +141,12 @@
 **Decision direction:** Keep damage channels, status/effect tags, control effects, actor capabilities, faction affinities, and resistance resolution as distinct concepts. Actor capabilities should be non-exclusive data tags so organic/mechanical/synthetic/hybrid/construct actors can express mixed traits. Generic Resistance is described without a damage-family name; its payload may be universal or explicitly filtered. Damage resistance does not implicitly resist control-effect chance or duration. Unknown capability metadata uses neutral compatibility behavior.
 
 **Constraints:** Existing Physical/mastery damage channels, typed mastery resistance, status stacking, and deterministic RNG behavior remain unchanged until implementation is separately approved. Faction baselines and values (including any Serpent Toxic resistance), weakness values, actor classification, control susceptibility, and Verra’s kit rework remain deferred. See [B1 design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) for the full proposal.
+
+
+## ADR-019 — Actor capability metadata contract (B2)
+
+**Status:** Accepted and implemented; inert metadata only.
+
+**Decision:** Actors expose a `capabilities` array, defaulting to `[]`. Tags are checked against a central whitelist, malformed metadata and unknown tags throw, and duplicates are removed while preserving author order. The four clearly mechanical enemy archetypes declare `mechanical` and `electronic-systems`; ambiguous enemy definitions and playable actors remain undeclared/neutral.
+
+**Constraints:** No capability-based combat, resistance, weakness, control, AI, or RNG behavior is introduced. B3 is a separate gate. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).

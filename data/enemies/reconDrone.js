@@ -1,5 +1,6 @@
 module.exports = {
   id: "recon-drone",
+  capabilities: ["mechanical", "electronic-systems"],
   name: "Recon Drone",
   mastery: "Kinetic",
   skillSet: "reconDrone",

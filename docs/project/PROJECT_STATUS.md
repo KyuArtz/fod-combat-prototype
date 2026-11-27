@@ -53,7 +53,7 @@ The prototype has a controller-driven battle loop, deterministic seeded randomne
 
 ## Verification
 
-Current `npm test`: **400 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
+Current `npm test`: **405 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
 
 Additional validation for this Serpent migration: all 145 JavaScript files pass `node --check`, the website-facing JSON parses, the compact owner-reference module loads, and 40 Markdown documents have no broken relative links. Run `npm test` from the project root to verify the checkout.
 
@@ -77,7 +77,8 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 
 ## Current design work
 
-- **B1 — Agnostic Effect & Actor Capability Design:** design-only proposal documents separate damage channels, effect/control tags, non-exclusive actor capabilities, generic resistance with optional filters, faction affinities as a separate balance layer, and deterministic resolution responsibilities. No runtime changes or new weaknesses/resistances have been implemented. Review the [B1 design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) before implementation.
+- **B1 — Agnostic Effect & Actor Capability Design:** design proposal documents separate damage channels, effect/control tags, non-exclusive actor capabilities, generic resistance with optional filters, faction affinities as a separate balance layer, and deterministic resolution responsibilities.
+- **B2 — Actor Capability Metadata & Validation:** actors now expose validated, inert `capabilities` arrays. Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; all playable roster profiles and two ambiguous enemy archetypes remain neutral/undeclared. No combat logic consumes these tags. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
 
 ## Data authority
 

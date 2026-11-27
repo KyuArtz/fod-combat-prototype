@@ -75,7 +75,8 @@ This roadmap separates completed foundations from proposed future work. An unche
 ## Current follow-up opportunities
 
 - [x] **B1 design — Agnostic Effect & Actor Capability Design:** documented proposed vocabulary, separation of damage/effects/capabilities, generic resistance semantics, neutral fallback, and implementation gate. Design review is complete; runtime implementation remains unapproved.
-- [ ] Review/approve B1 terminology and contracts before beginning B2 implementation.
+- [x] **B2 — Actor Capability Metadata & Validation:** add a validated, inert actor `capabilities` array, neutral fallback, whitelist, and focused tests. No susceptibility or combat mechanics are connected yet. See [B2 contract](../reference/ACTOR_CAPABILITY_METADATA.md).
+- [ ] B3 — Generic Resistance Resolution (separate owner approval; no effects until design/tests are approved).
 
 The three faction integrations are complete. No single next feature has been locked. Useful follow-ups include:
 
