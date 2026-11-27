@@ -110,3 +110,9 @@ B6.2 adds the inert schema in `systems/factionAffinities.js`, empty faction prof
 ## B6.3 approved actor classification
 
 All current playable actors are explicitly classified `organic`. Galloz is `organic` + `electronic-systems` because of cybernetic components and EMP susceptibility. Armor/shields are equipment and do not change composition. Fully android future characters should be classified from confirmed lore; none are added here. Capability metadata is still inert. The full-Serpent Toxic resistance idea is deferred. See `docs/reference/ACTOR_CLASSIFICATION_B6.3.md`.
+
+## B6.4-A runtime integration audit
+
+B6.4-A is complete, audit-only. Damage calculations and reflected mitigation live in `systems/damage.js`; direct/basic/skill hit routing is in `core/actionResolver.js`; HP/shield application is downstream in `systems/damageApplication.js`. DoT calculation uses mastery calculation when authored by the generic DoT handler; turn-start ticks apply stored damage through the battle damage callback. Effect/control susceptibility remains a pure resolver in `systems/effectSusceptibility.js`, integrated opt-in via `systems/effects/defaultHandlers.js` for `status`, `statusEnemies`, and `damageOverTime`; legacy untagged routes bypass it. Affinity schema/profile validation is in `systems/factionAffinities.js`, empty profiles in `data/factionAffinities.js`, actor overrides are validated/default-empty via `characters/actorFactory.js`.
+
+No combat consumers or values added. Before runtime integration, define exact selector/override semantics, preserve strongest-applicable stacking, separate damage resistance from effect/control chance and duration, keep profile resolution RNG-free, and test reserve/summon affiliation. Next is B6.4-B pure resolver implementation only. See `docs/reference/FACTION_AFFINITY_RUNTIME_AUDIT_B6.4A.md`.

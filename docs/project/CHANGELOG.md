@@ -420,3 +420,10 @@ This file records notable implementation milestones. Detailed historical scope a
 - Three-active coordinated averages: 56.79 rounds, 1.86 party-switch events, 0.91 reserve-deployment events, 1.8 statuses cleansed, 4,432 healing, and 1,844 shield absorption per battle; zero rejected decisions.
 - Full verification: `npm test` 273 passed, 0 failed, 38 superseded legacy assertions skipped.
 - Added full deterministic victory and defeat transcripts for seeds 996000 and 996004.
+
+## 2026-11-26 — B6.4-A Runtime Integration Audit
+
+- Audited damage, reflected mitigation, DoT, and opt-in effect/control susceptibility integration owners and recommended a staged implementation sequence.
+- Recorded unresolved selector/override semantics, neutral fallback, stacking, RNG, duration, and summon/reserve considerations.
+- Audit-only; no runtime, combat values, actor metadata, RNG, AI, or golden transcripts changed. All JS syntax checks passed. B6.3 captured full suite output verifies 441 passing.
+- See [B6.4-A audit](../reference/FACTION_AFFINITY_RUNTIME_AUDIT_B6.4A.md).

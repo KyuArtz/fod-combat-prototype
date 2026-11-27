@@ -122,3 +122,5 @@ Before merging a development change to `main`:
 - [x] **B6.2 — Faction Affinity Schema:** added validated inert faction profiles and actor override metadata. Faction profiles are empty; no merging or combat consumption. See [B6.2 schema](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).
 - [x] **B6.3 — Approved Actor Classification:** all 15 playable actors are organic; Galloz additionally electronic-systems. Capability metadata remains inert. See [B6.3 reference](../reference/ACTOR_CLASSIFICATION_B6.3.md).
 - [ ] **B6.4 — Affinity Activation:** separate approval for affinity values and runtime resolution.
+- [x] **B6.4-A — Runtime Integration Audit:** mapped damage, reflected damage, DoT, and opt-in effect/control susceptibility paths; documented integration owners, override/selector decisions, RNG constraints, and staged implementation gates. Audit-only; no combat changes. See [B6.4-A audit](../reference/FACTION_AFFINITY_RUNTIME_AUDIT_B6.4A.md).
+- [ ] **B6.4-B — Pure Affinity Profile Resolution:** define and implement faction baseline plus actor override resolution with focused tests only; no combat consumer yet.

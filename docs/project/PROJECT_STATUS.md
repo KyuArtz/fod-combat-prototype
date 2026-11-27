@@ -122,3 +122,11 @@ See [Architecture](../reference/ARCHITECTURE.md), [Testing](TESTING_AND_PLAYTEST
 
 - All 15 playable actors have `organic` capability metadata. Galloz additionally has `electronic-systems` to reflect cybernetic components and EMP susceptibility.
 - Capability metadata remains inert. Enemy profiles unchanged; faction affinity profiles remain empty. Serpent team Toxic resistance is deferred. See [B6.3 reference](../reference/ACTOR_CLASSIFICATION_B6.3.md).
+
+## B6.4-A runtime integration audit
+
+- Completed an audit of direct Physical/mastery damage, reflected mitigation, DoT calculation/ticks, and the B5 opt-in status/control resolver integration points.
+- Affinity profiles remain empty and inert; no code or values changed. The audit recommends a pure resolver before consumer integration, with damage affinity owned by `systems/damage.js` and effect/control affinity supplied to the pure susceptibility resolver.
+- Explicit design questions remain: actor override selector matching, universal/filter precedence, duration reduction floors, and handling summons/reserves. Existing strongest-applicable resistance and neutral fallback should be preserved.
+- All JavaScript passed syntax checks. The completed B6.3 test output confirms 441 passed, 0 failed/skipped/todo in 13,922.372495 ms; the suite was not rerun in B6.4-A.
+- See [B6.4-A audit](../reference/FACTION_AFFINITY_RUNTIME_AUDIT_B6.4A.md). Next checkpoint: B6.4-B, pure profile resolution.
