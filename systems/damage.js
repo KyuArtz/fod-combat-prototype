@@ -52,13 +52,23 @@ function mitigateReflectedDamage(target, amount, damageType, effectiveStat, atta
   return Math.max(1, Math.floor(damage));
 }
 
-// Adaptive Barrier: resistance to the one damage type the shield last absorbed.
+// Resistance resolution supports legacy single-channel statuses, optional multi-channel
+// filters, and universal resistance statuses. Adaptive Barrier remains a separate source.
 function resistanceMultiplier(target, damageType) {
-  const resistance = target.statuses.adaptiveResistance;
+  const adaptive = target.statuses?.adaptiveResistance;
   const resistances = Object.values(target.statuses || {})
-    .filter((status) => (status.resistanceType === damageType && Number.isFinite(status.resistancePercent)) ||
-      (status === resistance && resistance?.damageType === damageType))
-    .map((status) => status === resistance ? resistance.amount : status.resistancePercent);
+    .filter((status) => {
+      if (!status || !Number.isFinite(status.resistancePercent)) return false;
+      if (status.resistanceType && status.resistanceType !== damageType) return false;
+      if (status.damageTypes !== undefined) {
+        if (!Array.isArray(status.damageTypes) || !status.damageTypes.includes(damageType)) return false;
+      }
+      return true;
+    })
+    .map((status) => status.resistancePercent);
+  if (adaptive?.damageType === damageType && Number.isFinite(adaptive.amount)) {
+    resistances.push(adaptive.amount);
+  }
   const strongest = resistances.length ? Math.max(...resistances) : 0;
   return Math.max(0, 1 - clamp(strongest, 0, 100) / 100);
 }

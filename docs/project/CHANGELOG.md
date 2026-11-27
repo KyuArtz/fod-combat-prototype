@@ -1,3 +1,11 @@
+## 2026-11-26 — B3 Generic Resistance Resolution
+
+- Added universal resistance statuses (`resistancePercent` without filters) and optional `damageTypes` filters. Legacy `resistanceType` remains compatible; when both filters exist, both must match.
+- Preserved strongest-value resistance stacking and Adaptive Barrier behavior. Resistance is shared by Physical, mastery, and reflected-damage mitigation.
+- Added seven focused tests for universal coverage, filtered channels, empty filters, legacy typed behavior, stacking/clamping, adaptive interaction, and reflected mitigation.
+- No skills, balance values, actor capability classifications, weakness/control effects, RNG ordering, or golden transcripts were intentionally changed.
+- Verification: B2 baseline **405 passed**; B3 **412 passed, 0 failed, 0 skipped, 0 todo**.
+
 ## 2026-11-26 — B2 Actor Capability Metadata & Validation
 
 - Actor creation now normalizes optional capability metadata to a validated array; unknown or malformed tags throw. Duplicate tags are removed while preserving order.

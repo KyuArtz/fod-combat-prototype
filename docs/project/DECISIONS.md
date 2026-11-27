@@ -149,4 +149,13 @@
 
 **Decision:** Actors expose a `capabilities` array, defaulting to `[]`. Tags are checked against a central whitelist, malformed metadata and unknown tags throw, and duplicates are removed while preserving author order. The four clearly mechanical enemy archetypes declare `mechanical` and `electronic-systems`; ambiguous enemy definitions and playable actors remain undeclared/neutral.
 
-**Constraints:** No capability-based combat, resistance, weakness, control, AI, or RNG behavior is introduced. B3 is a separate gate. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
+**Constraints:** Capability metadata remains inert. B3 adds generic damage resistance but does not consume actor capabilities; weakness, control, effect susceptibility, AI, and RNG behavior remain outside B2. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
+
+
+## ADR-020 — Generic damage resistance contract (B3)
+
+**Status:** Accepted and implemented.
+
+**Decision:** A status with numeric `resistancePercent` and no filters is universal damage resistance. Optional `damageTypes` filters exact damage channels; legacy `resistanceType` remains as a single-channel compatibility filter. When both filters are present, both must match. Applicable resistance sources use strongest-value stacking, clamped to 0–100%; Adaptive Barrier remains a separate channel-specific source and joins the same strongest-value selection. The shared resolver is used for Physical, mastery, and reflected damage.
+
+**Constraints:** The damage floor remains 1, so 100% resistance is not immunity. No effect/control resistance, capability-based susceptibility, weakness, faction resistance baseline, skill tuning, or actor classification changes were introduced. See [B3 contract](../reference/GENERIC_RESISTANCE_RESOLUTION_B3.md).

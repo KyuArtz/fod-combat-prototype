@@ -34,6 +34,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Owner skill reference](reference/OWNER_SKILL_REFERENCE.md) | Authority and handling of the compact owner-reference extract |
 | [Player-facing skill copy](reference/PLAYER_FACING_SKILL_COPY.md) | Descriptive text; executable data remains authoritative |
 | [Agnostic effect & actor capability design (B1)](reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) | Proposed separation of damage channels, effects, actor capabilities, resistance, and susceptibility |
+| [Generic resistance resolution (B3)](reference/GENERIC_RESISTANCE_RESOLUTION_B3.md) | Universal and filtered damage resistance, legacy compatibility, strongest-value stacking, and covered damage paths |
 
 ## Historical milestone reports
 

@@ -9,7 +9,7 @@ Use this document as a concise starting point for future F.O.D. development sess
 - Default scheduler: `threshold`; `legacy` remains available for comparison.
 - Default interactive flow: unified mixed-faction roster selection across Falcon Company, Phantom Rebellion, and Serpent Syndicate (3–5 unique operatives; first three active, remaining selected members become reserves), followed by `trainingGround`.
 - Current roster: 15 selectable operatives, five per faction. Tekushiki is an official/canon member of Serpent by user authorization on 2026-11-23.
-- Current verification: `npm test` — **400 passed, 0 failed, 0 skipped, 0 todo**. Shared Taunt legal-target enforcement is implemented in `systems/targetingRules.js` and `core/turnView.js`; tactical skill-decision helpers in all four controllers now fall back to an action-legal target when their strategic target is outside the legal list.
+- Current verification: `npm test` — **412 passed, 0 failed, 0 skipped, 0 todo**. Shared Taunt legal-target enforcement is implemented in `systems/targetingRules.js` and `core/turnView.js`; tactical skill-decision helpers in all four controllers now fall back to an action-legal target when their strategic target is outside the legal list.
 - All three faction tactical controllers and symmetric faction-duel simulations are integrated.
 
 ## Start every work session by
@@ -57,9 +57,9 @@ See [Architecture](../reference/ARCHITECTURE.md) for the full module map.
 - Tekushiki is canon as a Serpent member by explicit owner authorization. Keep his broad established identity (former scientist turned rogue operative, Tether of Ruin, Serpent Syndicate) but do not invent the tether's origin or unexplained past details unless the owner asks.
 - Do not silently canonize Kane, Galloz, Claude, or other backstories whose source text remains labelled as a development proposal.
 
-## B1 — Agnostic effect and actor-capability design
+## B1–B3 — Effect and resistance architecture
 
-Design proposal is documented in [Agnostic Effect & Actor Capability Design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md). It separates damage channels, effect/control tags, actor capability tags, generic resistance, and faction affinity. B1 is documentation-only: implementation, actor reclassification, faction resistance values, weakness rules, control-proc susceptibility, and Verra redesign are deferred until the design contracts are approved. Baseline test count remains 400.
+B1 design is documented in [Agnostic Effect & Actor Capability Design](../reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md); B2 actor metadata contract is [here](../reference/ACTOR_CAPABILITY_METADATA.md); B3 generic damage-resistance contract is [here](../reference/GENERIC_RESISTANCE_RESOLUTION_B3.md). Universal `resistancePercent` applies to all damage channels; optional `damageTypes` filters exact channels; legacy `resistanceType` remains supported. If both filters are present, both must match. Strongest-value stacking remains in force, and Adaptive Barrier still only affects its remembered type. Capability-based susceptibility, weakness, control/effect resistance, faction affinities, and Verra rework are not implemented. B3 test baseline: 405; current suite: 412.
 
 ## Current character mechanics
 

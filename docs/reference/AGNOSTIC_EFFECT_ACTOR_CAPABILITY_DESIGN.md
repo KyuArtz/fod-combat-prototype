@@ -1,6 +1,6 @@
 # Agnostic Effect & Actor Capability Design (B1)
 
-**Status:** Design proposal; approved for design work, not implementation.
+**Status:** Design foundation; B2 and B3 portions implemented, remaining susceptibility/effect-control/faction-affinity portions are proposals.
 **Scope:** Establish extensible boundaries for damage, resistance, weaknesses, statuses, control effects, and actor-specific susceptibility before expanding the live combat runtime.
 
 The executable prototype and tests remain authoritative for current combat behavior. Everything in this document is proposed unless explicitly marked as existing.
@@ -165,3 +165,8 @@ B1 establishes a design direction for agnostic effects and actor capabilities. I
 ## B2 implementation status
 
 B2 is implemented as inert actor metadata. See [Actor Capability Metadata (B2)](ACTOR_CAPABILITY_METADATA.md) for the whitelist, validation contract, and authored enemy profiles. The current metadata does not affect combat; the B1 proposed effect-resolution and resistance rules remain future work.
+
+
+## B3 implementation note
+
+Universal and damage-channel-filtered resistance described above is implemented in `systems/damage.js`; see the [B3 contract](GENERIC_RESISTANCE_RESOLUTION_B3.md). Actor capabilities, effect tags, control resistance, weakness, and faction affinities are still not consumed by the damage resolver.

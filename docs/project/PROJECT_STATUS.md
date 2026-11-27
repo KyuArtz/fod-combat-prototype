@@ -53,7 +53,7 @@ The prototype has a controller-driven battle loop, deterministic seeded randomne
 
 ## Verification
 
-Current `npm test`: **405 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
+Current `npm test`: **412 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
 
 Additional validation for this Serpent migration: all 145 JavaScript files pass `node --check`, the website-facing JSON parses, the compact owner-reference module loads, and 40 Markdown documents have no broken relative links. Run `npm test` from the project root to verify the checkout.
 
@@ -75,10 +75,11 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 
 - **Taunt legal-target enforcement is now shared** (`systems/targetingRules.js`) and applied by `core/turnView.js` to hostile single-target actions for player, faction-controller, and neutral-enemy views. `view.opponents` remains unfiltered for tactical context; action target lists are authoritative. Tactical controllers consume those action target lists for single-target selections. AoE behavior is not restricted by Taunt. Post-fix 100-battle samples: Falcon vs Phantom (seats alternate) 76–24; Serpent vs Falcon 67–33; Serpent vs Phantom 43–57. These are directional observations only, not balance conclusions.
 
-## Current design work
+## B1–B3 implementation status
 
-- **B1 — Agnostic Effect & Actor Capability Design:** design proposal documents separate damage channels, effect/control tags, non-exclusive actor capabilities, generic resistance with optional filters, faction affinities as a separate balance layer, and deterministic resolution responsibilities.
-- **B2 — Actor Capability Metadata & Validation:** actors now expose validated, inert `capabilities` arrays. Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; all playable roster profiles and two ambiguous enemy archetypes remain neutral/undeclared. No combat logic consumes these tags. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
+- **B1 — Agnostic Effect & Actor Capability Design:** documented the separation of damage channels, effect/control tags, actor capabilities, resistance, weakness, faction affinities, and deterministic resolution boundaries.
+- **B2 — Actor Capability Metadata & Validation:** actors expose validated, inert `capabilities` arrays. Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; playable profiles and two ambiguous enemies remain neutral/undeclared. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
+- **B3 — Generic Resistance Resolution:** universal `resistancePercent` and optional exact `damageTypes` filters apply to Physical, mastery, and reflected damage. Legacy `resistanceType` and Adaptive Barrier remain compatible. Both filters intersect when present. Strongest-value stacking is preserved; capability tags, weakness, effect/control resistance, and faction affinities remain unconnected. See [B3 contract](../reference/GENERIC_RESISTANCE_RESOLUTION_B3.md).
 
 ## Data authority
 
