@@ -30,9 +30,9 @@ Falcon Company, Phantom Rebellion, and Serpent Syndicate use the same owner-agno
 
 See [Unified Character Selection](../reference/UNIFIED_ROSTER_SELECTION.md).
 
-## B1–B4 effect architecture
+## B1–B5 effect architecture
 
-B1 design, B2 inert actor capabilities, and B3 universal/filtered damage resistance are completed. B4 adds `systems/effectSusceptibility.js` as a pure resolver for required/any/excluded capabilities, explicit immunity, effect resistance, control-only resistance, proc chance, and control duration reduction. **B4 is foundation-only:** current skill/status application paths do not call it, and no effect profiles have been migrated. No combat outcomes changed. See [B4 contract](../reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md).
+B1 design, B2 inert actor capabilities, B3 universal/filtered damage resistance, and B4 susceptibility/control resolution are completed. B5 adds an opt-in integration helper to shared `status`, `statusEnemies`, and `damageOverTime` handlers. Shared Serpent Poison is tagged `biological-toxin`; Lucaz Stagger is tagged `control:stagger`. These tags do not assign actor capabilities or alter authored effect values. Untagged legacy effects bypass the resolver. Other status routes remain unmigrated. See [B4 contract](../reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md) and [B5 integration reference](../reference/SUSCEPTIBILITY_INTEGRATION_B5.md).
 
 ## Current engine and tools
 
@@ -57,14 +57,13 @@ The prototype has a controller-driven battle loop, deterministic seeded randomne
 
 ## Verification
 
-Current `npm test`: **425 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
+Current `npm test`: **432 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
 
 Additional validation for this Serpent migration: all 145 JavaScript files pass `node --check`, the website-facing JSON parses, the compact owner-reference module loads, and 40 Markdown documents have no broken relative links. Run `npm test` from the project root to verify the checkout.
 
 ## Integration smoke observations
 
-- A 10-battle Serpent-vs-Falcon smoke batch completed with zero rejected decisions; Falcon won all 10.
-- A 10-battle Serpent-vs-Phantom smoke batch completed with zero rejected decisions; Phantom won 8 and Serpent won 2.
+- B5 post-integration smoke: Falcon vs Phantom 100 battles (77–23 Falcon), Serpent vs Falcon 20 (16–4 Serpent), and Serpent vs Phantom 20 (9–11); all had zero rejected decisions.
 - These are small integration smoke samples, not balance estimates or evidence of final faction strength.
 
 ## Known limitations
@@ -79,7 +78,7 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 
 - **Taunt legal-target enforcement is now shared** (`systems/targetingRules.js`) and applied by `core/turnView.js` to hostile single-target actions for player, faction-controller, and neutral-enemy views. `view.opponents` remains unfiltered for tactical context; action target lists are authoritative. Tactical controllers consume those action target lists for single-target selections. AoE behavior is not restricted by Taunt. Post-fix 100-battle samples: Falcon vs Phantom (seats alternate) 76–24; Serpent vs Falcon 67–33; Serpent vs Phantom 43–57. These are directional observations only, not balance conclusions.
 
-## B1–B3 implementation status
+## B1–B5 implementation status
 
 - **B1 — Agnostic Effect & Actor Capability Design:** documented the separation of damage channels, effect/control tags, actor capabilities, resistance, weakness, faction affinities, and deterministic resolution boundaries.
 - **B2 — Actor Capability Metadata & Validation:** actors expose validated, inert `capabilities` arrays. Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; playable profiles and two ambiguous enemies remain neutral/undeclared. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).

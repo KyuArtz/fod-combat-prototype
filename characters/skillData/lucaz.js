@@ -54,7 +54,7 @@ module.exports = {
       tags: ["offensive", "control"], targeting: "none",
       effects: [
         { type: "masteryDamageAllEnemies", element: "Kinetic", power: 0.9, scalingStat: "ATK" },
-        { type: "statusEnemies", id: "staggered", turns: 1, delayCR: 20, debuff: true, onlyHitTargets: true },
+        { type: "statusEnemies", id: "staggered", turns: 1, delayCR: 20, debuff: true, onlyHitTargets: true, susceptibility: { effectTags: ["control:stagger"] } },
       ],
       message: "{actor} unleashes Faultline Breaker, dealing Kinetic damage to all enemies and Staggering them for 1 turn.",
     },
@@ -63,7 +63,7 @@ module.exports = {
       tags: ["offensive", "control", "team-support"], targeting: "none",
       effects: [
         { type: "masteryDamageAllEnemies", element: "Kinetic", power: 1.8, scalingStat: "ATK" },
-        { type: "statusEnemies", id: "staggered", turns: 1, delayCR: 20, debuff: true, onlyHitTargets: true },
+        { type: "statusEnemies", id: "staggered", turns: 1, delayCR: 20, debuff: true, onlyHitTargets: true, susceptibility: { effectTags: ["control:stagger"] } },
         { type: "statusAllies", id: "ironTitanDamageGuard", damageTakenPercent: -10, turns: 2 },
       ],
       message: "{actor} unleashes Cataclysm of the Iron Titan, damaging and Staggering all enemies while active allies gain 10% damage reduction for 2 turns.",

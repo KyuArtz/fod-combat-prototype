@@ -69,6 +69,18 @@ function validateSkillData(
     if (["enemy", "ally"].includes(targeting)) produced.add("target");
     for (const effect of effects) {
       const type = effect?.type;
+      if (effect?.susceptibility !== undefined) {
+        const susceptibility = effect.susceptibility;
+        const tagFields = ["effectTags", "requiredCapabilities", "requiredAnyCapabilities", "excludedCapabilities"];
+        if (!susceptibility || typeof susceptibility !== "object" || Array.isArray(susceptibility) ||
+          !Array.isArray(susceptibility.effectTags) || !susceptibility.effectTags.length ||
+          tagFields.some((field) => susceptibility[field] !== undefined &&
+            (!Array.isArray(susceptibility[field]) || susceptibility[field].some((tag) => typeof tag !== "string" || !tag.trim()))) ||
+          (susceptibility.chance !== undefined && (!isNum(susceptibility.chance) || susceptibility.chance < 0 || susceptibility.chance > 100)) ||
+          !["status", "statusEnemies", "damageOverTime"].includes(type)) {
+          fail(where, "susceptibility metadata needs effectTags, valid capability-tag arrays, optional chance 0–100, and a supported status effect type");
+        }
+      }
       const registryError = effectRegistry.validate(effect, { data, skill: where, targeting, summons });
       if (registryError) fail(where, registryError);
       const handlerTargeting = effectRegistry.get(type)?.targeting;

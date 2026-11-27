@@ -1,6 +1,7 @@
 // Declarative skill effect handlers. Keep effect execution separate from skill policy and validation.
 const { matchesModifierCondition, getHighestPriorityCleanseEntry, consumeNextAttackDamageModifier, consumeNextSkillDamageModifier, consumeNextSkillPowerModifier } = require("../statusEffects");
 const { isBattleTimerActive } = require("../battleTimers");
+const { resolveEffectApplication } = require("../effectSusceptibility");
 const { emitCombatEvent } = require("../../core/combatEvents");
 
 const pct = (value, percent) => Math.floor((value * percent) / 100);
@@ -33,7 +34,23 @@ function createDefaultEffectHandlers(context) {
     hitPhysical, makeActor, state, events, lifecycleHandlers = {}, random = Math.random,
   } = context;
 
-
+  // Opt-in integration: legacy effects bypass susceptibility exactly as before.
+  function applyStatusEffect(unit, id, statusData, susceptibility) {
+    if (!susceptibility) return addStatus(unit, id, statusData);
+    const tags = susceptibility.effectTags || [];
+    const resolution = resolveEffectApplication(unit, {
+      id, effectTags: tags,
+      requiredCapabilities: susceptibility.requiredCapabilities,
+      requiredAnyCapabilities: susceptibility.requiredAnyCapabilities,
+      excludedCapabilities: susceptibility.excludedCapabilities,
+      chance: susceptibility.chance,
+      turns: statusData.turns,
+    }, random);
+    if (!resolution.applied) return false;
+    const resolvedData = { ...statusData, ...(tags.length ? { effectTags: [...tags] } : {}) };
+    if (resolution.duration && statusData.turns !== undefined) resolvedData.turns = resolution.duration;
+    return addStatus(unit, id, resolvedData);
+  }
 
   const EFFECTS = {
     heal(effect, run) {
@@ -117,8 +134,8 @@ function createDefaultEffectHandlers(context) {
     status(effect, run) {
       const unit = effect.to === "self" ? run.actor : run.target;
       if (!unit) return;
-      const { type, to, ...data } = effect;
-      addStatus(unit, effect.id, data);
+      const { type, to, susceptibility, ...data } = effect;
+      applyStatusEffect(unit, effect.id, data, susceptibility);
     },
     statusGroup(effect, run) {
       if (!run.target) return;
@@ -154,12 +171,12 @@ function createDefaultEffectHandlers(context) {
         const outcome = typeof calculateMastery === "function"
           ? calculateMastery(run.actor, target, effect.element, effect.power, false, effect.scalingStat || "MPow")
           : { damage: Math.max(1, Math.floor((run.actor.stats[effect.scalingStat || "MPow"] || 0) * effect.power)) };
-        addStatus(target, effect.id, {
+        applyStatusEffect(target, effect.id, {
           dotDamage: outcome.damage, damageType: effect.element, turns: effect.turns, debuff: true,
           sourceId: run.actor.id,
           sourceSide: run.actor.side,
           ...(effect.turnStart ? { turnStart: effect.turnStart } : {}),
-        });
+        }, effect.susceptibility);
         if (target === run.target) run.results.dotDamage = outcome.damage;
       }
     },
@@ -202,8 +219,8 @@ function createDefaultEffectHandlers(context) {
         targets = targets.filter((target) => hitIds.has(target.id));
       }
       for (const enemy of targets) {
-        const { type, ...data } = effect;
-        addStatus(enemy, effect.id, data);
+        const { type, susceptibility, ...data } = effect;
+        applyStatusEffect(enemy, effect.id, data, susceptibility);
       }
     },
     masteryHit(effect, run) {

@@ -36,6 +36,7 @@ This index is the entry point for project documentation. Current-state documents
 | [Agnostic effect & actor capability design (B1)](reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md) | Proposed separation of damage channels, effects, actor capabilities, resistance, and susceptibility |
 | [Generic resistance resolution (B3)](reference/GENERIC_RESISTANCE_RESOLUTION_B3.md) | Universal and filtered damage resistance, legacy compatibility, strongest-value stacking, and covered damage paths |
 | [Effect susceptibility & control resolution (B4)](reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md) | Capability gates, explicit immunity, effect/control chance resistance, and duration resolution foundation |
+| [Susceptibility integration (B5)](reference/SUSCEPTIBILITY_INTEGRATION_B5.md) | Opt-in integration path, Poison/Stagger representative migrations, compatibility and determinism tests |
 
 ## Historical milestone reports
 

@@ -9,6 +9,7 @@ function createPoisonEffect({ power = 0.2, turns = 2, message = "{actor} takes {
     scalingStat: "MPow",
     turns,
     onlyHitTargets: true,
+    susceptibility: { effectTags: ["biological-toxin"] },
     turnStart: {
       damageField: "dotDamage",
       damageTypeField: "damageType",

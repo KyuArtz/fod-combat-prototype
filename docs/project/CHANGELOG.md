@@ -1,3 +1,12 @@
+## 2026-11-26 — B5 Susceptibility Integration & Representative Effect Migration
+
+- Integrated the B4 resolver through an opt-in helper in `systems/effects/defaultHandlers.js` for the generic `status`, `statusEnemies`, and `damageOverTime` handlers. Effects without susceptibility metadata continue through the legacy status path.
+- Migrated shared Serpent Poison with the `biological-toxin` tag and both Lucaz Stagger payloads with `control:stagger`. No required actor capabilities were assigned; undeclared roster profiles remain neutral.
+- Added skill-data validation for susceptibility objects, tags/capability arrays, and optional 0–100 chance values.
+- Added seven integration regressions for independent damage/status behavior, partial resistance, control resistance/duration, capability gates, legacy bypass, validation, RNG draw preservation, and migration scope.
+- No status routes outside the selected handlers, skill values, actor classifications, damage formulas, AI, or golden transcripts were changed.
+- Verification: B4 baseline **425 passed**; B5 **432 passed, 0 failed, 0 skipped, 0 todo**. Focused set **66 passed**. Faction duel smoke checks: Falcon–Phantom 100 battles (77–23), Serpent–Falcon 20 (16–4), Serpent–Phantom 20 (9–11); zero rejected decisions. Small samples are not balance evidence. See [B5 integration report](../reference/SUSCEPTIBILITY_INTEGRATION_B5.md).
+
 ## 2026-11-26 — B4 Effect Susceptibility & Control Resolution
 
 - Added a shared pure resolver (`systems/effectSusceptibility.js`) for capability eligibility, explicit immunity, generic effect resistance, control-only resistance, proc chance, and control-duration reduction.

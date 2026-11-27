@@ -159,3 +159,12 @@
 **Decision:** A status with numeric `resistancePercent` and no filters is universal damage resistance. Optional `damageTypes` filters exact damage channels; legacy `resistanceType` remains as a single-channel compatibility filter. When both filters are present, both must match. Applicable resistance sources use strongest-value stacking, clamped to 0–100%; Adaptive Barrier remains a separate channel-specific source and joins the same strongest-value selection. The shared resolver is used for Physical, mastery, and reflected damage.
 
 **Constraints:** The damage floor remains 1, so 100% resistance is not immunity. No effect/control resistance, capability-based susceptibility, weakness, faction resistance baseline, skill tuning, or actor classification changes were introduced. See [B3 contract](../reference/GENERIC_RESISTANCE_RESOLUTION_B3.md).
+
+
+## ADR-021 — Opt-in susceptibility integration and representative migration (B5)
+
+**Status:** Accepted and implemented for selected effects.
+
+**Decision:** Live declarative effect handlers may opt into the B4 susceptibility resolver through a `susceptibility` metadata block. Untagged legacy effects bypass the resolver and preserve their existing application path. The initial migrations are shared Serpent Poison (`biological-toxin`) and Lucaz's two Stagger payloads (`control:stagger`). Tags are not actor capability requirements; no unknown roster profiles are classified, and neutral actors remain neutral. The injected battle RNG is used only when the resolver needs a probabilistic roll.
+
+**Constraints:** Migration is limited to `status`, `statusEnemies`, and `damageOverTime`. Other status routes remain legacy. Damage components are independent of rejected status applications. No skill tuning, capability assignment, new effects, AI changes, or golden transcript edits. See [B5 reference](../reference/SUSCEPTIBILITY_INTEGRATION_B5.md).
