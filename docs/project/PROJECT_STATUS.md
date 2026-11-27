@@ -30,9 +30,9 @@ Falcon Company, Phantom Rebellion, and Serpent Syndicate use the same owner-agno
 
 See [Unified Character Selection](../reference/UNIFIED_ROSTER_SELECTION.md).
 
-## B1–B5 effect architecture
+## B1–B6.2 effect architecture
 
-B1 design, B2 inert actor capabilities, B3 universal/filtered damage resistance, and B4 susceptibility/control resolution are completed. B5 adds an opt-in integration helper to shared `status`, `statusEnemies`, and `damageOverTime` handlers. Shared Serpent Poison is tagged `biological-toxin`; Lucaz Stagger is tagged `control:stagger`. These tags do not assign actor capabilities or alter authored effect values. Untagged legacy effects bypass the resolver. Other status routes remain unmigrated. See [B4 contract](../reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md) and [B5 integration reference](../reference/SUSCEPTIBILITY_INTEGRATION_B5.md).
+B1 design, B2 inert actor capabilities, B3 universal/filtered damage resistance, B4 susceptibility/control resolution, B5 opt-in effect integration, and B6.2 affinity schema are completed. B6.2 adds empty faction profile records and validated actor affinity override metadata; no profile values or runtime inheritance are active. B5 adds an opt-in integration helper to shared `status`, `statusEnemies`, and `damageOverTime` handlers. Shared Serpent Poison is tagged `biological-toxin`; Lucaz Stagger is tagged `control:stagger`. These tags do not assign actor capabilities or alter authored effect values. Untagged legacy effects bypass the resolver. Other status routes remain unmigrated. See [B4 contract](../reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md) and [B5 integration reference](../reference/SUSCEPTIBILITY_INTEGRATION_B5.md).
 
 ## Current engine and tools
 
@@ -110,3 +110,10 @@ See [Architecture](../reference/ARCHITECTURE.md), [Testing](TESTING_AND_PLAYTEST
 ### P1.2.7 Matchup-dependent rotation policy feasibility
 
 - Telemetry-only feasibility audit across 80 battles (20 seeds, both seats, Phantom/Falcon) captured 2,085 Verra decision snapshots. Current turn view supports reactive state-based policy using HP/status, enemy count/roles/HP, treatment target availability, and reserve health. It does **not** provide rolling incoming-damage/focus history, so true pressure-history adaptation would require a neutral turn-view/engine telemetry addition. Role labels are not validated threat scores. No AI or combat behavior changed; retain 16% default. See `reports/experiments/P1-2-7-matchup-dependent-rotation-feasibility.md`.
+
+## B6.2 faction affinity schema
+
+- `data/factionAffinities.js` defines Falcon, Phantom, and Serpent with empty profiles.
+- `systems/factionAffinities.js` validates profile fields, filters, percentages, faction keys, and duration reduction.
+- Actor objects expose validated `affinityOverrides`, default `{}`.
+- No merge/resolution function consumes affinity data. All factions remain combat-neutral; B6.1 Serpent Toxic proposal remains unapproved/unpopulated. See [B6.2 reference](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).

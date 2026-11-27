@@ -168,3 +168,11 @@
 **Decision:** Live declarative effect handlers may opt into the B4 susceptibility resolver through a `susceptibility` metadata block. Untagged legacy effects bypass the resolver and preserve their existing application path. The initial migrations are shared Serpent Poison (`biological-toxin`) and Lucaz's two Stagger payloads (`control:stagger`). Tags are not actor capability requirements; no unknown roster profiles are classified, and neutral actors remain neutral. The injected battle RNG is used only when the resolver needs a probabilistic roll.
 
 **Constraints:** Migration is limited to `status`, `statusEnemies`, and `damageOverTime`. Other status routes remain legacy. Damage components are independent of rejected status applications. No skill tuning, capability assignment, new effects, AI changes, or golden transcript edits. See [B5 reference](../reference/SUSCEPTIBILITY_INTEGRATION_B5.md).
+
+## ADR-022 — Inert faction affinity schema and actor overrides (B6.2)
+
+**Decision:** Define validated affinity profile fields for damage resistance, effect resistance, control resistance, and control-duration reduction. Faction defaults are keyed to Falcon, Phantom, and Serpent and currently empty. Actor `affinityOverrides` is a validated partial profile, defaulting to `{}`.
+
+**Future proposal:** actor override categories replace matching faction categories/entries; unspecified fields inherit. This merge behavior is not implemented.
+
+**Constraints:** B6.2 is schema-only. No combat code reads faction profiles or actor affinity overrides; no values, classifications, weaknesses, skill changes, AI, RNG, or golden transcripts change. See [B6.2 schema](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).

@@ -117,3 +117,8 @@ Before merging a development change to `main`:
 - [x] Complete final audit of defensive passive modifiers and action-resolution hooks using reusable modifier records.
 - [x] Complete Falcon shared-runtime character-ID audit; move Zackry targeter attribution and Jazen Recoil Dampeners status identity into passive data.
 - [x] Expand passive event/modifier contract validation and re-run deterministic regression coverage.
+
+- [x] **B6.1 — Classification & Affinity Proposal:** audited the current classifications and proposed only Serpent Toxic affinity for future approval; no combat changes.
+- [x] **B6.2 — Faction Affinity Schema:** added validated inert faction profiles and actor override metadata. Faction profiles are empty; no merging or combat consumption. See [B6.2 schema](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).
+- [ ] **B6.3 — Approved Actor Classification:** assign actor capabilities only after individual lore approval; preserve neutral fallback.
+- [ ] **B6.4 — Affinity Activation:** separate approval for affinity values and runtime resolution.

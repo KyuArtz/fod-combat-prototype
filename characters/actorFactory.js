@@ -11,6 +11,7 @@ const ACTOR_CAPABILITIES = Object.freeze([
   "corrosion-resistant-materials",
 ]);
 const ACTOR_CAPABILITY_SET = new Set(ACTOR_CAPABILITIES);
+const { validateActorAffinityOverrides } = require("../systems/factionAffinities");
 
 function normalizeActorCapabilities(capabilities) {
   if (capabilities === undefined) return [];
@@ -40,6 +41,7 @@ function makeActor(data) {
   return {
     ...data,
     capabilities: normalizeActorCapabilities(data.capabilities),
+    affinityOverrides: validateActorAffinityOverrides(data.affinityOverrides),
     stats: { ...data.stats },
     hp: data.stats.HP,
     mp: data.stats.MP,

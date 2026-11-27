@@ -1,3 +1,11 @@
+## 2026-11-26 — B6.2 Faction Affinity Schema
+
+- Added schema/validation for optional faction damage resistance, effect resistance, control resistance, and control-duration reduction metadata.
+- Added empty inert affinity profiles for Falcon, Phantom, and Serpent; no values are approved or activated.
+- Actor factory now exposes validated partial `affinityOverrides`, defaulting to `{}`. No runtime inheritance/merge or combat consumer exists.
+- Added focused schema validation tests. No capabilities, faction balance, skills, combat formulas, AI, RNG, or golden transcripts changed.
+- Verification: B5 baseline **432 passed**; B6.2 suite pending final verification. See [B6.2 schema](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).
+
 ## 2026-11-26 — B5 Susceptibility Integration & Representative Effect Migration
 
 - Integrated the B4 resolver through an opt-in helper in `systems/effects/defaultHandlers.js` for the generic `status`, `statusEnemies`, and `damageOverTime` handlers. Effects without susceptibility metadata continue through the legacy status path.
