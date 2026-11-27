@@ -14,7 +14,7 @@ A Node.js command-line prototype for experimenting with **Fragments of Decay (F.
 - Coordinated Falcon, Phantom, and Serpent controllers with role-aware target focus, faction-specific tactics, Toxic-counterplay, and three-active/two-reserve rotation.
 - Typed combat events alongside readable battle logs.
 - Headless simulator with table, JSON, and CSV reports.
-- Automated regression suite: **432 tests passing, 0 failing, 0 skipped, 0 todo** after B6.2 Faction Affinity Schema; run `npm test` locally to verify your checkout.
+- Automated regression suite: **441 tests passing, 0 failing, 0 skipped, 0 todo** after B6.3 Actor Classification; run `npm test` locally to verify your checkout.
 - Taunt now restricts hostile single-target legal targets through the shared targeting rules; AoE and friendly-targeting modes are unaffected. A2.1 adds six focused legality-matrix tests covering priority/ties, targetFaction intersection, support-mode exclusions, controller parity, summon eligibility, and targetless AoE actions.
 
 Reward awarding, XP, inventory, persistent stage progression, and save/load are not implemented. The encounter completion callback exposes reward metadata for a future progression layer.
@@ -143,3 +143,4 @@ package.json          Project metadata and standard npm scripts
 
 See [project status](docs/project/PROJECT_STATUS.md), [architecture](docs/reference/ARCHITECTURE.md), and [testing guidance](docs/project/TESTING_AND_PLAYTESTING.md).
 - **B6.2 Faction Affinity Schema:** added validated, inert faction affinity profiles and actor-specific affinity override metadata. Faction profiles remain empty; no affinity merging or combat application is active. See [B6.2 schema reference](docs/reference/FACTION_AFFINITY_SCHEMA_B6.2.md).
+- **B6.3 Approved Actor Classification:** all 15 playable actors are classified `organic`; Galloz additionally receives `electronic-systems` for cybernetic components. Capability metadata remains inert. See [B6.3 classification reference](docs/reference/ACTOR_CLASSIFICATION_B6.3.md).

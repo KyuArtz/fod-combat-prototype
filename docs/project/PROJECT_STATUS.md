@@ -81,7 +81,7 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 ## B1–B5 implementation status
 
 - **B1 — Agnostic Effect & Actor Capability Design:** documented the separation of damage channels, effect/control tags, actor capabilities, resistance, weakness, faction affinities, and deterministic resolution boundaries.
-- **B2 — Actor Capability Metadata & Validation:** actors expose validated, inert `capabilities` arrays. Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; playable profiles and two ambiguous enemies remain neutral/undeclared. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
+- **B2 — Actor Capability Metadata & Validation:** actors expose validated, inert `capabilities` arrays. Four clearly mechanical enemy definitions declare `mechanical` and `electronic-systems`; playable profiles were neutral/undeclared before B6.3; B6.3 now classifies all 15 playable actors as organic, with Galloz additionally electronic-systems. Two ambiguous enemies remain neutral/undeclared. See [B2 metadata contract](../reference/ACTOR_CAPABILITY_METADATA.md).
 - **B3 — Generic Resistance Resolution:** universal `resistancePercent` and optional exact `damageTypes` filters apply to Physical, mastery, and reflected damage. Legacy `resistanceType` and Adaptive Barrier remain compatible. Both filters intersect when present. Strongest-value stacking is preserved; capability tags, weakness, effect/control resistance, and faction affinities remain unconnected. See [B3 contract](../reference/GENERIC_RESISTANCE_RESOLUTION_B3.md).
 
 ## Data authority
@@ -117,3 +117,8 @@ See [Architecture](../reference/ARCHITECTURE.md), [Testing](TESTING_AND_PLAYTEST
 - `systems/factionAffinities.js` validates profile fields, filters, percentages, faction keys, and duration reduction.
 - Actor objects expose validated `affinityOverrides`, default `{}`.
 - No merge/resolution function consumes affinity data. All factions remain combat-neutral; B6.1 Serpent Toxic proposal remains unapproved/unpopulated. See [B6.2 reference](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).
+
+## B6.3 actor classification
+
+- All 15 playable actors have `organic` capability metadata. Galloz additionally has `electronic-systems` to reflect cybernetic components and EMP susceptibility.
+- Capability metadata remains inert. Enemy profiles unchanged; faction affinity profiles remain empty. Serpent team Toxic resistance is deferred. See [B6.3 reference](../reference/ACTOR_CLASSIFICATION_B6.3.md).

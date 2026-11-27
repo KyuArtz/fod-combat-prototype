@@ -106,3 +106,7 @@ Faction smoke results (not balance estimates): 100 Falcon vs Phantom battles = F
 ## B6.2 faction affinity schema
 
 B6.2 adds the inert schema in `systems/factionAffinities.js`, empty faction profiles in `data/factionAffinities.js`, and validated actor `affinityOverrides` in `characters/actorFactory.js`. The supported profile fields are damage resistance entries, effect resistance entries, control resistance percentage, and control duration reduction. No faction values are populated and no runtime merge/apply path exists. Preserve neutral behavior. See `docs/reference/FACTION_AFFINITY_SCHEMA_B6.2.md`.
+
+## B6.3 approved actor classification
+
+All current playable actors are explicitly classified `organic`. Galloz is `organic` + `electronic-systems` because of cybernetic components and EMP susceptibility. Armor/shields are equipment and do not change composition. Fully android future characters should be classified from confirmed lore; none are added here. Capability metadata is still inert. The full-Serpent Toxic resistance idea is deferred. See `docs/reference/ACTOR_CLASSIFICATION_B6.3.md`.

@@ -44,6 +44,7 @@ function createSerpentParty({ side = "ally" } = {}) {
     name: member.name,
     side,
     faction: "serpent",
+    capabilities: member.id === "galloz" ? ["organic", "electronic-systems"] : ["organic"],
     role: member.role,
     roles: [...member.roles],
     skillSet: member.id,

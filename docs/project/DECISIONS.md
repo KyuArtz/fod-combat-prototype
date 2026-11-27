@@ -176,3 +176,9 @@
 **Future proposal:** actor override categories replace matching faction categories/entries; unspecified fields inherit. This merge behavior is not implemented.
 
 **Constraints:** B6.2 is schema-only. No combat code reads faction profiles or actor affinity overrides; no values, classifications, weaknesses, skill changes, AI, RNG, or golden transcripts change. See [B6.2 schema](../reference/FACTION_AFFINITY_SCHEMA_B6.2.md).
+
+## ADR-023 — B6.3 approved playable actor classification
+
+**Decision:** The current playable roster is organic by canon. Armor, shields, and equipment do not alter composition. Galloz remains organic and additionally carries `electronic-systems` to represent cybernetic components and EMP susceptibility. Future fully android characters require lore-grounded classifications.
+
+**Constraints:** Capability metadata remains inert. No faction affinity values, runtime capability effects, skill/balance, AI, RNG, or golden transcript changes. Full-Serpent Toxic resistance is a deferred concept. See [B6.3 reference](../reference/ACTOR_CLASSIFICATION_B6.3.md).

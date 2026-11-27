@@ -50,6 +50,7 @@ function createPhantomParty({ side = "ally" } = {}) {
     name: member.name,
     side,
     faction: "phantom",
+    capabilities: ["organic"],
     role: member.role,
     skillSet: member.id,
     mastery: member.mastery,

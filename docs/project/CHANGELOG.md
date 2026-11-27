@@ -1,3 +1,9 @@
+## 2026-11-26 — B6.3 Approved Actor Classification
+
+- Classified all 15 playable actors as `organic` by approved canon. Galloz additionally receives `electronic-systems` for cybernetic components/EMP susceptibility.
+- Added three focused classification tests; enemy profiles and neutral factory defaults are unchanged.
+- Capability tags remain inert; no affinity bonus, combat effect, balance, AI, RNG, or golden transcript changes. Serpent full-team Toxic resistance remains a deferred idea. Verification: B6.2 baseline 438 passed; final suite 441 passed, 0 failed/skipped/todo. See [B6.3 reference](../reference/ACTOR_CLASSIFICATION_B6.3.md).
+
 ## 2026-11-26 — B6.2 Faction Affinity Schema
 
 - Added schema/validation for optional faction damage resistance, effect resistance, control resistance, and control-duration reduction metadata.
