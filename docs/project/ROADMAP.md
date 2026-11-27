@@ -74,12 +74,16 @@ This roadmap separates completed foundations from proposed future work. An unche
 
 ## Current follow-up opportunities
 
+- [x] **B4 — Effect Susceptibility & Control Resolution:** add a pure, tested resolver for capability eligibility, explicit immunity, effect/control chance resistance, and control duration reduction. Resolver is not wired into skill/status execution; no effects or balance values migrated. See [B4 contract](../reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md).
+- [ ] **B5 — Susceptibility integration & representative migration:** separately scoped implementation gate; first select a few effects, integrate through seeded RNG and shared status paths, and preserve baseline behavior for untagged effects.
+
+
 - [x] **B1 design — Agnostic Effect & Actor Capability Design:** documented vocabulary, separation of damage/effects/capabilities, resistance semantics, neutral fallback, and implementation boundaries.
 - [x] **B2 — Actor Capability Metadata & Validation:** add a validated, inert actor `capabilities` array, neutral fallback, whitelist, and focused tests. No susceptibility or combat mechanics are connected yet. See [B2 contract](../reference/ACTOR_CAPABILITY_METADATA.md).
 - [x] **B3 — Generic Resistance Resolution:** universal and filtered damage resistance; typed legacy compatibility; strongest-value stacking; Physical, mastery, and reflected-damage path coverage. See [B3 contract](../reference/GENERIC_RESISTANCE_RESOLUTION_B3.md).
-- [ ] B4 — Effect susceptibility/control resolution (capability-based compatibility and proc/resistance rules; design gate before implementation).
+- [x] B4 — Effect susceptibility/control resolution foundation (pure resolver with capability gates, explicit immunity, effect/control resistance, and control duration reduction; not yet integrated).
 
-The three faction integrations are complete. Next combat architecture work is B4, with a separate design/implementation approval gate. Other useful follow-ups include:
+The three faction integrations are complete. Next combat architecture work is B5 integration and representative effect migration, with a separate implementation gate. Other useful follow-ups include:
 
 1. Run larger three-way faction balance studies and add matchup/role analytics before changing character values.
 2. Improve Serpent tactical decisions and review faction coverage where it is materially weaker than sustain-focused teams.

@@ -30,6 +30,10 @@ Falcon Company, Phantom Rebellion, and Serpent Syndicate use the same owner-agno
 
 See [Unified Character Selection](../reference/UNIFIED_ROSTER_SELECTION.md).
 
+## B1–B4 effect architecture
+
+B1 design, B2 inert actor capabilities, and B3 universal/filtered damage resistance are completed. B4 adds `systems/effectSusceptibility.js` as a pure resolver for required/any/excluded capabilities, explicit immunity, effect resistance, control-only resistance, proc chance, and control duration reduction. **B4 is foundation-only:** current skill/status application paths do not call it, and no effect profiles have been migrated. No combat outcomes changed. See [B4 contract](../reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md).
+
 ## Current engine and tools
 
 The prototype has a controller-driven battle loop, deterministic seeded randomness and replay, typed combat events, threshold and legacy readiness schedulers, declarative skills/passives/summons, load-time registry validation, data-driven enemy AI, and multi-wave encounters with reinforcements. Headless simulations use the same engine as interactive play.
@@ -53,7 +57,7 @@ The prototype has a controller-driven battle loop, deterministic seeded randomne
 
 ## Verification
 
-Current `npm test`: **412 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
+Current `npm test`: **425 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
 
 Additional validation for this Serpent migration: all 145 JavaScript files pass `node --check`, the website-facing JSON parses, the compact owner-reference module loads, and 40 Markdown documents have no broken relative links. Run `npm test` from the project root to verify the checkout.
 

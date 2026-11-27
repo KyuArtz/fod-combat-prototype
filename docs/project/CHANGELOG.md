@@ -1,3 +1,12 @@
+## 2026-11-26 — B4 Effect Susceptibility & Control Resolution
+
+- Added a shared pure resolver (`systems/effectSusceptibility.js`) for capability eligibility, explicit immunity, generic effect resistance, control-only resistance, proc chance, and control-duration reduction.
+- Supports all-of capability requirements, any-of requirements, and explicit excluded capabilities; undeclared profiles remain neutral.
+- Effect and control resistance are independent strongest-value categories; control duration reduction is separate from chance and applies only to `control:` tags. Damage resistance does not affect effect/control resolution.
+- Added 13 focused tests for eligibility, immunity, filters, resistance separation, duration, deterministic RNG injection, and malformed metadata.
+- Resolver is not yet connected to live status/skill application; no character or faction effects migrated. No skill values, combat behavior, RNG streams, or golden transcripts changed.
+- Verification: B3 baseline **412 passed**; B4 **425 passed, 0 failed, 0 skipped, 0 todo**.
+
 ## 2026-11-26 — B3 Generic Resistance Resolution
 
 - Added universal resistance statuses (`resistancePercent` without filters) and optional `damageTypes` filters. Legacy `resistanceType` remains compatible; when both filters exist, both must match.

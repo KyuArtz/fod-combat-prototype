@@ -14,7 +14,7 @@ A Node.js command-line prototype for experimenting with **Fragments of Decay (F.
 - Coordinated Falcon, Phantom, and Serpent controllers with role-aware target focus, faction-specific tactics, Toxic-counterplay, and three-active/two-reserve rotation.
 - Typed combat events alongside readable battle logs.
 - Headless simulator with table, JSON, and CSV reports.
-- Automated regression suite: **412 tests passing, 0 failing, 0 skipped, 0 todo** after B3 Generic Resistance Resolution; run `npm test` locally to verify your checkout.
+- Automated regression suite: **425 tests passing, 0 failing, 0 skipped, 0 todo** after B4 Effect Susceptibility & Control Resolution; run `npm test` locally to verify your checkout.
 - Taunt now restricts hostile single-target legal targets through the shared targeting rules; AoE and friendly-targeting modes are unaffected. A2.1 adds six focused legality-matrix tests covering priority/ties, targetFaction intersection, support-mode exclusions, controller parity, summon eligibility, and targetless AoE actions.
 
 Reward awarding, XP, inventory, persistent stage progression, and save/load are not implemented. The encounter completion callback exposes reward metadata for a future progression layer.
@@ -99,7 +99,7 @@ See [the simulator guide](docs/history/milestones/STEP5_HEADLESS_SIMULATOR.md) f
 
 ## Documentation
 
-See [B1 — Agnostic Effect & Actor Capability Design](docs/reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md), [Actor Capability Metadata (B2)](docs/reference/ACTOR_CAPABILITY_METADATA.md), and [Generic Resistance Resolution (B3)](docs/reference/GENERIC_RESISTANCE_RESOLUTION_B3.md). Actor capability tags remain inert; B3 adds universal and filtered damage resistance while preserving typed resistance compatibility.
+See [B1 — Agnostic Effect & Actor Capability Design](docs/reference/AGNOSTIC_EFFECT_ACTOR_CAPABILITY_DESIGN.md), [Actor Capability Metadata (B2)](docs/reference/ACTOR_CAPABILITY_METADATA.md), [Generic Resistance Resolution (B3)](docs/reference/GENERIC_RESISTANCE_RESOLUTION_B3.md), and [Effect Susceptibility & Control Resolution (B4)](docs/reference/EFFECT_SUSCEPTIBILITY_CONTROL_RESOLUTION_B4.md). B4 adds a tested pure resolver foundation; existing skill/status execution does not yet consume it.
 
 Start at the [documentation index](docs/README.md). It separates current project guidance, technical references, and historical milestone records.
 
