@@ -47,10 +47,11 @@ function getAction(view, key) {
 
 function skillDecision(view, action, targetId) {
   if (!action) return null;
+  const legalTargetId = targetId && action.targets?.includes(targetId) ? targetId : targetId ? action.targets?.[0] : undefined;
   return {
     type: action.type,
     skillKey: action.key,
-    ...(targetId ? { targetId } : {}),
+    ...(legalTargetId ? { targetId: legalTargetId } : {}),
   };
 }
 

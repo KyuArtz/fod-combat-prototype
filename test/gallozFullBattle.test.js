@@ -81,18 +81,16 @@ test("full battle: Galloz's primed Reinforcement flag always has a live charge b
 });
 
 // Taunt currently applies only through the default PvE enemy AI (ai/targeting.js).
-// Controller-driven sides (faction duels) still see every opponent as a legal target,
-// so enemy attacks are not redirected. Marked `todo` so the suite stays green until the
-// engine enforces Taunt for controller turns; remove the flag once it does.
-test("full battle: enemy basic attacks during Galloz's Taunt are redirected to him", { todo: "Taunt is not enforced for controller-driven sides yet" }, async () => {
+// Controller-driven sides now receive Taunt-filtered legal target lists.
+test("full battle: enemy basic attacks during Galloz's Taunt target him through legal-target enforcement", async () => {
   const falcon = {
     chooseAction(view) {
       const galloz = view.opponents.find((unit) => unit.id === "galloz");
       const taunting = Object.values(galloz?.statuses || {}).some((status) => status.taunt);
       const basic = view.actions.find((action) => action.type === "basic");
       if (!basic?.targets?.length) return { type: "pass" };
-      // Deliberately aim away from the taunter so redirection (not luck) is what is tested.
-      return { type: "basic", targetId: taunting ? basic.targets.find((id) => id !== "galloz") : basic.targets[0] };
+      // During Taunt, the view exposes only Galloz as a legal hostile target.
+      return { type: "basic", targetId: basic.targets[0] };
     },
   };
   const battle = await playFactionDuel({

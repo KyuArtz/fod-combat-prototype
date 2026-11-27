@@ -1,7 +1,7 @@
 # Project Status
 
 **Project:** F.O.D. (Fragments of Decay) Combat Prototype  
-**Snapshot:** 2026-11-23  
+**Snapshot:** 2026-11-26  
 **Runtime:** Node.js CommonJS CLI  
 **Preferred scheduler:** Threshold / continuous-time  
 **Interactive encounter:** `trainingGround`
@@ -53,7 +53,7 @@ The prototype has a controller-driven battle loop, deterministic seeded randomne
 
 ## Verification
 
-Current `npm test`: **370 passed, 0 failed, 0 skipped**. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
+Current `npm test`: **400 passed, 0 failed, 0 skipped, 0 todo**. The controller-side Taunt legality fix adds four focused TurnView cases and removes the Galloz full-battle todo. A2.1 adds six more Taunt legality-matrix regressions. Coverage includes all 15 playable skill sets, all six enemy skill sets, Serpent passive/effect mechanics, three-faction selection, mode-based target previews, hidden-operative neutral-copy checks, faction-duel execution on either side, effect timing/stacking, source-attributed DoT, reserve/summon lifecycle, and deterministic transcripts.
 
 Additional validation for this Serpent migration: all 145 JavaScript files pass `node --check`, the website-facing JSON parses, the compact owner-reference module loads, and 40 Markdown documents have no broken relative links. Run `npm test` from the project root to verify the checkout.
 
@@ -71,7 +71,9 @@ Additional validation for this Serpent migration: all 145 JavaScript files pass 
 - Encounter rewards, XP, currency, inventory, persistent progression, and save/load remain unimplemented.
 - Runtime Falcon base stats remain prototype values and are not automatically synchronized with the owner-maintained stat sheet.
 - Phantom Bleeding's 0.15× ATK Anomaly tick remains a provisional test baseline pending later balance review.
-- **Taunt is only enforced by the default PvE enemy AI** (`ai/targeting.js`). Controller-driven sides (faction duels) still see every opponent as a legal target, so Lucaz's Bastion and Galloz's Tyrant's Guard do not redirect enemy attacks there. Pending test: the `todo` case in `test/gallozFullBattle.test.js`. Fixing it changes duel balance and touches target legality in `core/turnView.js` plus every tactical controller.
+- **A2.1 Taunt legality matrix coverage:** six focused tests exercise longest-duration priority and stable ties, hostile `targetFaction` intersection, ally support with `excludeSelf`/`targetFaction`, player/faction-controller hostile-mode parity, summon eligibility and untargetable fall-through, and targetless all-enemy action targeting. No engine behavior changed in A2.1.
+
+- **Taunt legal-target enforcement is now shared** (`systems/targetingRules.js`) and applied by `core/turnView.js` to hostile single-target actions for player, faction-controller, and neutral-enemy views. `view.opponents` remains unfiltered for tactical context; action target lists are authoritative. Tactical controllers consume those action target lists for single-target selections. AoE behavior is not restricted by Taunt. Post-fix 100-battle samples: Falcon vs Phantom (seats alternate) 76–24; Serpent vs Falcon 67–33; Serpent vs Phantom 43–57. These are directional observations only, not balance conclusions.
 
 ## Data authority
 

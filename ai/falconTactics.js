@@ -51,11 +51,13 @@ function action(view, key) {
 
 function decisionForSkill(item, targetId, mode) {
   if (!item) return null;
+  const legalTargets = mode ? item.modes?.find((candidate) => candidate.id === mode)?.targets : item.targets;
+  const legalTargetId = targetId && legalTargets?.includes(targetId) ? targetId : targetId ? legalTargets?.[0] : undefined;
   return {
     type: "skill",
     skillKey: item.key,
     ...(mode ? { mode } : {}),
-    ...(targetId ? { targetId } : {}),
+    ...(legalTargetId ? { targetId: legalTargetId } : {}),
   };
 }
 

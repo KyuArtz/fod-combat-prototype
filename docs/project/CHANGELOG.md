@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-26 — Controller-side Taunt legality (A1)
+
+
+- Added `systems/targetingRules.js` as the shared source for active-Taunt lookup, longest-duration priority, stable formation-order ties, and target-list restriction.
+- `core/turnView.js` now restricts hostile single-target legal targets for player/faction controllers and neutral enemy controllers. `view.opponents` stays unfiltered for strategic context; friendly-targeting modes and AoE remain unchanged.
+- `ai/targeting.js` now uses the shared active-Taunter helper, preserving default PvE targeting behavior.
+- Removed the Galloz full-battle Taunt `todo`; controller-side Taunt targeting is now exercised in battle. Added focused player-view, faction-enemy-view, and neutral-enemy-view tests.
+- Updated the single-target skill-decision helpers in Falcon, Falcon V2, Phantom, and Serpent controllers to retain a chosen target only when it is legal for that action, otherwise falling back to an exposed legal target. This was necessary because some tactical priority choices originate from the unfiltered `view.opponents` list.
+- Verification: `npm test` — **394 passed, 0 failed, 0 skipped, 0 todo**. 100-battle samples (seat alternation) yielded Falcon 76–24 vs Phantom, Serpent 67–33 vs Falcon, and Serpent 43–57 vs Phantom; execution smoke only, not balance evidence.
+
+
+
 ## 2026-11-24 — P1-2-13 review fixes: Taunt targeting and Reinforcement expiry
 
 - **Fixed stale Reinforcement payoff (Galloz, Lucaz):** the `*ReinforcementPrimed` passive flag is now cleared by the new shared `clearPrimedFlagWithoutCharge` passive handler (subscribed on `turnStart` and `turnEnd`) when the matching Kinetic charge status has expired or been removed. Previously Galloz's Reactor Quake could still use its 120% ATK payoff after the charge had run out. In full duels continuous enemy skill hits usually keep refreshing the charge, so this rarely occurred naturally.

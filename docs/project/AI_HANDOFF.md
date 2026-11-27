@@ -9,7 +9,7 @@ Use this document as a concise starting point for future F.O.D. development sess
 - Default scheduler: `threshold`; `legacy` remains available for comparison.
 - Default interactive flow: unified mixed-faction roster selection across Falcon Company, Phantom Rebellion, and Serpent Syndicate (3–5 unique operatives; first three active, remaining selected members become reserves), followed by `trainingGround`.
 - Current roster: 15 selectable operatives, five per faction. Tekushiki is an official/canon member of Serpent by user authorization on 2026-11-23.
-- Current verification: `npm test` — 370 passed, 0 failed, 0 skipped.
+- Current verification: `npm test` — **400 passed, 0 failed, 0 skipped, 0 todo**. Shared Taunt legal-target enforcement is implemented in `systems/targetingRules.js` and `core/turnView.js`; tactical skill-decision helpers in all four controllers now fall back to an action-legal target when their strategic target is outside the legal list.
 - All three faction tactical controllers and symmetric faction-duel simulations are integrated.
 
 ## Start every work session by
@@ -80,7 +80,9 @@ Available player/opponent factions are `falcon`, `phantom`, and `serpent`; they 
 - Enemy and faction AI are deterministic rule-based policies, not learning systems.
 - Encounter rewards, XP, inventory, persistent stage progression, and save/load are not implemented.
 - Runtime Falcon stats remain prototype values pending a separate stat-sync decision.
-- **Taunt is only enforced by the default PvE enemy AI** (`ai/targeting.js`). Controller-driven sides (faction duels) still see every opponent as a legal target, so Lucaz's Bastion and Galloz's Tyrant's Guard do not redirect enemy attacks there. Pending test: the `todo` case in `test/gallozFullBattle.test.js`. Fixing it changes duel balance and touches target legality in `core/turnView.js` plus every tactical controller.
+- **A2.1 Taunt legality matrix tests:** six added regressions cover longest Taunt priority/tie stability, hostile targetFaction intersection, support targeting with excludeSelf/targetFaction, player and faction-controller mode parity, eligible summon/untargetable Taunter handling, and targetless all-enemy actions. Test-only; no engine changes.
+
+- **Taunt legal-target enforcement is shared** (`systems/targetingRules.js`) and applied by `core/turnView.js` to hostile single-target action targets in player, faction-controller, and neutral-enemy views. `view.opponents` remains unfiltered for tactical context; action target lists are authoritative. The existing tactical controllers use those action target lists for single-target selection. AoE target behavior is intentionally unchanged. Post-fix seed samples: 100 Falcon-vs-Phantom battles (seat alternation) yielded Falcon 76 / Phantom 24; 100 Serpent-vs-Falcon yielded Serpent 67 / Falcon 33; 100 Serpent-vs-Phantom yielded Serpent 43 / Phantom 57. Treat these as execution smoke samples only, not balance evidence.
 
 ## Documentation rules
 

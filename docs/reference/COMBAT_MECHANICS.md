@@ -64,6 +64,12 @@ Damage types are `Physical` or one of the configured masteries: Energy, Kinetic,
 
 DoT source attribution resolves the saved source ID and side against deployed actors and both party rosters, so damage remains attributed if its applier is in reserve or has left the active actor list. If a turn-start DoT incapacitates its target, later simultaneous DoT ticks on that target are skipped.
 
+## Taunt and hostile target legality
+
+
+Taunt restricts hostile single-target legal targets to the active Taunter, using the shared payload-based rule: longest remaining duration wins, with formation order breaking ties. This is applied to action target lists in the turn view, so controller-driven faction duels and neutral enemy controllers see the same legality rule. The full `view.opponents` roster remains available for strategic context. Friendly-targeting actions and area-of-effect targeting are not narrowed by Taunt.
+
+
 ## Accuracy and evasion
 
 - Enemy basic attacks check ally Evasion, clamped to 0–75%, and may trigger configured counter behavior after a successful hit.

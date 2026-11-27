@@ -1,4 +1,5 @@
 const { getIncomingPressure } = require("./incomingPressureTelemetry");
+const { restrictHostileTargets } = require("../systems/targetingRules");
 
 // Plain-data description of "what can this actor do right now".
 //
@@ -96,7 +97,8 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
   };
 
   if (kind === "player") {
-    const enemyIds = enemies.filter((unit) => !unit.untargetable).map((unit) => unit.id);
+    const eligibleEnemies = enemies.filter((unit) => !unit.untargetable);
+    const enemyIds = restrictHostileTargets(eligibleEnemies).map((unit) => unit.id);
     const allyIds = allies.filter((unit) => !unit.summon).map((unit) => unit.id);
     const targetsFor = (targeting, skill = {}) => {
       if (targeting === "enemy") return enemyIds;
@@ -146,7 +148,7 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
     const factionActor = Boolean(actor.faction);
     const foeUnits = view.opponents.filter((unit) => (!unit.summon || unit.targetableByEnemy) && !unit.untargetable);
     const friendUnits = view.friendlies.filter((unit) => !unit.summon && !unit.untargetable);
-    const foeIds = foeUnits.map((unit) => unit.id);
+    const foeIds = restrictHostileTargets(foeUnits).map((unit) => unit.id);
     const friendIds = friendUnits.map((unit) => unit.id);
     if (foeIds.length) view.actions.push({ type: "basic", targeting: "enemy", targets: foeIds });
 
@@ -162,6 +164,11 @@ function buildTurnView({ state, actor, skills, describeEnemySkills, ready, alive
         // faction actors use the same player/character semantics as their own kits.
         targets = foeIds;
         candidates = foeUnits;
+      }
+      // Only hostile target modes are constrained by Taunt. Friendly support modes
+      // retain their normal ally lists.
+      if (targeting === "enemy" || (!factionActor && targeting === "ally")) {
+        targets = restrictHostileTargets(candidates.filter((unit) => targets.includes(unit.id))).map((unit) => unit.id);
       }
       if (skill.excludeSelf) targets = targets.filter((id) => id !== actor.id);
       if (skill.targetFaction) {

@@ -164,6 +164,12 @@ Statuses may declare a `turnStartRefresh` contract that maps their base amount, 
 A status may declare an `onUnitDefeated` reaction with a registered generic handler. `systems/statusEffects.js` dispatches the reaction from the defeated unit's status snapshot, and the passive lifecycle runtime only forwards the defeat event. Tactical Mark declares a `restoreMpToLivingAllies` reaction for 5% of each living non-summon ally's Max MP; both Zackry's single-target Mark and Full Spectrum Assault's party-wide status application carry the same reaction data. The single-target application uses the generic `status` effect handler; no dedicated Tactical Mark application handler remains. The reaction is once-only for the supplied defeat snapshot, and skill-data validation checks the handler and configured percentage range.
 
 
+## Shared hostile target legality and Taunt
+
+
+`systems/targetingRules.js` owns payload-based active-Taunt detection and stable priority (longest remaining duration; formation order breaks ties). `core/turnView.js` applies that rule to hostile single-target legal lists, including basic attacks, enemy-targeting skills, and hostile modes. `view.opponents` remains the full unfiltered opponent summary for tactical context; action target lists are the legality source. Friendly-targeting modes and AoE behavior are not narrowed by Taunt. The default PvE enemy target picker uses the same active-Taunter helper.
+
+
 ## Iteration 5 runtime coverage audit
 
 The runtime validates passive event names and passive/summon handler references against the live battle-scoped registries when skill data is built. This covers all ten selectable character skill sets and all six enemy skill sets. `targetFaction` and `excludeSelf` restrictions are enforced again by `core/skillInterpreter.js` at execution time for ally-targeting mode variants, so a controller cannot bypass them by invoking the interpreter directly.
